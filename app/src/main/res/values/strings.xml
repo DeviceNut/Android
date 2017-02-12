@@ -1,0 +1,32 @@
+<resources>
+    <string name="app_name">PixelNut!</string>
+    <string name="name_help">Help</string>
+    <string name="name_controls">Controls</string>
+    <string name="title_help">How to use the controls</string>
+    <string name="toggle_manual">Manual</string>
+    <string name="toggle_automatic">Automatic</string>
+    <string name="text_title">Controls Help</string>
+    <string name="text_help">
+        This explains how to use the controls, which affect the PixelNut! device that is currently selected
+        (name is displayed in the upper left corner).
+
+        \n\nThe Beacon causes a distinctive pattern to be displayed on the device so that you can locate it amongst others.
+
+        \n\nYou can change the name of your device anytime by editing the text.
+        Be sure to confirm your changes, or it will revert to its original name.
+
+        \n\nPreset Effect Pattern:
+        \nThis drop-down list allows the selection one of the 13 built-in patterns.
+        You can then modify various setting with the other controls described below.
+
+        \n\nModify Effect Properties:
+        \nWhen set to Automatic, the color hue and whiteness, and the length properties
+        are all determined from the pattern itself, and usually change periodically.
+        When set to Manual you can directly change them yourself.
+
+        \n\nTrigger Force and Action:
+        \nTriggering a pattern by pressing the Action button causes the pattern to change
+        somehow, depending on the pattern. The amount of change is determined by the amount
+        of force that is applied.
+    </string>
+</resources>

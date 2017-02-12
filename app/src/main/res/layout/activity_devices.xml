@@ -1,0 +1,240 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/activity_devices"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingLeft="0dp"
+    android:paddingRight="0dp"
+    android:paddingTop="0dp"
+    android:background="@color/Background"
+    tools:context=".Devices">
+
+    <ProgressBar
+        style="?android:attr/progressBarStyle"
+        android:layout_width="match_parent"
+        android:layout_height="70dp"
+        android:visibility="invisible"
+        android:translationZ="2dp"
+        android:layout_centerVertical="true"
+        android:id="@+id/progress_Scanner"/>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Connecting..."
+        android:textSize="28sp"
+        android:textStyle="italic|bold"
+        android:visibility="invisible"
+        android:id="@+id/text_Connecting"
+        android:layout_below="@id/progress_Scanner"
+        android:gravity="center_horizontal"/>
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <View
+            android:layout_width="fill_parent"
+            android:layout_height="2dp"
+            android:background="@color/HorzDivider0"/>
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:background="@color/DarkHeader"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="10dp"
+                android:layout_marginRight="25dp"
+                android:layout_gravity="center"
+                android:text="PixelNut!"
+                android:textSize="36dp"
+                android:textStyle="italic|bold"
+                android:onClick="onClick"
+                android:clickable="true"
+                android:id="@+id/text_Header"/>
+
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:layout_gravity="bottom"
+                android:text="Website"
+                android:textAppearance="@style/TextAppearance.AppCompat.Small"
+                android:textColor="@color/UserChoice"
+                android:visibility="visible"
+                android:onClick="onClick"
+                android:id="@+id/button_Website"/>
+
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom"
+                android:text="Scan"
+                android:textAppearance="@style/TextAppearance.AppCompat.Small"
+                android:textColor="@color/UserChoice"
+                android:visibility="visible"
+                android:onClick="onClick"
+                android:layout_toLeftOf="@id/button_Website"
+                android:id="@+id/button_ScanStop"/>
+
+        </RelativeLayout>
+
+        <View
+            android:layout_width="fill_parent"
+            android:layout_height="1dp"
+            android:background="@color/HorzDivider1"/>
+
+        <View
+            android:layout_width="fill_parent"
+            android:layout_height="1dp"
+            android:background="@color/HorzDivider2"/>
+
+        <View
+            android:layout_width="fill_parent"
+            android:layout_height="1dp"
+            android:background="@color/HorzDivider3"/>
+
+        <LinearLayout
+            android:orientation="vertical"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="10dp"
+            android:layout_marginTop="10dp"
+            android:layout_marginLeft="@dimen/activity_horizontal_margin"
+            android:layout_marginRight="@dimen/activity_horizontal_margin"
+            android:background="@color/Background"
+            android:id="@+id/layout_Devices">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Select A PixelNut Device"
+                android:textSize="24sp"
+                android:textStyle="italic"
+                android:id="@+id/text_SelectDevice"
+                android:gravity="center_vertical|center_horizontal"/>
+
+            <ScrollView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:layout_marginLeft="@dimen/activity_horizontal_margin"
+                android:layout_marginRight="@dimen/activity_horizontal_margin"
+                android:fillViewport="false"
+                android:clipChildren="false"
+                android:fadingEdge="none"
+                android:id="@+id/scroll_Devices">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <Button
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Device"
+                        android:textAllCaps="false"
+                        android:textColor="@color/UserChoice"
+                        android:textSize="20sp"
+                        android:textStyle="bold"
+                        android:visibility="visible"
+                        android:onClick="onClick"
+                        android:id="@+id/button_Device1"/>
+
+                    <Button
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Device"
+                        android:textAllCaps="false"
+                        android:textColor="@color/UserChoice"
+                        android:textSize="20sp"
+                        android:textStyle="bold"
+                        android:visibility="visible"
+                        android:onClick="onClick"
+                        android:id="@+id/button_Device2"/>
+
+                    <Button
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Device"
+                        android:textAllCaps="false"
+                        android:textColor="@color/UserChoice"
+                        android:textSize="20sp"
+                        android:textStyle="bold"
+                        android:visibility="gone"
+                        android:onClick="onClick"
+                        android:id="@+id/button_Device3"/>
+
+                    <Button
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Device"
+                        android:textAllCaps="false"
+                        android:textColor="@color/UserChoice"
+                        android:textSize="20sp"
+                        android:textStyle="bold"
+                        android:visibility="gone"
+                        android:onClick="onClick"
+                        android:id="@+id/button_Device4"/>
+
+                    <Button
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Device"
+                        android:textAllCaps="false"
+                        android:textColor="@color/UserChoice"
+                        android:textSize="20sp"
+                        android:textStyle="bold"
+                        android:visibility="gone"
+                        android:onClick="onClick"
+                        android:id="@+id/button_Device5"/>
+
+                    <Button
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Device"
+                        android:textAllCaps="false"
+                        android:textColor="@color/UserChoice"
+                        android:textSize="20sp"
+                        android:textStyle="bold"
+                        android:visibility="gone"
+                        android:onClick="onClick"
+                        android:id="@+id/button_Device6"/>
+
+                    <Button
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Device"
+                        android:textAllCaps="false"
+                        android:textColor="@color/UserChoice"
+                        android:textSize="20sp"
+                        android:textStyle="bold"
+                        android:visibility="gone"
+                        android:onClick="onClick"
+                        android:id="@+id/button_Device7"/>
+
+                    <Button
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Device"
+                        android:textAllCaps="false"
+                        android:textColor="@color/UserChoice"
+                        android:textSize="20sp"
+                        android:textStyle="bold"
+                        android:visibility="gone"
+                        android:onClick="onClick"
+                        android:id="@+id/button_Device8"/>
+
+                </LinearLayout>
+            </ScrollView>
+        </LinearLayout>
+    </LinearLayout>
+</RelativeLayout>

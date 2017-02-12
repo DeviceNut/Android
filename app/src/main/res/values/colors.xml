@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="Background">#B0C0C0</color>
+    <color name="DarkHeader">#669999</color>
+    <color name="HorzDivider0">#111111</color>
+    <color name="HorzDivider1">#447777</color>
+    <color name="HorzDivider2">#335555</color>
+    <color name="HorzDivider3">#222222</color>
+    <color name="UserChoice">#2B5A61</color>
+</resources>
