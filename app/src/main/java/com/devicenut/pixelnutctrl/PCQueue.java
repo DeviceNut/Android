@@ -1,5 +1,6 @@
 package com.devicenut.pixelnutctrl;
 
+@SuppressWarnings("unchecked")
 class PCQueue<E>
 {
     private int head;

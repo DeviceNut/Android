@@ -1,4 +1,4 @@
-PixelNut Bluetooth String Commands
+PixelNut Application Bluetooth String Commands
 
 User Commands:
 
@@ -30,19 +30,19 @@ Set hue (0..359), whiteness (0..100), and pixel count (1..max). The count is opt
 Triggers current pattern with force (0..1000).
 
 "?"
-Returns current values, in 3 lines of numbers:
-1) Constants:
+Returns current values, in 4 lines of numbers:
+1) Number of lines: 3
+2) Constants:
 	a) Number of pixels (1...).
 	b) Maximum effect layers (1...).
 	c) Maximum effect tracks (1...).
 	d) Delay offset in msecs (-128..127).
-	e) Maximum brightness (0..100).
-2) External property mode settings:
+3) External property mode settings:
 	a) Mode enabled state (0/1).
 	b) Color hue (0..359).
-	c) Whiteness (0..100).
-	d) Pixel count (1..).
-3) Current effect settings:
+	c) Whiteness percent (0..100).
+	d) Pixel count percent (0..100).
+4) Current effect settings:
 	a) Preset pattern number.
 	b) Delay in msecs (-128..127).
-	c) Brightness (0..100).
+	c) Brightness percent (0..100).

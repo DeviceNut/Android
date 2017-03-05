@@ -1,9 +1,13 @@
 package com.devicenut.pixelnutctrl;
 
+import android.Manifest;
 import android.app.Activity;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
@@ -42,7 +46,7 @@ public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
     private Button buttonScan;
     private ProgressBar progressBar;
     private ScrollView scrollDevices;
-    private ArrayList<Integer> bleDevIDs = new ArrayList<>();
+    private ArrayList<Integer> bleDevIDs = new ArrayList<Integer>();
     private Bluetooth ble;
 
     private int[] listButtons =
@@ -84,6 +88,13 @@ public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
         {
             Toast.makeText(this, "Cannot find Bluetooth LE", Toast.LENGTH_LONG).show();
             threadFinish.start();
+        }
+
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)   != PackageManager.PERMISSION_GRANTED ||
+            ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED)
+        {
+            Log.w(LOGNAME, "Asking for location permission...");
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION}, 123);
         }
     }
 
@@ -282,26 +293,36 @@ public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
         });
     }
 
-    @Override public void onScan(String name, int id)
+    @Override public void onScan(final String name, int id)
     {
-        if ((name != null) && name.startsWith("P!"))
+        if (name != null)
         {
-            if (buttonCount < listButtons.length)
+            if (name.startsWith("P!"))
             {
-                Button b = (Button) findViewById(listButtons[buttonCount]);
-                b.setText(name.substring(2));
-                b.setVisibility(View.VISIBLE);
+                if (buttonCount < listButtons.length)
+                {
+                    Button b = (Button) findViewById(listButtons[buttonCount]);
+                    b.setText(name.substring(2));
+                    b.setVisibility(View.VISIBLE);
 
-                ++buttonCount;
-                bleDevIDs.add(id);
+                    ++buttonCount;
+                    bleDevIDs.add(id);
 
-                scrollDevices.post(new Runnable() {
-                    @Override public void run() {
-                        scrollDevices.scrollTo(0, scrollDevices.getBottom());
-                    }
-                });
+                    scrollDevices.post(new Runnable() {
+                        @Override public void run() {
+                            scrollDevices.scrollTo(0, scrollDevices.getBottom());
+                        }
+                    });
+                }
+                else StopScanning();
             }
-            else StopScanning();
+            else context.runOnUiThread(new Runnable()
+            {
+                public void run()
+                {
+                    Toast.makeText(context, name, Toast.LENGTH_SHORT).show();
+                }
+            });
         }
     }
 

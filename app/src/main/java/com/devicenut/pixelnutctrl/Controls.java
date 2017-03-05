@@ -2,7 +2,6 @@ package com.devicenut.pixelnutctrl;
 
 import android.app.Activity;
 import android.os.Bundle;
-import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.text.InputType;
 import android.util.Log;
@@ -31,6 +30,7 @@ import static com.devicenut.pixelnutctrl.AApp.xmodeHue;
 import static com.devicenut.pixelnutctrl.AApp.xmodePixCnt;
 import static com.devicenut.pixelnutctrl.AApp.xmodeWhite;
 
+@SuppressWarnings("unchecked")
 public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChangeListener, Bluetooth.BleCallbacks
 {
     private final String LOGNAME = "Controls";
@@ -83,7 +83,7 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
 
     private Bluetooth ble;
 
-    private PCQueue<String> writeQueue = new PCQueue(10);
+    private PCQueue<String> writeQueue = new PCQueue(50);
     private boolean isConnected = false;
     private boolean writeEnable = false;
     private boolean writeBusy = false;
@@ -153,7 +153,6 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
                 //v.setTextColor(ContextCompat.getColor(context, R.color.UserChoice));
                 //v.setTextSize(18);
 
-                // FIXME: (position != (curPattern-1)) always!!!
                 // always reset the pattern from scratch
                 Log.d(LOGNAME, "Pattern choice: " + parent.getItemAtPosition(position));
                 curPattern = position+1; // curPattern starts at 1
