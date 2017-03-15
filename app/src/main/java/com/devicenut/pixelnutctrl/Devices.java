@@ -49,6 +49,8 @@ public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
     private ArrayList<Integer> bleDevIDs = new ArrayList<Integer>();
     private Bluetooth ble;
 
+    //private Toast myToast; // for debugging
+
     private int[] listButtons =
     {
         R.id.button_Device1,
@@ -94,7 +96,7 @@ public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
             ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED)
         {
             Log.w(LOGNAME, "Asking for location permission...");
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION}, 123);
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION}, 0);
         }
     }
 
@@ -124,6 +126,7 @@ public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
         super.onPause();
 
         if (bleEnabled) StopScanning();
+        //if (myToast != null) myToast.cancel();
     }
 
     @Override public void onBackPressed()
@@ -295,7 +298,7 @@ public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
 
     @Override public void onScan(final String name, int id)
     {
-        if (name != null)
+        if (isScanning && !isConnecting && !isConnected && (name != null))
         {
             if (name.startsWith("P!"))
             {
@@ -316,13 +319,16 @@ public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
                 }
                 else StopScanning();
             }
+            /*
             else context.runOnUiThread(new Runnable()
             {
                 public void run()
                 {
-                    Toast.makeText(context, name, Toast.LENGTH_SHORT).show();
+                    myToast = Toast.makeText(context, name, Toast.LENGTH_SHORT);
+                    myToast.show();
                 }
             });
+            */
         }
     }
 

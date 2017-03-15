@@ -242,7 +242,7 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
         Log.d(LOGNAME, ">>onPause");
         super.onPause();
 
-        writeEnable = false;
+        writeEnable = false; // causes exit from threadSendCmd thread
         ble.disconnect();
     }
 
@@ -367,7 +367,7 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
     @Override public void onStartTrackingTouch(SeekBar seekBar) {}
     @Override public void onStopTrackingTouch(SeekBar seekBar)  {}
 
-    private void DeviceDisconnect()
+    private void DeviceDisconnect(final String reason)
     {
         if (isConnected)
         {
@@ -376,9 +376,10 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
             {
                 public void run()
                 {
-                    Toast.makeText(context, "Device Disconnected", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(context, "Disconnect: " + reason, Toast.LENGTH_SHORT).show();
                     inHelpMode = false;
-                    onBackPressed(); // FIXME: crashes when reloading...
+
+                    if (!isFinishing()) onBackPressed();
                 }
             });
         }
@@ -392,7 +393,7 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
             if (!writeQueue.put(cmdstr))
             {
                 Log.e(LOGNAME, "Queue full: cmd=" + cmdstr);
-                DeviceDisconnect();
+                DeviceDisconnect("Full");
             }
         }
     }
@@ -413,7 +414,7 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
                     Log.v(LOGNAME, "Skipping=\"" + cmd1 + "\"");
                     cmd1 = writeQueue.get();
                 }
-                Log.d(LOGNAME, "Command=\"" + cmd1 + "\"");
+                Log.v(LOGNAME, "Command=\"" + cmd1 + "\"");
 
                 writeBusy = true;
                 ble.WriteString(cmd1);
@@ -447,16 +448,16 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
     @Override public void onDisconnect()
     {
         Log.e(LOGNAME, "Received disconnect");
-        DeviceDisconnect();
+        DeviceDisconnect("Request");
     }
 
     @Override public void onWrite(final int status)
     {
         if (status != 0)
         {
-            writeEnable = false;
+            writeEnable = false; // causes exit from threadSendCmd thread
             Log.e(LOGNAME, "Write status: " + Integer.toHexString(status));
-            DeviceDisconnect();
+            DeviceDisconnect("Write");
         }
         writeBusy = false;
     }
