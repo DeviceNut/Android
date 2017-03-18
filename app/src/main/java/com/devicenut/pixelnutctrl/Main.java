@@ -15,4 +15,6 @@ public class AApp extends Application
     public static int xmodeHue = 0;
     public static int xmodeWhite = 0;
     public static int xmodePixCnt = 0;
+
+    public static String devName;
 }
