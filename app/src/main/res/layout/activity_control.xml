@@ -28,25 +28,28 @@
         android:background="@color/DarkHeader"
         android:orientation="horizontal">
 
-        <EditText
+        <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="5dp"
-            android:inputType="text"
-            android:text="DeviceName"
-            android:maxLines="1"
-            android:maxLength="12"
-            android:id="@+id/edit_DevName"/>
+            android:layout_marginLeft="10dp"
+            android:layout_alignParentStart="true"
+            android:paddingTop="7dp"
+            android:text="PixelNut!"
+            android:textSize="24dp"
+            android:textStyle="italic|bold"
+            android:textColor="@color/UserChoice"
+            android:onClick="onClick"
+            android:id="@+id/text_Devname"/>
 
         <Button
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentEnd="true"
-            android:layout_gravity="bottom"
+            android:layout_marginTop="5dp"
+            android:layout_marginBottom="5dp"
             android:text="Help"
             android:textAppearance="@style/TextAppearance.AppCompat.Small"
             android:textColor="@color/UserChoice"
-            android:visibility="visible"
             android:onClick="onClick"
             android:id="@+id/button_Help"/>
 
@@ -54,13 +57,13 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_toLeftOf="@id/button_Help"
-            android:layout_gravity="bottom"
-            android:text="Beacon"
+            android:layout_marginTop="5dp"
+            android:layout_marginBottom="5dp"
+            android:text="Advanced"
             android:textAppearance="@style/TextAppearance.AppCompat.Small"
             android:textColor="@color/UserChoice"
-            android:visibility="visible"
             android:onClick="onClick"
-            android:id="@+id/button_Beacon"/>
+            android:id="@+id/button_Adv"/>
 
     </RelativeLayout>
 

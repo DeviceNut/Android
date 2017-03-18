@@ -19,26 +19,28 @@ import android.widget.Toast;
 
 import java.util.ArrayList;
 
-import static com.devicenut.pixelnutctrl.AApp.countLayers;
-import static com.devicenut.pixelnutctrl.AApp.countPixels;
-import static com.devicenut.pixelnutctrl.AApp.countTracks;
-import static com.devicenut.pixelnutctrl.AApp.curBright;
-import static com.devicenut.pixelnutctrl.AApp.curDelay;
-import static com.devicenut.pixelnutctrl.AApp.curPattern;
-import static com.devicenut.pixelnutctrl.AApp.rangeDelay;
-import static com.devicenut.pixelnutctrl.AApp.xmodeEnabled;
-import static com.devicenut.pixelnutctrl.AApp.xmodeHue;
-import static com.devicenut.pixelnutctrl.AApp.xmodePixCnt;
-import static com.devicenut.pixelnutctrl.AApp.xmodeWhite;
+import static com.devicenut.pixelnutctrl.Main.CMD_GETINFO;
+import static com.devicenut.pixelnutctrl.Main.MAXVAL_HUE;
+import static com.devicenut.pixelnutctrl.Main.MAXVAL_PATTERN;
+import static com.devicenut.pixelnutctrl.Main.MAXVAL_PERCENT;
+import static com.devicenut.pixelnutctrl.Main.URL_PIXELNUT;
+import static com.devicenut.pixelnutctrl.Main.countLayers;
+import static com.devicenut.pixelnutctrl.Main.countPixels;
+import static com.devicenut.pixelnutctrl.Main.countTracks;
+import static com.devicenut.pixelnutctrl.Main.curBright;
+import static com.devicenut.pixelnutctrl.Main.curDelay;
+import static com.devicenut.pixelnutctrl.Main.curPattern;
+import static com.devicenut.pixelnutctrl.Main.rangeDelay;
+import static com.devicenut.pixelnutctrl.Main.xmodeEnabled;
+import static com.devicenut.pixelnutctrl.Main.xmodeHue;
+import static com.devicenut.pixelnutctrl.Main.xmodePixCnt;
+import static com.devicenut.pixelnutctrl.Main.xmodeWhite;
 
 public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
 {
     private final static String LOGNAME = "Devices";
-    private final static String CMD_GETINFO = "?";
+
     private final static String TITLE_PIXELNUT = "PixelNut!";
-    private final static int MAXVAL_PATTERN = 13;
-    private final static int MAXVAL_HUE = 359;
-    private final static int MAXVAL_PERCENT = 100;
 
     private Activity context = this;
     private TextView textConnecting;
@@ -175,7 +177,7 @@ public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
             {
                 StopScanning();
 
-                Uri uri = Uri.parse("http://www.pixelhats.com");
+                Uri uri = Uri.parse(URL_PIXELNUT);
                 Intent intent = new Intent(Intent.ACTION_VIEW, uri);
                 startActivity(intent);
                 break;
@@ -194,9 +196,12 @@ public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
                         replyState = 0;
                         replyFail = false;
 
-                        isConnecting = true;
-                        SetupUserDisplay();
-                        ble.connect(devid); // FIXME: ignoring return value!
+                        if (false)//ble.connect(devid))
+                        {
+                            isConnecting = true;
+                            SetupUserDisplay();
+                        }
+                        else Toast.makeText(context, "Cannot connect: retry", Toast.LENGTH_SHORT).show();
                         break;
                     }
                 }

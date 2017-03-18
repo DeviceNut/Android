@@ -33,6 +33,10 @@
             android:name=".About"
             android:theme="@style/DialogTheme">
         </activity>
+        <activity
+            android:name=".EditName"
+            android:theme="@style/DialogTheme">
+        </activity>
     </application>
 
 </manifest>

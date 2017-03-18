@@ -1,19 +1,14 @@
 package com.devicenut.pixelnutctrl;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.text.InputType;
 import android.util.Log;
-import android.view.KeyEvent;
-import android.view.MotionEvent;
 import android.view.View;
-import android.view.inputmethod.EditorInfo;
-import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.SeekBar;
 import android.widget.Spinner;
@@ -21,14 +16,22 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ToggleButton;
 
-import static com.devicenut.pixelnutctrl.AApp.curBright;
-import static com.devicenut.pixelnutctrl.AApp.curDelay;
-import static com.devicenut.pixelnutctrl.AApp.curPattern;
-import static com.devicenut.pixelnutctrl.AApp.rangeDelay;
-import static com.devicenut.pixelnutctrl.AApp.xmodeEnabled;
-import static com.devicenut.pixelnutctrl.AApp.xmodeHue;
-import static com.devicenut.pixelnutctrl.AApp.xmodePixCnt;
-import static com.devicenut.pixelnutctrl.AApp.xmodeWhite;
+import static com.devicenut.pixelnutctrl.Main.CMD_BLUENAME;
+import static com.devicenut.pixelnutctrl.Main.CMD_BRIGHT;
+import static com.devicenut.pixelnutctrl.Main.CMD_DELAY;
+import static com.devicenut.pixelnutctrl.Main.CMD_EXTMODE;
+import static com.devicenut.pixelnutctrl.Main.CMD_PROPVALS;
+import static com.devicenut.pixelnutctrl.Main.CMD_TRIGGER;
+import static com.devicenut.pixelnutctrl.Main.patternNames;
+import static com.devicenut.pixelnutctrl.Main.curBright;
+import static com.devicenut.pixelnutctrl.Main.curDelay;
+import static com.devicenut.pixelnutctrl.Main.curPattern;
+import static com.devicenut.pixelnutctrl.Main.rangeDelay;
+import static com.devicenut.pixelnutctrl.Main.xmodeEnabled;
+import static com.devicenut.pixelnutctrl.Main.xmodeHue;
+import static com.devicenut.pixelnutctrl.Main.xmodePixCnt;
+import static com.devicenut.pixelnutctrl.Main.xmodeWhite;
+import static com.devicenut.pixelnutctrl.Main.devName;
 
 @SuppressWarnings("unchecked")
 public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChangeListener, Bluetooth.BleCallbacks
@@ -36,10 +39,7 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
     private final String LOGNAME = "Controls";
     private Activity context = this;
 
-    private EditText editName;
-    private boolean isEditing = true;
-    private String devName;
-
+    private TextView nameText;
     private Button helpButton;
     private TextView helpText;
     private TextView helpTitle;
@@ -53,31 +53,6 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
     private SeekBar seekTrigForce;
     private ToggleButton toggleAutoProp;
 
-    private final String CMD_BEACON     = "*";
-    private final String CMD_BLUENAME   = "@";
-    private final String CMD_BRIGHT     = "%";
-    private final String CMD_DELAY      = ":";
-    private final String CMD_EXTMODE    = "_";
-    private final String CMD_PROPVALS   = "=";
-    private final String CMD_TRIGGER    = "!";
-
-    private String[] titlesPatterns =
-            {
-                    "Rainbow Wipe     ",
-                    "Rainbow Roll     ",
-                    "Light Waves      ",
-                    "Blue Twinkle     ",
-                    "Twinkle Comets   ",
-                    "Dueling Comets   ",
-                    "Dueling Scanners ",
-                    "Ferris Wheel     ",
-                    "White Noise      ",
-                    "Bright Blinks    ",
-                    "Bright Swells    ",
-                    "Color Smooth     ",
-                    "All Together     ",
-            };
-
     private int trigForce = 500;
     private boolean inHelpMode = false;
 
@@ -87,6 +62,7 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
     private boolean isConnected = false;
     private boolean writeEnable = false;
     private boolean writeBusy = false;
+    private boolean isEditing = false;
 
     @Override protected void onCreate(Bundle savedInstanceState)
     {
@@ -96,51 +72,7 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
 
         //getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN); // hides keyboard on entry?
 
-        editName = (EditText) findViewById(R.id.edit_DevName);
-        editName.setInputType(InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS); // prevents second underline!
-        editName.setOnEditorActionListener(new TextView.OnEditorActionListener()
-        {
-            @Override public boolean onEditorAction(TextView v, int actionId, KeyEvent event)
-            {
-                if (actionId == EditorInfo.IME_ACTION_DONE)
-                {
-                    if (!devName.equals(editName.getText().toString()))
-                    {
-                        if (editName.length() > 0)
-                            QueueCmdStr(CMD_BLUENAME + editName.getText());
-
-                        else editName.setText(devName);
-
-                        isEditing = false;
-                    }
-
-                    editName.post(new Runnable() {
-                        @Override public void run() { editName.clearFocus(); }
-                    });
-                }
-                return false;
-            }
-        });
-        editName.setOnFocusChangeListener(new View.OnFocusChangeListener()
-        {
-            public void onFocusChange(View v, boolean hasFocus)
-            {
-                if (hasFocus)
-                {
-                    devName = editName.getText().toString();
-                    Log.d(LOGNAME, "DevName=" + devName);
-                    isEditing = true;
-                }
-                else if (isEditing && !devName.equals(editName.getText().toString()))
-                {
-                    ClearEditFocus();
-                    editName.setText(devName);
-                    isEditing = false;
-                }
-            }
-        });
-
-        ArrayAdapter<String> spinnerArrayAdapter = new ArrayAdapter<String>(this, R.layout.layout_spinner, titlesPatterns);
+        ArrayAdapter<String> spinnerArrayAdapter = new ArrayAdapter<String>(this, R.layout.layout_spinner, patternNames);
         spinnerArrayAdapter.setDropDownViewResource(R.layout.layout_spinner);
 
         selectPattern = (Spinner) findViewById(R.id.spinner_Pattern);
@@ -160,22 +92,6 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
             }
             @Override public void onNothingSelected(AdapterView<?> parent) {}
         });
-        selectPattern.setOnTouchListener(new View.OnTouchListener()
-        {
-            @Override public boolean onTouch(View v, MotionEvent event)
-            {
-                ClearEditFocus();
-                return false;
-            }
-        });
-        selectPattern.setOnKeyListener(new View.OnKeyListener()
-        {
-            @Override public boolean onKey(View v, int keyCode, KeyEvent event)
-            {
-                ClearEditFocus();
-                return false;
-            }
-        });
 
         seekBright = (SeekBar) findViewById(R.id.seek_Bright);
         seekDelay = (SeekBar) findViewById(R.id.seek_Delay);
@@ -194,6 +110,7 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
         seekTrigForce.setOnSeekBarChangeListener(this);
 
         layoutControls = (LinearLayout) findViewById(R.id.layout_Controls);
+        nameText = (TextView) findViewById(R.id.text_Devname);
         helpButton = (Button) findViewById(R.id.button_Help);
         helpTitle = (TextView) findViewById(R.id.view_HelpTitle);
         helpText = (TextView) findViewById(R.id.view_HelpText);
@@ -204,37 +121,47 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
         Log.d(LOGNAME, ">>onResume");
         super.onResume();
 
-        ble = new Bluetooth(this);
-        ble.setCallbacks(this);
-
-        devName = ble.getCurDevName();
-        if ((devName == null) || (devName.length() < 3)) // have disconnected
+        if (isEditing)
         {
-            Log.w(LOGNAME, "Lost connection (no device name)");
-            Toast.makeText(context, "Lost connection", Toast.LENGTH_SHORT).show();
-            onBackPressed();
-            return;
+            Log.d(LOGNAME, "Renaming device: " + devName);
+            QueueCmdStr(CMD_BLUENAME + devName);
+            isEditing = false;
         }
-        devName = devName.substring(2);
-        editName.setText(devName);
+        else
+        {
+            ble = new Bluetooth(this);
+            ble.setCallbacks(this);
 
-        isConnected = true;
-        writeEnable = false; // prevent following from writing commands
+            devName = ble.getCurDevName();
+            if ((devName == null) || (devName.length() < 3)) // have disconnected
+            {
+                Log.w(LOGNAME, "Lost connection (no device name)");
+                Toast.makeText(context, "Lost connection", Toast.LENGTH_SHORT).show();
+                onBackPressed();
+                return;
+            }
+            devName = devName.substring(2);
+            Log.d(LOGNAME, "Device name: " + devName);
 
-        SetManualControls();
-        toggleAutoProp.setChecked(xmodeEnabled);
-        selectPattern.setSelection(curPattern-1, true); // curPattern starts at 1
-        seekBright.setProgress(curBright);
-        seekDelay.setProgress(((rangeDelay - curDelay) * 100) / (rangeDelay + rangeDelay));
-        seekPropColor.setProgress(((xmodeHue * 100) / 360));
-        seekPropWhite.setProgress(xmodeWhite);
-        seekPropCount.setProgress(xmodePixCnt);
-        seekTrigForce.setProgress(trigForce / 10);
+            isConnected = true;
+            writeEnable = false; // prevent following from writing commands
 
-        writeEnable = true;
-        writeBusy = false;
+            SetManualControls();
+            toggleAutoProp.setChecked(xmodeEnabled);
+            selectPattern.setSelection(curPattern-1, true); // curPattern starts at 1
+            seekBright.setProgress(curBright);
+            seekDelay.setProgress(((rangeDelay - curDelay) * 100) / (rangeDelay + rangeDelay));
+            seekPropColor.setProgress(((xmodeHue * 100) / 360));
+            seekPropWhite.setProgress(xmodeWhite);
+            seekPropCount.setProgress(xmodePixCnt);
+            seekTrigForce.setProgress(trigForce / 10);
 
-        threadSendCmd.start();
+            writeEnable = true;
+            writeBusy = false;
+
+            threadSendCmd.start();
+        }
+        nameText.setText(devName);
     }
 
     @Override protected void onPause()
@@ -242,6 +169,18 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
         Log.d(LOGNAME, ">>onPause");
         super.onPause();
 
+        if (!isEditing)
+        {
+            writeEnable = false; // causes exit from threadSendCmd thread
+            ble.disconnect();
+        }
+    }
+
+    @Override protected void onStop()
+    {
+        Log.d(LOGNAME, ">>onStop");
+        super.onStop();
+        isEditing = false;
         writeEnable = false; // causes exit from threadSendCmd thread
         ble.disconnect();
     }
@@ -280,26 +219,24 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
         seekPropCount.setEnabled(xmodeEnabled);
     }
 
-    private void ClearEditFocus() // hack to hide cursor and keyboard from EditView
-    {
-        editName.clearFocus();
-        InputMethodManager inputManager = (InputMethodManager) getSystemService(Activity.INPUT_METHOD_SERVICE);
-        inputManager.hideSoftInputFromWindow(selectPattern.getWindowToken(), 0);
-    }
-
     public void onClick(View v)
     {
-        ClearEditFocus();
         switch (v.getId())
         {
+            case R.id.text_Devname:
+            {
+                isEditing = true;
+                startActivity( new Intent(Controls.this, EditName.class) );
+                break;
+            }
+            case R.id.button_Adv:
+            {
+                Toast.makeText(context, "Advanced features coming soon...", Toast.LENGTH_SHORT).show();
+                break;
+            }
             case R.id.button_Help:
             {
                 SetHelpMode();
-                break;
-            }
-            case R.id.button_Beacon:
-            {
-                QueueCmdStr(CMD_BEACON);
                 break;
             }
             case R.id.toggle_AutoProp:
@@ -323,7 +260,6 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
 
     @Override public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser)
     {
-        ClearEditFocus();
         switch (seekBar.getId())
         {
             case R.id.seek_Bright:

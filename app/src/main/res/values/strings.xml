@@ -7,13 +7,12 @@
     <string name="toggle_automatic">Automatic</string>
     <string name="text_title">Controls Help</string>
     <string name="text_help">
-        This explains how to use the controls, which affect the PixelNut! device that is currently selected
-        (name is displayed in the upper left corner).
+        The controls affect the PixelNut! device that is currently connected,
+         whose name is displayed in the upper left of the screen.
 
-        \n\nThe Beacon causes a distinctive pattern to be displayed on the device so that you can locate it amongst others.
-
-        \n\nYou can change the name of your device anytime by editing the text.
-        Be sure to confirm your changes, or it will revert to its original name.
+        \n\nYou can change this name anytime by selecting it, which pops open
+        an edit box for you to type into. Be sure to confirm your changes by
+        pressing the Done key, or it will revert back to its original name.
 
         \n\nPreset Effect Pattern:
         \nThis drop-down list allows the selection one of the 13 built-in patterns.
