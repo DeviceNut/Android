@@ -34,7 +34,7 @@
             android:layout_marginLeft="10dp"
             android:layout_alignParentStart="true"
             android:paddingTop="7dp"
-            android:text="PixelNut!"
+            android:text="DeviceName"
             android:textSize="24dp"
             android:textStyle="italic|bold"
             android:textColor="@color/UserChoice"
@@ -59,11 +59,11 @@
             android:layout_toLeftOf="@id/button_Help"
             android:layout_marginTop="5dp"
             android:layout_marginBottom="5dp"
-            android:text="Advanced"
+            android:text="Pause"
             android:textAppearance="@style/TextAppearance.AppCompat.Small"
             android:textColor="@color/UserChoice"
             android:onClick="onClick"
-            android:id="@+id/button_Adv"/>
+            android:id="@+id/button_Pause"/>
 
     </RelativeLayout>
 
@@ -98,18 +98,18 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:layout_marginBottom="10dp"
-                android:visibility="gone"
                 android:text="@string/text_title"
                 android:textAppearance="@style/TextAppearance.AppCompat.Large"
                 android:textStyle="italic"
+                android:visibility="gone"
                 android:id="@+id/view_HelpTitle"/>
 
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:visibility="gone"
                 android:textAppearance="@style/TextAppearance.AppCompat.Medium"
                 android:text="@string/text_help"
+                android:visibility="gone"
                 android:id="@+id/view_HelpText"/>
 
             <LinearLayout
@@ -215,90 +215,107 @@
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="5dp"
-                    android:orientation="horizontal">
+                    android:orientation="vertical"
+                    android:visibility="visible"
+                    android:id="@+id/layout_Basic">
 
-                    <TextView
-                        android:layout_width="wrap_content"
+                    <LinearLayout
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:textAppearance="@style/TextAppearance.AppCompat.Medium"
-                        android:textStyle="italic"
-                        android:text="Modify effect properties"
-                        android:id="@+id/text_AutoProp"/>
+                        android:layout_marginTop="5dp"
+                        android:orientation="horizontal">
 
-                    <ToggleButton
-                        android:text="ToggleButton"
-                        android:layout_width="wrap_content"
-                        android:layout_height="40dp"
-                        android:layout_marginStart="10dp"
-                        android:textAlignment="center"
-                        android:checked="false"
-                        android:onClick="onClick"
-                        android:id="@+id/toggle_AutoProp"
-                        android:textOn="@string/toggle_manual"
-                        android:textOff="@string/toggle_automatic"
-                        android:textColorLink="@color/UserChoice"/>
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+                            android:textStyle="italic"
+                            android:text="Modify effect properties"
+                            android:id="@+id/text_AutoProp"/>
 
+                        <ToggleButton
+                            android:text="ToggleButton"
+                            android:layout_width="wrap_content"
+                            android:layout_height="40dp"
+                            android:layout_marginStart="10dp"
+                            android:textAlignment="center"
+                            android:checked="false"
+                            android:onClick="onClick"
+                            android:id="@+id/toggle_AutoProp"
+                            android:textOn="@string/toggle_manual"
+                            android:textOff="@string/toggle_automatic"
+                            android:textColorLink="@color/UserChoice"/>
+
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:layout_width="80dp"
+                            android:layout_height="wrap_content"
+                            android:text="ColorHue"
+                            android:id="@+id/text_PropColor"/>
+
+                        <SeekBar
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:id="@+id/seek_PropColor"/>
+
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:layout_width="80dp"
+                            android:layout_height="wrap_content"
+                            android:text="Whiteness"
+                            android:id="@+id/text_PropWhite"/>
+
+                        <SeekBar
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:id="@+id/seek_PropWhite"/>
+
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:layout_marginBottom="20dp"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:layout_width="80dp"
+                            android:layout_height="wrap_content"
+                            android:text="Length"
+                            android:id="@+id/text_PropCount"/>
+
+                        <SeekBar
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:id="@+id/seek_PropCount"/>
+
+                    </LinearLayout>
                 </LinearLayout>
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="10dp"
-                    android:orientation="horizontal">
-
-                    <TextView
-                        android:layout_width="80dp"
-                        android:layout_height="wrap_content"
-                        android:text="ColorHue"
-                        android:id="@+id/text_PropColor"/>
-
-                    <SeekBar
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:id="@+id/seek_PropColor"/>
-
-                </LinearLayout>
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="10dp"
-                    android:orientation="horizontal">
-
-                    <TextView
-                        android:layout_width="80dp"
-                        android:layout_height="wrap_content"
-                        android:text="Whiteness"
-                        android:id="@+id/text_PropWhite"/>
-
-                    <SeekBar
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:id="@+id/seek_PropWhite"/>
-
-                </LinearLayout>
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="10dp"
-                    android:layout_marginBottom="20dp"
-                    android:orientation="horizontal">
-
-                    <TextView
-                        android:layout_width="80dp"
-                        android:layout_height="wrap_content"
-                        android:text="Length"
-                        android:id="@+id/text_PropCount"/>
-
-                    <SeekBar
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:id="@+id/seek_PropCount"/>
+                    android:orientation="vertical"
+                    android:visibility="gone"
+                    android:id="@+id/layout_Custom">
 
                 </LinearLayout>
 

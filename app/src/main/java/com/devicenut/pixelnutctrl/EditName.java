@@ -30,6 +30,7 @@ public class EditName extends AppCompatActivity
             @Override public boolean onEditorAction(TextView v, int actionId, KeyEvent event)
             {
                 if (actionId == EditorInfo.IME_ACTION_DONE) SaveName();
+                finish();
                 return false;
             }
         });
@@ -37,16 +38,19 @@ public class EditName extends AppCompatActivity
         saveName = devName;
         editName.setText(devName);
 
-        ((InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE)).toggleSoftInput(InputMethodManager.SHOW_FORCED, InputMethodManager.HIDE_IMPLICIT_ONLY);
+        ((InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE)).toggleSoftInput(InputMethodManager.SHOW_FORCED, 0);
     }
 
     private void SaveName()
     {
         if ((editName.length() > 0) && !devName.equals(editName.getText().toString()))
-        {
             devName = editName.getText().toString();
-            onBackPressed();
-        }
+    }
+
+    private void DoExit()
+    {
+        ((InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE)).toggleSoftInput(InputMethodManager.RESULT_HIDDEN, 0);
+        finish();
     }
 
     public void onClick(View v)
@@ -56,12 +60,13 @@ public class EditName extends AppCompatActivity
             case R.id.button_EditCancel:
             {
                 devName = saveName;
-                onBackPressed();
+                DoExit();
                 break;
             }
             case R.id.button_EditDone:
             {
                 SaveName();
+                DoExit();
                 break;
             }
         }

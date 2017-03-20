@@ -6,13 +6,15 @@ public class Main extends Application
 {
     public static final String URL_PIXELNUT = "http://www.pixelnutstore.com";
 
-    public static final String CMD_GETINFO = "?";
-    public static final String CMD_BLUENAME   = "@";
-    public static final String CMD_BRIGHT     = "%";
-    public static final String CMD_DELAY      = ":";
-    public static final String CMD_EXTMODE    = "_";
-    public static final String CMD_PROPVALS   = "=";
-    public static final String CMD_TRIGGER    = "!";
+    public static final String CMD_GETINFO      = "?";
+    public static final String CMD_BLUENAME     = "@";
+    public static final String CMD_BRIGHT       = "%";
+    public static final String CMD_DELAY        = ":";
+    public static final String CMD_EXTMODE      = "_";
+    public static final String CMD_PROPVALS     = "=";
+    public static final String CMD_TRIGGER      = "!";
+    public static final String CMD_PAUSE        = "[";
+    public static final String CMD_RESUME       = "]";
 
     public static final int MAXVAL_PATTERN = 13;
     public static final int MAXVAL_HUE = 359;

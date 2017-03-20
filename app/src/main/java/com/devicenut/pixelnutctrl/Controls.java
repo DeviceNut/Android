@@ -20,7 +20,9 @@ import static com.devicenut.pixelnutctrl.Main.CMD_BLUENAME;
 import static com.devicenut.pixelnutctrl.Main.CMD_BRIGHT;
 import static com.devicenut.pixelnutctrl.Main.CMD_DELAY;
 import static com.devicenut.pixelnutctrl.Main.CMD_EXTMODE;
+import static com.devicenut.pixelnutctrl.Main.CMD_PAUSE;
 import static com.devicenut.pixelnutctrl.Main.CMD_PROPVALS;
+import static com.devicenut.pixelnutctrl.Main.CMD_RESUME;
 import static com.devicenut.pixelnutctrl.Main.CMD_TRIGGER;
 import static com.devicenut.pixelnutctrl.Main.patternNames;
 import static com.devicenut.pixelnutctrl.Main.curBright;
@@ -40,6 +42,7 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
     private Activity context = this;
 
     private TextView nameText;
+    private Button pauseButton;
     private Button helpButton;
     private TextView helpText;
     private TextView helpTitle;
@@ -55,6 +58,7 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
 
     private int trigForce = 500;
     private boolean inHelpMode = false;
+    private boolean doUpdate = true;
 
     private Bluetooth ble;
 
@@ -111,6 +115,7 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
 
         layoutControls = (LinearLayout) findViewById(R.id.layout_Controls);
         nameText = (TextView) findViewById(R.id.text_Devname);
+        pauseButton = (Button) findViewById(R.id.button_Pause);
         helpButton = (Button) findViewById(R.id.button_Help);
         helpTitle = (TextView) findViewById(R.id.view_HelpTitle);
         helpText = (TextView) findViewById(R.id.view_HelpText);
@@ -229,9 +234,11 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
                 startActivity( new Intent(Controls.this, EditName.class) );
                 break;
             }
-            case R.id.button_Adv:
+            case R.id.button_Pause:
             {
-                Toast.makeText(context, "Advanced features coming soon...", Toast.LENGTH_SHORT).show();
+                QueueCmdStr(doUpdate ? CMD_PAUSE : CMD_RESUME);
+                doUpdate = !doUpdate;
+                pauseButton.setText(doUpdate ? "Pause" : "Resume");
                 break;
             }
             case R.id.button_Help:

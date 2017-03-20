@@ -196,7 +196,7 @@ public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
                         replyState = 0;
                         replyFail = false;
 
-                        if (false)//ble.connect(devid))
+                        if (ble.connect(devid))
                         {
                             isConnecting = true;
                             SetupUserDisplay();
