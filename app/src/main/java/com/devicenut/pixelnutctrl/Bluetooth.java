@@ -32,7 +32,7 @@ class Bluetooth
 
     private Context context = null;
     private static BluetoothAdapter bleAdapter = null;
-    private static List<BluetoothDevice> bleDevList = new ArrayList<>();
+    private static final List<BluetoothDevice> bleDevList = new ArrayList<>();
     private static BluetoothDevice bleDevice = null;
     private static BluetoothGatt bleGatt = null;
     private static BluetoothGattCharacteristic bleTx, bleRx;
@@ -46,11 +46,11 @@ class Bluetooth
 
     interface BleCallbacks
     {
-        public void onScan(String name, int id);
-        public void onConnect(final int status);
-        public void onDisconnect();
-        public void onWrite(final int status);
-        public void onRead(String reply);
+        void onScan(String name, int id);
+        void onConnect(final int status);
+        void onDisconnect();
+        void onWrite(final int status);
+        void onRead(String reply);
     }
     private static BleCallbacks bleCB;
 
@@ -160,7 +160,7 @@ class Bluetooth
             Log.v(LOGNAME, type + "=PermRead");
     }
 
-    private ScanCallback bleScanDevicesCB = new ScanCallback()
+    private final ScanCallback bleScanDevicesCB = new ScanCallback()
     {
         public void onScanResult(int callbackType, ScanResult result)
         {

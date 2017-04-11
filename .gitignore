@@ -1,14 +1,45 @@
-.gradle
-/local.properties
-/.idea/workspace.xml
-/.idea/libraries
-.DS_Store
-/build
-/captures
-.externalNativeBuild
+#Ignore thumbnails created by Windows
+Thumbs.db
+
+#Ignore files built by Visual Studio
+*.obj
+*.exe
+*.pdb
+*.user
+*.aps
+*.pch
+*.vspscc
+*_i.c
+*_p.c
+*.ncb
+*.suo
+*.tlb
+*.tlh
+*.bak
 *.cache
-*.iml
 *.ilk
 *.log
+*.lib
+*.sbr
+*.db
+.vs/
+obj/
+[Bb]in
+[Dd]ebug*/
+[Rr]elease*/
+_ReSharper*/
+[Tt]est[Rr]esult*
+
+#Nuget packages folder
+packages/
+.DS_Store
+
+#Ignore files built by Android Studio
+.idea/
+.gradle/
+build/
+build/generated
+local.properties
+*.iml
 *.apk
 *.zip

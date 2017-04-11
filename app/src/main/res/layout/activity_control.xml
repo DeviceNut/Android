@@ -21,8 +21,6 @@
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="50dp"
-        android:layout_alignParentTop="true"
-        android:layout_alignParentStart="true"
         android:focusable="true"
         android:focusableInTouchMode="true"
         android:background="@color/DarkHeader"
@@ -34,20 +32,20 @@
             android:layout_marginLeft="10dp"
             android:layout_alignParentStart="true"
             android:paddingTop="7dp"
-            android:text="DeviceName"
-            android:textSize="24dp"
+            android:textSize="24sp"
             android:textStyle="italic|bold"
             android:textColor="@color/UserChoice"
             android:onClick="onClick"
-            android:id="@+id/text_Devname"/>
+            android:id="@+id/text_Devname"
+            tools:ignore="RtlHardcoded"/>
 
         <Button
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignParentEnd="true"
             android:layout_marginTop="5dp"
             android:layout_marginBottom="5dp"
-            android:text="Help"
+            android:layout_alignParentEnd="true"
+            android:text="@string/name_help"
             android:textAppearance="@style/TextAppearance.AppCompat.Small"
             android:textColor="@color/UserChoice"
             android:onClick="onClick"
@@ -56,14 +54,15 @@
         <Button
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_toLeftOf="@id/button_Help"
             android:layout_marginTop="5dp"
             android:layout_marginBottom="5dp"
-            android:text="Pause"
+            android:layout_toLeftOf="@id/button_Help"
+            android:text="@string/name_pause"
             android:textAppearance="@style/TextAppearance.AppCompat.Small"
             android:textColor="@color/UserChoice"
             android:onClick="onClick"
-            android:id="@+id/button_Pause"/>
+            android:id="@+id/button_Pause"
+            tools:ignore="RtlHardcoded"/>
 
     </RelativeLayout>
 
@@ -98,7 +97,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:layout_marginBottom="10dp"
-                android:text="@string/text_title"
+                android:text="@string/title_help"
                 android:textAppearance="@style/TextAppearance.AppCompat.Large"
                 android:textStyle="italic"
                 android:visibility="gone"
@@ -124,7 +123,7 @@
                     android:layout_height="wrap_content"
                     android:textAppearance="@style/TextAppearance.AppCompat.Medium"
                     android:textStyle="italic"
-                    android:text="Choose preset effect pattern"
+                    android:text="@string/title_pattern"
                     android:id="@+id/text_Pattern"/>
 
                 <Spinner
@@ -144,7 +143,7 @@
                     android:layout_marginTop="5dp"
                     android:textAppearance="@style/TextAppearance.AppCompat.Medium"
                     android:textStyle="italic"
-                    android:text="Adjust brightness and animation speed"
+                    android:text="@string/title_adjust"
                     android:id="@+id/text_Controls"/>
 
                 <LinearLayout
@@ -159,7 +158,8 @@
                         android:minWidth="50dp"
                         android:gravity="left"
                         android:text="Dim"
-                        android:id="@+id/text_BrightDim"/>
+                        android:id="@+id/text_BrightDim"
+                        tools:ignore="RtlHardcoded"/>
 
                     <SeekBar
                         android:layout_width="0dp"
@@ -174,7 +174,8 @@
                         android:minWidth="50dp"
                         android:gravity="right"
                         android:text="Bright"
-                        android:id="@+id/text_BrightFull"/>
+                        android:id="@+id/text_BrightFull"
+                        tools:ignore="RtlHardcoded"/>
 
                 </LinearLayout>
 
@@ -191,7 +192,8 @@
                         android:minWidth="50dp"
                         android:gravity="left"
                         android:text="Slow"
-                        android:id="@+id/text_DelaySlow"/>
+                        android:id="@+id/text_DelaySlow"
+                        tools:ignore="RtlHardcoded"/>
 
                     <SeekBar
                         android:layout_width="0dp"
@@ -206,7 +208,8 @@
                         android:minWidth="50dp"
                         android:gravity="right"
                         android:text="Fast"
-                        android:id="@+id/text_DelayFast"/>
+                        android:id="@+id/text_DelayFast"
+                        tools:ignore="RtlHardcoded"/>
 
                 </LinearLayout>
 
@@ -230,11 +233,10 @@
                             android:layout_height="wrap_content"
                             android:textAppearance="@style/TextAppearance.AppCompat.Medium"
                             android:textStyle="italic"
-                            android:text="Modify effect properties"
+                            android:text="@string/title_modify"
                             android:id="@+id/text_AutoProp"/>
 
                         <ToggleButton
-                            android:text="ToggleButton"
                             android:layout_width="wrap_content"
                             android:layout_height="40dp"
                             android:layout_marginStart="10dp"
@@ -242,8 +244,8 @@
                             android:checked="false"
                             android:onClick="onClick"
                             android:id="@+id/toggle_AutoProp"
-                            android:textOn="@string/toggle_manual"
-                            android:textOff="@string/toggle_automatic"
+                            android:textOn="@string/name_manual"
+                            android:textOff="@string/name_auto"
                             android:textColorLink="@color/UserChoice"/>
 
                     </LinearLayout>
@@ -327,7 +329,7 @@
                     android:layout_marginTop="10dp"
                     android:textAppearance="@style/TextAppearance.AppCompat.Medium"
                     android:textStyle="italic"
-                    android:text="Select trigger force and perform action"
+                    android:text="@string/title_trigger"
                     android:id="@+id/text_TriggerForce"/>
 
                 <LinearLayout
@@ -342,7 +344,8 @@
                         android:minWidth="50dp"
                         android:gravity="left"
                         android:text="Min"
-                        android:id="@+id/text_TrigMin"/>
+                        android:id="@+id/text_TrigMin"
+                        tools:ignore="RtlHardcoded"/>
 
                     <SeekBar
                         android:layout_width="0dp"
@@ -356,7 +359,8 @@
                         android:minWidth="50dp"
                         android:gravity="left"
                         android:text="Max"
-                        android:id="@+id/text_TrigMax"/>
+                        android:id="@+id/text_TrigMax"
+                        tools:ignore="RtlHardcoded"/>
 
                 </LinearLayout>
 

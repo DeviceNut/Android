@@ -39,7 +39,7 @@ import static com.devicenut.pixelnutctrl.Main.devName;
 public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChangeListener, Bluetooth.BleCallbacks
 {
     private final String LOGNAME = "Controls";
-    private Activity context = this;
+    private final Activity context = this;
 
     private TextView nameText;
     private Button pauseButton;
@@ -62,7 +62,7 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
 
     private Bluetooth ble;
 
-    private PCQueue<String> writeQueue = new PCQueue(50);
+    private final PCQueue<String> writeQueue = new PCQueue(50);
     private boolean isConnected = false;
     private boolean writeEnable = false;
     private boolean writeBusy = false;
@@ -76,7 +76,7 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
 
         //getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN); // hides keyboard on entry?
 
-        ArrayAdapter<String> spinnerArrayAdapter = new ArrayAdapter<String>(this, R.layout.layout_spinner, patternNames);
+        ArrayAdapter<String> spinnerArrayAdapter = new ArrayAdapter<>(this, R.layout.layout_spinner, patternNames);
         spinnerArrayAdapter.setDropDownViewResource(R.layout.layout_spinner);
 
         selectPattern = (Spinner) findViewById(R.id.spinner_Pattern);
@@ -204,7 +204,7 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
             helpText.setVisibility(View.GONE);
             helpTitle.setVisibility(View.GONE);
             layoutControls.setVisibility(View.VISIBLE);
-            helpButton.setText("Help");
+            helpButton.setText(getResources().getString(R.string.name_help));
             inHelpMode = false;
         }
         else
@@ -212,7 +212,7 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
             layoutControls.setVisibility(View.GONE);
             helpTitle.setVisibility(View.VISIBLE);
             helpText.setVisibility(View.VISIBLE);
-            helpButton.setText("Controls");
+            helpButton.setText(getResources().getString(R.string.name_controls));
             inHelpMode = true;
         }
     }
@@ -366,7 +366,7 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
         }
     }
 
-    private Thread threadSendCmd = new Thread()
+    private final Thread threadSendCmd = new Thread()
     {
         @Override public void run()
         {

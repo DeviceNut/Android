@@ -42,18 +42,18 @@ public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
 
     private final static String TITLE_PIXELNUT = "PixelNut!";
 
-    private Activity context = this;
+    private final Activity context = this;
     private TextView textConnecting;
     private TextView textSelectDevice;
     private Button buttonScan;
     private ProgressBar progressBar;
     private ScrollView scrollDevices;
-    private ArrayList<Integer> bleDevIDs = new ArrayList<Integer>();
+    private final ArrayList<Integer> bleDevIDs = new ArrayList<>();
     private Bluetooth ble;
 
     //private Toast myToast; // for debugging
 
-    private int[] listButtons =
+    private final int[] listButtons =
     {
         R.id.button_Device1,
         R.id.button_Device2,
@@ -138,12 +138,18 @@ public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
         super.onBackPressed();
     }
 
-    private Thread threadFinish = new Thread()
+    private void SleepSeconds(int secs)
+    {
+        //noinspection EmptyCatchBlock
+        try { Thread.sleep(secs * 1000); }
+        catch (Exception ignored) {}
+    }
+
+    private final Thread threadFinish = new Thread()
     {
         @Override public void run()
         {
-            try { Thread.sleep(2000); }
-            catch (Exception e) {}
+            SleepSeconds(2);
             Devices.this.finish();
         }
     };
@@ -212,9 +218,9 @@ public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
 
     private void HideButtons()
     {
-        for (int i = 0; i < listButtons.length; ++i)
+        for (int listButton : listButtons)
         {
-            Button b = (Button) findViewById(listButtons[i]);
+            Button b = (Button) findViewById(listButton);
             b.setVisibility(View.GONE);
         }
         bleDevIDs.clear();
@@ -229,7 +235,7 @@ public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
             textSelectDevice.setVisibility(View.GONE);
             textConnecting.setVisibility(View.VISIBLE);
             progressBar.setVisibility(View.VISIBLE);
-            buttonScan.setText("Cancel");
+            buttonScan.setText(getResources().getString(R.string.name_cancel));
         }
         else if (isScanning)
         {
@@ -237,14 +243,14 @@ public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
             textConnecting.setVisibility(View.INVISIBLE);
             textSelectDevice.setVisibility(View.VISIBLE);
             progressBar.setVisibility(View.VISIBLE);
-            buttonScan.setText("Stop");
+            buttonScan.setText(getResources().getString(R.string.name_stop));
         }
         else // scan stopped, waiting for user
         {
             progressBar.setVisibility(View.INVISIBLE);
             textConnecting.setVisibility(View.INVISIBLE);
             textSelectDevice.setVisibility(View.VISIBLE);
-            buttonScan.setText("Scan");
+            buttonScan.setText(getResources().getString(R.string.name_scan));
         }
         buttonScan.setEnabled(true);
 
@@ -350,7 +356,7 @@ public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
             {
                 @Override public void run()
                 {
-                    buttonScan.setText("Wait");
+                    buttonScan.setText(getResources().getString(R.string.name_wait));
                     buttonScan.setEnabled(false);
                 }
             });
@@ -359,8 +365,7 @@ public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
             {
                 @Override public void run()
                 {
-                    try { Thread.sleep(2000); }
-                    catch (Exception e) {}
+                    SleepSeconds(2);
 
                     Log.d(LOGNAME, "Sending GetInfo command...");
                     ble.WriteString(CMD_GETINFO);

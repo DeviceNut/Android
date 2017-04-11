@@ -23,7 +23,7 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Connecting..."
+        android:text="@string/title_connecting"
         android:textSize="28sp"
         android:textStyle="italic|bold"
         android:visibility="invisible"
@@ -52,20 +52,21 @@
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="10dp"
                 android:layout_marginRight="25dp"
-                android:text="PixelNut!"
-                android:textSize="36dp"
+                android:text="@string/app_name"
+                android:textSize="32sp"
                 android:textStyle="italic|bold"
                 android:onClick="onClick"
                 android:clickable="true"
-                android:id="@+id/text_Header"/>
+                android:id="@+id/text_Header"
+                tools:ignore="RtlHardcoded"/>
 
             <Button
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_alignParentEnd="true"
                 android:layout_marginTop="5dp"
                 android:layout_marginBottom="5dp"
-                android:text="Website"
+                android:layout_alignParentEnd="true"
+                android:text="@string/name_website"
                 android:textAppearance="@style/TextAppearance.AppCompat.Small"
                 android:textColor="@color/UserChoice"
                 android:onClick="onClick"
@@ -76,12 +77,13 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="5dp"
                 android:layout_marginBottom="5dp"
-                android:text="Scan"
+                android:layout_toLeftOf="@id/button_Website"
+                android:text="@string/name_scan"
                 android:textAppearance="@style/TextAppearance.AppCompat.Small"
                 android:textColor="@color/UserChoice"
                 android:onClick="onClick"
-                android:layout_toLeftOf="@id/button_Website"
-                android:id="@+id/button_ScanStop"/>
+                android:id="@+id/button_ScanStop"
+                tools:ignore="RtlHardcoded"/>
 
         </RelativeLayout>
 
@@ -114,7 +116,7 @@
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Select A PixelNut Device"
+                android:text="@string/title_select"
                 android:textSize="24sp"
                 android:textStyle="italic"
                 android:id="@+id/text_SelectDevice"
@@ -139,7 +141,7 @@
                     <Button
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Device"
+                        android:text="@string/name_device"
                         android:textAllCaps="false"
                         android:textColor="@color/UserChoice"
                         android:textSize="20sp"
@@ -151,7 +153,7 @@
                     <Button
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Device"
+                        android:text="@string/name_device"
                         android:textAllCaps="false"
                         android:textColor="@color/UserChoice"
                         android:textSize="20sp"
@@ -163,7 +165,7 @@
                     <Button
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Device"
+                        android:text="@string/name_device"
                         android:textAllCaps="false"
                         android:textColor="@color/UserChoice"
                         android:textSize="20sp"
@@ -175,7 +177,7 @@
                     <Button
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Device"
+                        android:text="@string/name_device"
                         android:textAllCaps="false"
                         android:textColor="@color/UserChoice"
                         android:textSize="20sp"
@@ -187,7 +189,7 @@
                     <Button
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Device"
+                        android:text="@string/name_device"
                         android:textAllCaps="false"
                         android:textColor="@color/UserChoice"
                         android:textSize="20sp"
@@ -199,7 +201,7 @@
                     <Button
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Device"
+                        android:text="@string/name_device"
                         android:textAllCaps="false"
                         android:textColor="@color/UserChoice"
                         android:textSize="20sp"
@@ -211,7 +213,7 @@
                     <Button
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Device"
+                        android:text="@string/name_device"
                         android:textAllCaps="false"
                         android:textColor="@color/UserChoice"
                         android:textSize="20sp"
@@ -223,7 +225,7 @@
                     <Button
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Device"
+                        android:text="@string/name_device"
                         android:textAllCaps="false"
                         android:textColor="@color/UserChoice"
                         android:textSize="20sp"
