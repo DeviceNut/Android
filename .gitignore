@@ -36,10 +36,12 @@ packages/
 
 #Ignore files built by Android Studio
 .idea/
+.idea/libraries/
 .gradle/
+local.properties
+app/build
 build/
 build/generated
-local.properties
 *.iml
 *.apk
 *.zip
