@@ -181,6 +181,7 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
         }
     }
 
+    /*
     @Override protected void onStop()
     {
         Log.d(LOGNAME, ">>onStop");
@@ -189,6 +190,7 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
         writeEnable = false; // causes exit from threadSendCmd thread
         ble.disconnect();
     }
+    */
 
     @Override public void onBackPressed()
     {
@@ -390,7 +392,7 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
 
     @Override public void onDisconnect()
     {
-        Log.e(LOGNAME, "Received disconnect");
+        Log.i(LOGNAME, "Received disconnect");
         DeviceDisconnect("Request");
     }
 

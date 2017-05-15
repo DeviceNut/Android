@@ -19,6 +19,7 @@ import android.widget.Toast;
 
 import java.util.ArrayList;
 
+import static com.devicenut.pixelnutctrl.Bluetooth.BLESTAT_SUCCESS;
 import static com.devicenut.pixelnutctrl.Main.CMD_GETINFO;
 import static com.devicenut.pixelnutctrl.Main.MAXVAL_HUE;
 import static com.devicenut.pixelnutctrl.Main.MAXVAL_PATTERN;
@@ -138,10 +139,10 @@ public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
         super.onBackPressed();
     }
 
-    private void SleepSeconds(int secs)
+    private void SleepMsecs(int msecs)
     {
         //noinspection EmptyCatchBlock
-        try { Thread.sleep(secs * 1000); }
+        try { Thread.sleep(msecs); }
         catch (Exception ignored) {}
     }
 
@@ -149,7 +150,7 @@ public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
     {
         @Override public void run()
         {
-            SleepSeconds(2);
+            SleepMsecs(2000);
             Devices.this.finish();
         }
     };
@@ -345,9 +346,9 @@ public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
 
     @Override public void onConnect(final int status)
     {
-        if (status == 0)
+        if (status == BLESTAT_SUCCESS)
         {
-            Log.d(LOGNAME, "Connection started");
+            Log.i(LOGNAME, "Connected to our device <<<<<<<<<<");
             isConnecting = false;
             isConnected = true;
 
@@ -365,7 +366,7 @@ public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
             {
                 @Override public void run()
                 {
-                    SleepSeconds(2);
+                    SleepMsecs(500); // don't send too soon...hack!
 
                     Log.d(LOGNAME, "Sending GetInfo command...");
                     ble.WriteString(CMD_GETINFO);
@@ -402,7 +403,7 @@ public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
             case 0:
             {
                 if (reply.contains(TITLE_PIXELNUT)) ++replyState;
-                else Log.w(LOGNAME, "Waiting for: " + TITLE_PIXELNUT);
+                else Log.w(LOGNAME, "Expected title: " + reply);
                 break;
             }
             case 1: // line 1: # of lines
@@ -472,7 +473,7 @@ public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
                         if (curDelay < -rangeDelay) curDelay = -rangeDelay;
                         else if (curDelay > rangeDelay) curDelay = rangeDelay;
 
-                        Log.i(LOGNAME, "Connection successful");
+                        Log.i(LOGNAME, "Communication successful <<<<<<<<<<");
                         startActivity( new Intent(Devices.this, Controls.class) );
                     }
                     else replyFail = true;

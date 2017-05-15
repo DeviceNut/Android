@@ -11,8 +11,9 @@
     <string name="name_help">Help</string>
     <string name="name_pause">Pause</string>
     <string name="name_controls">Controls</string>
-    <string name="name_manual">Manual</string>
     <string name="name_auto">Auto</string>
+    <string name="name_manual">Manual</string>
+    <string name="name_trigger">Trigger</string>
     <string name="title_copyright">Copyright 2017</string>
     <string name="title_allrights">All rights reserved</string>
     <string name="title_select">Select A PixelNut Device</string>
@@ -20,22 +21,21 @@
     <string name="title_pattern">Choose preset effect pattern</string>
     <string name="title_adjust">Adjust brightness and speed</string>
     <string name="title_modify">Modify effect properties</string>
-    <string name="title_trigger">Select force and trigger action</string>
+    <string name="title_trigger">Select force then trigger</string>
     <string name="title_help">Controls Help</string>
     <string name="text_help">
         The controls affect the PixelNut! device that is currently connected,
          whose name is displayed in the upper left of the screen.
 
-        \n\nYou can change this name anytime by selecting it, which open an
-        edit box for you to type into. Be sure to confirm your changes by
-        pressing Done, or it will revert back to its original name.
+        \n\nYou can change this name anytime by selecting it, which opens an edit box.
+        Be sure to confirm your changes by pressing Done, or it will revert back to its original name.
 
         \n\nAdjust Brightness and Speed:
         \n\nThese two slider controls determine the overall brightness of the pixels,
-        and how fast the various animation effects will appear.
+        and how fast the various animation effects change.
 
         \n\nChoose Preset Effect Pattern:
-        \n\nThis drop-down list allows the selection one of the 13 built-in patterns.
+        \n\nThis drop-down list allows the selection one of the built-in patterns.
         You can then modify various setting with the other controls described below.
 
         \n\nModify Effect Properties:
@@ -43,9 +43,8 @@
         are all determined from the pattern itself, and usually change periodically.
         When set to Manual you can directly change them yourself with the slider controls.
 
-        \n\nSelect Force and Trigger Action:
-        \n\nTriggering a pattern by pressing the Action button causes the pattern to change
-        somehow, depending on the pattern. The amount of change is determined by the amount
-        of force that is applied by setting the slider control.
+        \n\nSelect Force and Trigger:
+        \n\nTriggering a pattern causes the pattern to change somehow, depending on the pattern.
+        The amount of change is determined by the amount of force that is set with the slider.
     </string>
 </resources>

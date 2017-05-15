@@ -39,10 +39,10 @@ class Bluetooth
 
     private String strLine = "";
 
-    private static final int BLESTAT_SUCCESS        =  0;
-    private static final int BLESTAT_CALL_FAILED    = -1;
-    private static final int BLESTAT_DISCONNECTED   = -2;
-    private static final int BLESTAT_NO_SERVICES    = -3;
+    static final int BLESTAT_SUCCESS        =  0;
+    static final int BLESTAT_CALL_FAILED    = -1;
+    static final int BLESTAT_DISCONNECTED   = -2;
+    static final int BLESTAT_NO_SERVICES    = -3;
 
     interface BleCallbacks
     {
@@ -193,7 +193,7 @@ class Bluetooth
             {
                 if (bleGatt != null)
                 {
-                    Log.i(LOGNAME, "GATT now connected!");
+                    Log.i(LOGNAME, "...GATT now connected");
                     bleGatt.discoverServices();
                 }
                 else Log.w(LOGNAME, "No GATT on connect");
@@ -211,10 +211,10 @@ class Bluetooth
             {
                 for (BluetoothGattService service : bleGatt.getServices())
                 {
-                    Log.d(LOGNAME, "Service=" + service.getUuid());
+                    Log.v(LOGNAME, "Service=" + service.getUuid());
                     if (service.getUuid().toString().equals(UUID_UART))
                     {
-                        Log.v(LOGNAME, "Found UART Service");
+                        Log.d(LOGNAME, "Found UART Service");
 
                         bleTx = bleRx = null;
                         for (BluetoothGattCharacteristic ch : service.getCharacteristics())
@@ -225,9 +225,12 @@ class Bluetooth
 
                         if ((bleTx != null) && (bleRx != null))
                         {
-                            Log.v(LOGNAME, "Found RX and TX Chars!");
-                            ShowProperties("TX", bleTx);
-                            ShowProperties("RX", bleRx);
+                            Log.v(LOGNAME, "Found RX and TX Chars");
+                            if (BuildConfig.DEBUG)
+                            {
+                                ShowProperties("TX", bleTx);
+                                ShowProperties("RX", bleRx);
+                            }
 
                             BluetoothGattDescriptor config = bleRx.getDescriptor(UUID.fromString(CH_CONFIG));
                             if (config != null)
@@ -240,6 +243,18 @@ class Bluetooth
                                 bleCB.onConnect(BLESTAT_SUCCESS);
                                 return;
                             }
+                            else
+                            {
+                                Log.e(LOGNAME, "Config descriptor is null");
+                                bleCB.onConnect(BLESTAT_CALL_FAILED);
+                                return;
+                            }
+                        }
+                        else
+                        {
+                            Log.e(LOGNAME, "Rx/Tx characteristic is null");
+                            bleCB.onConnect(BLESTAT_CALL_FAILED);
+                            return;
                         }
                     }
                 }
@@ -256,8 +271,17 @@ class Bluetooth
 
         @Override public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic)
         {
+            if (bleRx == null) Log.w(LOGNAME, "Read characteristic is null");
+            if (bleRx != characteristic) Log.i(LOGNAME, "Not read characteristic");
+            if ((bleRx == null) || (bleRx != characteristic)) return;
+
             bleGatt.readCharacteristic(bleRx);
             byte[] bytes = bleRx.getValue();
+            if (bytes == null)
+            {
+                Log.w(LOGNAME, "Read characteristic bytes is null");
+                return;
+            }
 
             String str = new String(bytes, Charset.forName("UTF-8"));
             Log.v(LOGNAME, "ReadBytes=\"" + str + "\"");

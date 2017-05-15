@@ -131,7 +131,7 @@
                     android:layout_height="wrap_content"
                     android:dropDownWidth="wrap_content"
                     android:layout_marginTop="5dp"
-                    android:layout_marginBottom="10dp"
+                    android:layout_marginBottom="12dp"
                     android:focusable="true"
                     android:id="@+id/spinner_Pattern"/>
 
@@ -182,8 +182,8 @@
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="10dp"
-                    android:layout_marginBottom="20dp"
+                    android:layout_marginTop="7dp"
+                    android:layout_marginBottom="12dp"
                     android:orientation="horizontal">
 
                     <TextView
@@ -253,7 +253,7 @@
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="10dp"
+                        android:layout_marginTop="7dp"
                         android:orientation="horizontal">
 
                         <TextView
@@ -273,7 +273,7 @@
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="10dp"
+                        android:layout_marginTop="7dp"
                         android:orientation="horizontal">
 
                         <TextView
@@ -293,8 +293,8 @@
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="10dp"
-                        android:layout_marginBottom="20dp"
+                        android:layout_marginTop="7dp"
+                        android:layout_marginBottom="12dp"
                         android:orientation="horizontal">
 
                         <TextView
@@ -310,15 +310,6 @@
                             android:id="@+id/seek_PropCount"/>
 
                     </LinearLayout>
-                </LinearLayout>
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:visibility="gone"
-                    android:id="@+id/layout_Custom">
-
                 </LinearLayout>
 
                 <View style="@style/DividerHorz" />
@@ -367,9 +358,9 @@
                 <Button
                     android:layout_width="match_parent"
                     android:layout_height="40dp"
-                    android:layout_marginTop="10dp"
+                    android:layout_marginTop="5dp"
                     android:textColorLink="@color/UserChoice"
-                    android:text="Action"
+                    android:text="@string/name_trigger"
                     android:onClick="onClick"
                     android:id="@+id/button_TrigAction"/>
 
