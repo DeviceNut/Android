@@ -28,22 +28,25 @@
          whose name is displayed in the upper left of the screen.
 
         \n\nYou can change this name anytime by selecting it, which opens an edit box.
-        Be sure to confirm your changes by pressing Done, or it will revert back to its original name.
+        Be sure to confirm your changes by pressing Done, or it will revert to its original name.
 
-        \n\nAdjust Brightness and Speed:
-        \n\nThese two slider controls determine the overall brightness of the pixels,
-        and how fast the various animation effects change.
+        \n\nAt any time you can press the Pause button to stop the animation,
+        until you restart it with Resume.
 
         \n\nChoose Preset Effect Pattern:
         \n\nThis drop-down list allows the selection one of the built-in patterns.
         You can then modify various setting with the other controls described below.
+
+        \n\nAdjust Brightness and Speed:
+        \n\nThese slider controls determine the overall brightness of the pixels,
+        and how fast the various animation effects change.
 
         \n\nModify Effect Properties:
         \n\nWhen set to Auto, the color hue and whiteness, and the length properties
         are all determined from the pattern itself, and usually change periodically.
         When set to Manual you can directly change them yourself with the slider controls.
 
-        \n\nSelect Force and Trigger:
+        \n\nSelect Force then Trigger:
         \n\nTriggering a pattern causes the pattern to change somehow, depending on the pattern.
         The amount of change is determined by the amount of force that is set with the slider.
     </string>
