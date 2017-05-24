@@ -24,6 +24,7 @@ import static com.devicenut.pixelnutctrl.Main.CMD_GETINFO;
 import static com.devicenut.pixelnutctrl.Main.MAXVAL_HUE;
 import static com.devicenut.pixelnutctrl.Main.MAXVAL_PATTERN;
 import static com.devicenut.pixelnutctrl.Main.MAXVAL_PERCENT;
+import static com.devicenut.pixelnutctrl.Main.TITLE_PIXELNUT;
 import static com.devicenut.pixelnutctrl.Main.URL_PIXELNUT;
 import static com.devicenut.pixelnutctrl.Main.countLayers;
 import static com.devicenut.pixelnutctrl.Main.countPixels;
@@ -39,11 +40,9 @@ import static com.devicenut.pixelnutctrl.Main.xmodeWhite;
 
 public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
 {
-    private final static String LOGNAME = "Devices";
-
-    private final static String TITLE_PIXELNUT = "PixelNut!";
-
+    private final String LOGNAME = "Devices";
     private final Activity context = this;
+
     private TextView textConnecting;
     private TextView textSelectDevice;
     private Button buttonScan;
@@ -71,6 +70,7 @@ public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
     private boolean isScanning = false;
     private boolean isConnecting = false;
     private boolean isConnected = false;
+    private boolean resumeScanning = true;
     private boolean didFail = false;
 
     private int replyState = 0;
@@ -119,7 +119,9 @@ public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
             isConnecting = false;
             isConnected = false;
             ble.setCallbacks(this);
-            StartScanning();
+
+            if (resumeScanning) StartScanning();
+            else resumeScanning = true;
         }
     }
 
@@ -161,7 +163,9 @@ public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
         {
             case R.id.text_Header:
             {
-                StopScanning();
+                if (isScanning) StopScanning();
+                else resumeScanning = false;
+
                 startActivity(new Intent(this, About.class));
                 break;
             }
@@ -182,7 +186,8 @@ public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
             }
             case R.id.button_Website:
             {
-                StopScanning();
+                if (isScanning) StopScanning();
+                else resumeScanning = false;
 
                 Uri uri = Uri.parse(URL_PIXELNUT);
                 Intent intent = new Intent(Intent.ACTION_VIEW, uri);
