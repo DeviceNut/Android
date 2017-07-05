@@ -384,7 +384,19 @@ public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
 
     @Override public void onDisconnect()
     {
-        DeviceFailed("Device Disconnected: Try Again");
+        final String errstr = "Device Disconnected: Try Again";
+        Log.w(LOGNAME, errstr);
+
+        isScanning = false;
+
+        context.runOnUiThread(new Runnable()
+        {
+            public void run()
+            {
+                Toast.makeText(context, errstr, Toast.LENGTH_SHORT).show();
+                SetupUserDisplay();
+            }
+        });
     }
 
     @Override public void onWrite(final int status)

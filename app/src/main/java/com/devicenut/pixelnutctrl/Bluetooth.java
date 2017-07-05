@@ -122,12 +122,12 @@ class Bluetooth
         {
             Log.i(LOGNAME, "Disconnecting from GATT");
             bleGatt.disconnect();
-            //bleGatt.close(); //this crashes in BluetoothGatt
-            bleGatt = null;
         }
-        else Log.w(LOGNAME, "No GATT to disconnect");
-
-        bleDevice = null;
+        else
+        {
+            Log.w(LOGNAME, "No GATT to disconnect");
+            bleDevice = null;
+        }
     }
 
     void WriteString(String str)
@@ -144,20 +144,14 @@ class Bluetooth
     private void ShowProperties(String type, BluetoothGattCharacteristic ch)
     {
         int props = ch.getProperties();
-        if ((props & BluetoothGattCharacteristic.PROPERTY_READ) != 0)
-            Log.v(LOGNAME, type + "=PropRead");
-        if ((props & BluetoothGattCharacteristic.PROPERTY_WRITE) != 0)
-            Log.v(LOGNAME, type + "=PropWrite");
-        if ((props & BluetoothGattCharacteristic.PROPERTY_NOTIFY) != 0)
-            Log.v(LOGNAME, type + "=PropNotify");
-        if ((props & BluetoothGattCharacteristic.PROPERTY_INDICATE) != 0)
-            Log.v(LOGNAME, type + "=PropIndicate");
+        if ((props & BluetoothGattCharacteristic.PROPERTY_READ) != 0)       Log.v(LOGNAME, type + "=PropRead");
+        if ((props & BluetoothGattCharacteristic.PROPERTY_WRITE) != 0)      Log.v(LOGNAME, type + "=PropWrite");
+        if ((props & BluetoothGattCharacteristic.PROPERTY_NOTIFY) != 0)     Log.v(LOGNAME, type + "=PropNotify");
+        if ((props & BluetoothGattCharacteristic.PROPERTY_INDICATE) != 0)   Log.v(LOGNAME, type + "=PropIndicate");
 
         int perms = ch.getPermissions();
-        if ((perms & BluetoothGattCharacteristic.PERMISSION_READ) != 0)
-            Log.v(LOGNAME, type + "=PermRead");
-        if ((perms & BluetoothGattCharacteristic.PERMISSION_WRITE) != 0)
-            Log.v(LOGNAME, type + "=PermRead");
+        if ((perms & BluetoothGattCharacteristic.PERMISSION_READ) != 0)     Log.v(LOGNAME, type + "=PermRead");
+        if ((perms & BluetoothGattCharacteristic.PERMISSION_WRITE) != 0)    Log.v(LOGNAME, type + "=PermRead");
     }
 
     private final ScanCallback bleScanDevicesCB = new ScanCallback()
@@ -202,6 +196,9 @@ class Bluetooth
             {
                 Log.i(LOGNAME, "GATT now disconnected");
                 bleCB.onDisconnect();
+                bleGatt.close();
+                bleGatt = null;
+                bleDevice = null;
             }
         }
 
