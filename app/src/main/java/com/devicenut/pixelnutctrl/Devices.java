@@ -66,6 +66,7 @@ public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
     };
 
     private int buttonCount = 0;
+    private boolean blePresentAndEnabled = true;
     private boolean bleEnabled = false;
     private boolean isScanning = false;
     private boolean isConnecting = false;
@@ -88,13 +89,16 @@ public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
         scrollDevices = (ScrollView) findViewById(R.id.scroll_Devices);
         progressBar = (ProgressBar) findViewById(R.id.progress_Scanner);
 
+        blePresentAndEnabled = true;
+
         ble = new Bluetooth(this);
         if (!ble.checkForBlePresent())
         {
             Toast.makeText(this, "Cannot find Bluetooth LE", Toast.LENGTH_LONG).show();
             threadFinish.start();
+            blePresentAndEnabled = false;
         }
-
+        else
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)   != PackageManager.PERMISSION_GRANTED ||
             ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED)
         {
@@ -108,11 +112,14 @@ public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
         Log.i(LOGNAME, ">>onResume");
         super.onResume();
 
+        if (!blePresentAndEnabled) return;
+
         bleEnabled = ble.checkForBleEnabled();
         if (!bleEnabled)
         {
             Toast.makeText(this, "Bluetooth LE not enabled", Toast.LENGTH_LONG).show();
             threadFinish.start();
+            blePresentAndEnabled = false;
         }
         else
         {
