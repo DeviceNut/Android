@@ -32,6 +32,9 @@ import static com.devicenut.pixelnutctrl.Main.countTracks;
 import static com.devicenut.pixelnutctrl.Main.curBright;
 import static com.devicenut.pixelnutctrl.Main.curDelay;
 import static com.devicenut.pixelnutctrl.Main.curPattern;
+import static com.devicenut.pixelnutctrl.Main.internalPatterns;
+import static com.devicenut.pixelnutctrl.Main.maxlenEEPROM;
+import static com.devicenut.pixelnutctrl.Main.maxlenSendStrs;
 import static com.devicenut.pixelnutctrl.Main.rangeDelay;
 import static com.devicenut.pixelnutctrl.Main.xmodeEnabled;
 import static com.devicenut.pixelnutctrl.Main.xmodeHue;
@@ -75,6 +78,7 @@ public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
     private boolean didFail = false;
 
     private int replyState = 0;
+    private int optionLines = 0;
     private boolean replyFail = false;
 
     @Override protected void onCreate(Bundle savedInstanceState)
@@ -297,6 +301,7 @@ public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
         Log.d(LOGNAME, "Disconnecting...");
         isConnecting = false;
         isConnected = false;
+        StopScanning();
         ble.disconnect();
     }
 
@@ -308,7 +313,6 @@ public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
         Log.w(LOGNAME, errstr);
 
         DoDisconnect();
-        isScanning = false;
 
         context.runOnUiThread(new Runnable()
         {
@@ -417,28 +421,34 @@ public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
 
     @Override public void onRead(String reply)
     {
-        if (!isConnected || replyFail) return;
-
         reply = reply.trim();
         Log.v(LOGNAME, "Reply=" + reply);
 
-        switch (replyState)
+        if (!isConnected || ((replyState > 1) && (optionLines <= 0)))
         {
-            case 0:
+            Log.w(LOGNAME, "Unexpected reply: " + reply);
+            replyFail = true;
+        }
+
+        if (!replyFail) switch (replyState)
+        {
+            case 0: // first line: title
             {
                 if (reply.contains(TITLE_PIXELNUT)) ++replyState;
                 else Log.w(LOGNAME, "Expected title: " + reply);
                 break;
             }
-            case 1: // line 1: # of lines
+            case 1: // second line: # of additional lines
             {
                 String[] strs = reply.split(" ");
-                if ((strs.length == 1) && (Integer.parseInt(reply) == 3))
+                optionLines = Integer.parseInt(reply);
+                if ((strs.length == 1) && (optionLines >= 3))
                     ++replyState;
+
                 else replyFail = true;
                 break;
             }
-            case 2: // line 2: 4 device constants
+            case 2: // additional line 1: 4 device constants
             {
                 String[] strs = reply.split(" ");
                 if (strs.length == 4)
@@ -449,17 +459,18 @@ public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
                     rangeDelay  = Integer.parseInt(strs[3]);
                     Log.d(LOGNAME, "Constants: Pixels=" + countPixels + " Layers=" + countLayers + " Tracks=" + countTracks + " RangeDelay=" + rangeDelay);
 
-                    if (CheckValue(countPixels, 1, 0) &&
-                        CheckValue(countLayers, 2, 0) &&
-                        CheckValue(countTracks, 1, 0))
-                        ++replyState;
-
-                    else replyFail = true;
+                    if (!CheckValue(countPixels, 1, 0) ||
+                        !CheckValue(countLayers, 2, 0) ||
+                        !CheckValue(countTracks, 1, 0))
+                        replyFail = true;
                 }
                 else replyFail = true;
+
+                ++replyState;
+                --optionLines;
                 break;
             }
-            case 3: // line 3: 4 extern mode values
+            case 3: // additional line 2: 4 extern mode values
             {
                 String[] strs = reply.split(" ");
                 if (strs.length == 4)
@@ -470,17 +481,18 @@ public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
                     xmodePixCnt  = Integer.parseInt(strs[3]);
                     Log.d(LOGNAME, "Externs: Enable=" + xmodeEnabled + " Hue=" + xmodeHue + " White=" + xmodeWhite + " PixCnt=" + xmodePixCnt);
 
-                    if (CheckValue(xmodeHue, 0, MAXVAL_HUE) &&
-                        CheckValue(xmodeWhite, 0, MAXVAL_PERCENT) &&
-                        CheckValue(xmodePixCnt, 0, MAXVAL_PERCENT))
-                        ++replyState;
-
-                    else replyFail = true;
+                    if (!CheckValue(xmodeHue,    0, MAXVAL_HUE) ||
+                        !CheckValue(xmodeWhite,  0, MAXVAL_PERCENT) ||
+                        !CheckValue(xmodePixCnt, 0, MAXVAL_PERCENT))
+                        replyFail = true;
                 }
                 else replyFail = true;
+
+                ++replyState;
+                --optionLines;
                 break;
             }
-            case 4: // line 4: 3 current settings
+            case 4: // additional line 3: 3 current settings
             {
                 String[] strs = reply.split(" ");
                 if (strs.length == 3)
@@ -491,18 +503,45 @@ public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
                     Log.d(LOGNAME, "Current: Pattern=" + curPattern + " Delay=" + curDelay + " Bright=" + curBright);
 
                     if (CheckValue(curPattern, 1, MAXVAL_PATTERN) &&
-                        CheckValue(curBright, 0, MAXVAL_PERCENT))
+                        CheckValue(curBright,  0, MAXVAL_PERCENT))
                     {
                         // allow for bad current delay value
                         if (curDelay < -rangeDelay) curDelay = -rangeDelay;
                         else if (curDelay > rangeDelay) curDelay = rangeDelay;
-
-                        Log.i(LOGNAME, "Communication successful <<<<<<<<<<");
-                        startActivity( new Intent(Devices.this, Controls.class) );
                     }
                     else replyFail = true;
                 }
                 else replyFail = true;
+
+                ++replyState;
+                --optionLines;
+                break;
+            }
+            case 5: // additional line 4: 3 current settings
+            {
+                String[] strs = reply.split(" ");
+                if (strs.length == 3)
+                {
+                    internalPatterns  = Integer.parseInt(strs[0]);
+                    maxlenSendStrs    = Integer.parseInt(strs[1]);
+                    maxlenEEPROM      = Integer.parseInt(strs[2]);
+                    Log.d(LOGNAME, "Xinfo: IntPatterns=" + internalPatterns + " MaxSendStr=" + maxlenSendStrs + " LenEEPROM=" + maxlenEEPROM);
+
+                    if (((internalPatterns != 0) && (internalPatterns != 13)) ||
+                        (maxlenSendStrs < 0) ||
+                        (maxlenEEPROM < 0))
+                        replyFail = true;
+                }
+                else replyFail = true;
+
+                ++replyState;
+                --optionLines;
+                break;
+            }
+            default: // ignore for forward compatibility
+            {
+                Log.w(LOGNAME, "Unknown settings: " + reply);
+                --optionLines;
                 break;
             }
         }
@@ -511,6 +550,11 @@ public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
         {
             Log.e(LOGNAME, "Read failed: state=" + replyState);
             DeviceFailed("Device Not Recognized: Try Again");
+        }
+        else if ((replyState > 1) && (optionLines == 0))
+        {
+            Log.i(LOGNAME, "Communication successful <<<<<<<<<<");
+            startActivity( new Intent(Devices.this, Controls.class) );
         }
     }
 

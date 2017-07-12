@@ -29,15 +29,22 @@ class Bluetooth
     private static final String UUID_TX     = "6e400002-b5a3-f393-e0a9-e50e24dcca9e";
     private static final String UUID_RX     = "6e400003-b5a3-f393-e0a9-e50e24dcca9e";
     private static final String CH_CONFIG   = "00002902-0000-1000-8000-00805f9b34fb";
+    private static final int MAXLEN_CHUNK   = 20;
 
-    private Context context = null;
+    private static Context context = null;
     private static BluetoothAdapter bleAdapter = null;
     private static final List<BluetoothDevice> bleDevList = new ArrayList<>();
     private static BluetoothDevice bleDevice = null;
     private static BluetoothGatt bleGatt = null;
     private static BluetoothGattCharacteristic bleTx, bleRx;
 
-    private String strLine = "";
+    private static final PCQueue<String> writeQueue = new PCQueue(50);
+    private static String strLine = "";
+    private static boolean senderStarted = false;
+    private static boolean writeEnable = false;
+    private static boolean doNextChunk = true;
+    private static String[] writeChunks = null;
+    private static int nextChunk = 0;
 
     static final int BLESTAT_SUCCESS        =  0;
     static final int BLESTAT_CALL_FAILED    = -1;
@@ -100,6 +107,7 @@ class Bluetooth
 
         bleDevice = bdev;
         bleGatt = bdev.connectGatt(context, false, bleGattCB);
+
         return (bleGatt != null);
     }
 
@@ -118,6 +126,8 @@ class Bluetooth
 
     void disconnect()
     {
+        writeEnable = false; // stop threadSender
+
         if (bleGatt != null)
         {
             Log.i(LOGNAME, "Disconnecting from GATT");
@@ -132,14 +142,96 @@ class Bluetooth
 
     void WriteString(String str)
     {
+        if (!writeEnable) Log.e(LOGNAME, "Write disabled: str=" + str + "\"");
+        else if (!writeQueue.put(str)) Log.e(LOGNAME, "Queue full: str=" + str + "\"");
+    }
+
+    void SendNextChunk()
+    {
+        String str = writeChunks[nextChunk++];
+
+        int len = str.length();
+        if (len >= MAXLEN_CHUNK) // cannot support chunks too large
+        {
+            Log.e(LOGNAME, "Chunk too large: str=" + str + "\"");
+            writeEnable = false;
+            bleCB.onWrite(BLESTAT_CALL_FAILED);
+            return;
+        }
+
+        while ((nextChunk < writeChunks.length))
+        {
+            len += writeChunks[nextChunk].length() + 1; // 1 for space separator
+            if (len >= MAXLEN_CHUNK) break;
+            str += " " + writeChunks[nextChunk++];
+        }
+
+        Log.v(LOGNAME, "Sending chunk: str=" + str + "\"");
+
+        bleTx.setValue(str + "\n"); // MUST add newline to end of each string
+        if (!bleGatt.writeCharacteristic(bleTx))
+        {
+            Log.e(LOGNAME, "Chunk write failed: str=" + str + "\"");
+            writeEnable = false;
+            bleCB.onWrite(BLESTAT_CALL_FAILED);
+            return;
+        }
+
+        doNextChunk = false; // sent one, wait for completion
+    }
+
+    private void GetStrToSend()
+    {
         if ((bleTx != null) && (bleGatt != null))
         {
-            bleTx.setValue(str + "\n"); // MUST add newline to end of each string
-            if (!bleGatt.writeCharacteristic(bleTx))
-                bleCB.onWrite(BLESTAT_CALL_FAILED);
+            if ((writeChunks != null) && (nextChunk < writeChunks.length))
+                SendNextChunk();
+
+            else if (!writeQueue.empty())
+            {
+                String cmd1 = writeQueue.get();
+                if (cmd1 != null)
+                {
+                    while(true) // coalesce same commands
+                    {
+                        String cmd2 = writeQueue.peek();
+                        if ((cmd2 == null) || !cmd2.substring(0,1).equals(cmd1.substring(0,1)))
+                            break;
+
+                        Log.v(LOGNAME, "Skipping=\"" + cmd1 + "\" (\"" + cmd2 + "\")");
+                        cmd1 = writeQueue.get();
+                    }
+                    Log.v(LOGNAME, "Command=\"" + cmd1 + "\"");
+
+                    writeChunks = cmd1.split(" ");
+                    nextChunk = 0;
+                    SendNextChunk();
+                }
+                else Log.e(LOGNAME, "Queue was empty");
+            }
+            // else wait for next string in queue
         }
-        else bleCB.onWrite(BLESTAT_DISCONNECTED);
+        else
+        {
+            writeEnable = false;
+            bleCB.onWrite(BLESTAT_DISCONNECTED);
+        }
     }
+
+    private final Thread threadSender = new Thread()
+    {
+        @Override public void run()
+        {
+            senderStarted = true;
+            while (writeEnable)
+            {
+                if (doNextChunk) GetStrToSend();
+
+                yield();
+            }
+            senderStarted = false;
+        }
+    };
 
     private void ShowProperties(String type, BluetoothGattCharacteristic ch)
     {
@@ -237,6 +329,13 @@ class Bluetooth
                                 config.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
                                 bleGatt.writeDescriptor(config);
 
+                                if (!senderStarted)
+                                {
+                                    Log.d(LOGNAME, "Starting sender thread...");
+                                    writeEnable = true;
+                                    threadSender.start();
+                                }
+
                                 bleCB.onConnect(BLESTAT_SUCCESS);
                                 return;
                             }
@@ -262,7 +361,18 @@ class Bluetooth
         @Override public void onCharacteristicWrite(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status)
         {
             if (status == BluetoothGatt.GATT_SUCCESS)
-                 bleCB.onWrite(BLESTAT_SUCCESS);
+            {
+                if (nextChunk >= writeChunks.length)
+                {
+                    Log.d(LOGNAME, "Write string completed");
+                    writeChunks = null;
+                    nextChunk = 0;
+                    bleCB.onWrite(BLESTAT_SUCCESS);
+                }
+                else Log.v(LOGNAME, "Write chunk finished");
+
+                doNextChunk = true;
+            }
             else bleCB.onWrite(BLESTAT_CALL_FAILED);
         }
 
@@ -291,10 +401,6 @@ class Bluetooth
                     strLine += str;
                     break;
                 }
-
-                //String s = str.substring(0,i);
-                //Log.v(LOGNAME, "Substr=" + s);
-                //strLine += s;
 
                 strLine += str.substring(0,i);
                 bleCB.onRead(strLine);

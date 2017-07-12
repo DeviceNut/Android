@@ -24,10 +24,13 @@ import static com.devicenut.pixelnutctrl.Main.CMD_PAUSE;
 import static com.devicenut.pixelnutctrl.Main.CMD_PROPVALS;
 import static com.devicenut.pixelnutctrl.Main.CMD_RESUME;
 import static com.devicenut.pixelnutctrl.Main.CMD_TRIGGER;
+import static com.devicenut.pixelnutctrl.Main.internalPatterns;
+import static com.devicenut.pixelnutctrl.Main.maxlenSendStrs;
 import static com.devicenut.pixelnutctrl.Main.patternNames;
 import static com.devicenut.pixelnutctrl.Main.curBright;
 import static com.devicenut.pixelnutctrl.Main.curDelay;
 import static com.devicenut.pixelnutctrl.Main.curPattern;
+import static com.devicenut.pixelnutctrl.Main.patternStrs;
 import static com.devicenut.pixelnutctrl.Main.rangeDelay;
 import static com.devicenut.pixelnutctrl.Main.xmodeEnabled;
 import static com.devicenut.pixelnutctrl.Main.xmodeHue;
@@ -62,11 +65,10 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
 
     private Bluetooth ble;
 
-    private final PCQueue<String> writeQueue = new PCQueue(50);
     private boolean isConnected = false;
-    private boolean writeEnable = false;
-    private boolean writeBusy = false;
+    private boolean sendEnable = false;
     private boolean isEditing = false;
+    private boolean firstPattern = true;
 
     @Override protected void onCreate(Bundle savedInstanceState)
     {
@@ -89,16 +91,22 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
                 //v.setTextColor(ContextCompat.getColor(context, R.color.UserChoice));
                 //v.setTextSize(18);
 
-                // always reset the pattern from scratch
-                Log.d(LOGNAME, "Pattern choice: " + parent.getItemAtPosition(position));
-                curPattern = position+1; // curPattern starts at 1
-                QueueCmdStr("" + curPattern);
+                if (!firstPattern)
+                {
+                    // always reset the pattern from scratch
+                    Log.d(LOGNAME, "Pattern choice: " + parent.getItemAtPosition(position));
+                    curPattern = position+1; // curPattern starts at 1
+
+                    if (internalPatterns > 0) SendAndSavePattern(position);
+                    else SendString("" + curPattern);
+                }
+                else firstPattern = false;
             }
             @Override public void onNothingSelected(AdapterView<?> parent) {}
         });
 
-        seekBright = (SeekBar) findViewById(R.id.seek_Bright);
-        seekDelay = (SeekBar) findViewById(R.id.seek_Delay);
+        seekBright    = (SeekBar) findViewById(R.id.seek_Bright);
+        seekDelay     = (SeekBar) findViewById(R.id.seek_Delay);
         seekPropColor = (SeekBar) findViewById(R.id.seek_PropColor);
         seekPropWhite = (SeekBar) findViewById(R.id.seek_PropWhite);
         seekPropCount = (SeekBar) findViewById(R.id.seek_PropCount);
@@ -113,12 +121,12 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
         seekPropCount.setOnSeekBarChangeListener(this);
         seekTrigForce.setOnSeekBarChangeListener(this);
 
-        layoutControls = (LinearLayout) findViewById(R.id.layout_Controls);
-        nameText = (TextView) findViewById(R.id.text_Devname);
-        pauseButton = (Button) findViewById(R.id.button_Pause);
-        helpButton = (Button) findViewById(R.id.button_Help);
-        helpTitle = (TextView) findViewById(R.id.view_HelpTitle);
-        helpText = (TextView) findViewById(R.id.view_HelpText);
+        layoutControls  = (LinearLayout) findViewById(R.id.layout_Controls);
+        nameText        = (TextView)     findViewById(R.id.text_Devname);
+        pauseButton     = (Button)       findViewById(R.id.button_Pause);
+        helpButton      = (Button)       findViewById(R.id.button_Help);
+        helpTitle       = (TextView)     findViewById(R.id.view_HelpTitle);
+        helpText        = (TextView)     findViewById(R.id.view_HelpText);
     }
 
     @Override protected void onResume()
@@ -129,7 +137,7 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
         if (isEditing)
         {
             Log.d(LOGNAME, "Renaming device: " + devName);
-            QueueCmdStr(CMD_BLUENAME + devName);
+            SendString(CMD_BLUENAME + devName);
             isEditing = false;
         }
         else
@@ -149,11 +157,12 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
             Log.d(LOGNAME, "Device name: " + devName);
 
             isConnected = true;
-            writeEnable = false; // prevent following from writing commands
+            sendEnable = false; // prevent following from writing commands
+            firstPattern = true; // prevent sending pattern on initial selection
 
             SetManualControls();
             toggleAutoProp.setChecked(xmodeEnabled);
-            selectPattern.setSelection(curPattern-1, true); // curPattern starts at 1
+            selectPattern.setSelection(curPattern-1, false); // curPattern starts at 1
             seekBright.setProgress(curBright);
             seekDelay.setProgress(((rangeDelay - curDelay) * 100) / (rangeDelay + rangeDelay));
             seekPropColor.setProgress(((xmodeHue * 100) / 360));
@@ -161,10 +170,7 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
             seekPropCount.setProgress(xmodePixCnt);
             seekTrigForce.setProgress(trigForce / 10);
 
-            writeEnable = true;
-            writeBusy = false;
-
-            threadSendCmd.start();
+            sendEnable = true; // allow controls to work now
         }
         nameText.setText(devName);
     }
@@ -174,29 +180,30 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
         Log.d(LOGNAME, ">>onPause");
         super.onPause();
 
-        if (!isEditing)
-        {
-            writeEnable = false; // causes exit from threadSendCmd thread
-            ble.disconnect();
-        }
+        if (!isEditing) ble.disconnect();
     }
-
-    /*
-    @Override protected void onStop()
-    {
-        Log.d(LOGNAME, ">>onStop");
-        super.onStop();
-        isEditing = false;
-        writeEnable = false; // causes exit from threadSendCmd thread
-        ble.disconnect();
-    }
-    */
 
     @Override public void onBackPressed()
     {
         if (inHelpMode) SetHelpMode();
 
         else super.onBackPressed();
+    }
+
+    private void SendAndSavePattern(int index)
+    {
+        if (sendEnable)
+        {
+            ble.WriteString("P");
+            ble.WriteString(".");
+            ble.WriteString(patternStrs[index]);
+            ble.WriteString(".");
+        }
+    }
+
+    private void SendString(String str)
+    {
+        if (sendEnable) ble.WriteString(str);
     }
 
     private void SetHelpMode()
@@ -238,7 +245,7 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
             }
             case R.id.button_Pause:
             {
-                QueueCmdStr(doUpdate ? CMD_PAUSE : CMD_RESUME);
+                SendString(doUpdate ? CMD_PAUSE : CMD_RESUME);
                 doUpdate = !doUpdate;
                 pauseButton.setText(doUpdate ? "Pause" : "Resume");
                 break;
@@ -255,13 +262,13 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
                 SetManualControls();
 
                 if (xmodeEnabled)
-                     QueueCmdStr(CMD_EXTMODE + "1");
-                else QueueCmdStr(CMD_EXTMODE + "0");
+                     SendString(CMD_EXTMODE + "1");
+                else SendString(CMD_EXTMODE + "0");
                 break;
             }
             case R.id.button_TrigAction:
             {
-                QueueCmdStr(CMD_TRIGGER + trigForce);
+                SendString(CMD_TRIGGER + trigForce);
                 break;
             }
         }
@@ -274,31 +281,31 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
             case R.id.seek_Bright:
             {
                 curBright = progress;
-                QueueCmdStr(CMD_BRIGHT + curBright);
+                SendString(CMD_BRIGHT + curBright);
                 break;
             }
             case R.id.seek_Delay:
             {
                 curDelay = rangeDelay - (progress * 2 * rangeDelay)/100;
-                QueueCmdStr(CMD_DELAY + curDelay);
+                SendString(CMD_DELAY + curDelay);
                 break;
             }
             case R.id.seek_PropColor:
             {
                 xmodeHue = (progress * 359) / 100;
-                QueueCmdStr(CMD_PROPVALS + xmodeHue + " " + xmodeWhite + " " + xmodePixCnt);
+                SendString(CMD_PROPVALS + xmodeHue + " " + xmodeWhite + " " + xmodePixCnt);
                 break;
             }
             case R.id.seek_PropWhite:
             {
                 xmodeWhite = progress;
-                QueueCmdStr(CMD_PROPVALS + xmodeHue + " " + xmodeWhite + " " + xmodePixCnt);
+                SendString(CMD_PROPVALS + xmodeHue + " " + xmodeWhite + " " + xmodePixCnt);
                 break;
             }
             case R.id.seek_PropCount:
             {
                 xmodePixCnt = progress;
-                QueueCmdStr(CMD_PROPVALS + xmodeHue + " " + xmodeWhite + " " + xmodePixCnt);
+                SendString(CMD_PROPVALS + xmodeHue + " " + xmodeWhite + " " + xmodePixCnt);
                 break;
             }
             case R.id.seek_TrigForce:
@@ -330,56 +337,6 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
         }
     }
 
-    private void QueueCmdStr(String cmdstr)
-    {
-        if (writeEnable)
-        {
-            Log.v(LOGNAME, "Queuing=\"" + cmdstr + "\"");
-            if (!writeQueue.put(cmdstr))
-            {
-                Log.e(LOGNAME, "Queue full: cmd=" + cmdstr);
-                DeviceDisconnect("Full");
-            }
-        }
-    }
-
-    private void SendCmdStr()
-    {
-        if (!writeQueue.empty() && !writeBusy)
-        {
-            String cmd1 = writeQueue.get();
-            if (cmd1 != null)
-            {
-                while(true) // coalesce same commands
-                {
-                    String cmd2 = writeQueue.peek();
-                    if ((cmd2 == null) || !cmd2.substring(0,0).equals(cmd1.substring(0,0)))
-                        break;
-
-                    Log.v(LOGNAME, "Skipping=\"" + cmd1 + "\"");
-                    cmd1 = writeQueue.get();
-                }
-                Log.v(LOGNAME, "Command=\"" + cmd1 + "\"");
-
-                writeBusy = true;
-                ble.WriteString(cmd1);
-            }
-            else Log.e(LOGNAME, "Queue was empty");
-        }
-    }
-
-    private final Thread threadSendCmd = new Thread()
-    {
-        @Override public void run()
-        {
-            while (writeEnable)
-            {
-                SendCmdStr();
-                yield();
-            }
-        }
-    };
-
     @Override public void onScan(String name, int id)
     {
         Log.e(LOGNAME, "Unexpected callback: onScan");
@@ -400,11 +357,9 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
     {
         if (status != 0)
         {
-            writeEnable = false; // causes exit from threadSendCmd thread
-            Log.e(LOGNAME, "Write status: " + Integer.toHexString(status));
+            Log.e(LOGNAME, "Write status: " + status); //Integer.toHexString(status));
             DeviceDisconnect("Write");
         }
-        writeBusy = false;
     }
 
     @Override public void onRead(String reply)
