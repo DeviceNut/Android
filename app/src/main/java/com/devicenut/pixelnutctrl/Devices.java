@@ -26,6 +26,7 @@ import static com.devicenut.pixelnutctrl.Main.MAXVAL_PATTERN;
 import static com.devicenut.pixelnutctrl.Main.MAXVAL_PERCENT;
 import static com.devicenut.pixelnutctrl.Main.TITLE_PIXELNUT;
 import static com.devicenut.pixelnutctrl.Main.URL_PIXELNUT;
+import static com.devicenut.pixelnutctrl.Main.ble;
 import static com.devicenut.pixelnutctrl.Main.countLayers;
 import static com.devicenut.pixelnutctrl.Main.countPixels;
 import static com.devicenut.pixelnutctrl.Main.countTracks;
@@ -52,7 +53,6 @@ public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
     private ProgressBar progressBar;
     private ScrollView scrollDevices;
     private final ArrayList<Integer> bleDevIDs = new ArrayList<>();
-    private Bluetooth ble;
 
     //private Toast myToast; // for debugging
 
@@ -414,7 +414,7 @@ public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
     {
         if (status != 0)
         {
-            Log.e(LOGNAME, "Write status: " + Integer.toHexString(status));
+            Log.e(LOGNAME, "Write status: " + status);
             DeviceFailed("Write Failed: Try Again");
         }
     }

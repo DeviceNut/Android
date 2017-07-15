@@ -24,6 +24,7 @@ import static com.devicenut.pixelnutctrl.Main.CMD_PAUSE;
 import static com.devicenut.pixelnutctrl.Main.CMD_PROPVALS;
 import static com.devicenut.pixelnutctrl.Main.CMD_RESUME;
 import static com.devicenut.pixelnutctrl.Main.CMD_TRIGGER;
+import static com.devicenut.pixelnutctrl.Main.ble;
 import static com.devicenut.pixelnutctrl.Main.internalPatterns;
 import static com.devicenut.pixelnutctrl.Main.maxlenSendStrs;
 import static com.devicenut.pixelnutctrl.Main.patternNames;
@@ -62,8 +63,6 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
     private int trigForce = 500;
     private boolean inHelpMode = false;
     private boolean doUpdate = true;
-
-    private Bluetooth ble;
 
     private boolean isConnected = false;
     private boolean sendEnable = false;

@@ -74,4 +74,5 @@ public class Main extends Application
     public static int maxlenEEPROM      = 0;    // max length of internal EEPROM to store pattern(s)
 
     public static String devName;
+    public static Bluetooth ble;
 }

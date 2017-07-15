@@ -40,7 +40,6 @@ class Bluetooth
 
     private static final PCQueue<String> writeQueue = new PCQueue(50);
     private static String strLine = "";
-    private static boolean senderStarted = false;
     private static boolean writeEnable = false;
     private static boolean doNextChunk = true;
     private static String[] writeChunks = null;
@@ -65,13 +64,10 @@ class Bluetooth
     {
         context = ctx;
 
-        if (bleAdapter == null)
+        if (context.getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE))
         {
-            if (context.getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE))
-            {
-                BluetoothManager manager = (BluetoothManager) context.getSystemService(Context.BLUETOOTH_SERVICE);
-                if (manager != null) bleAdapter = manager.getAdapter();
-            }
+            BluetoothManager manager = (BluetoothManager) context.getSystemService(Context.BLUETOOTH_SERVICE);
+            if (manager != null) bleAdapter = manager.getAdapter();
         }
     }
 
@@ -154,8 +150,8 @@ class Bluetooth
         if (len >= MAXLEN_CHUNK) // cannot support chunks too large
         {
             Log.e(LOGNAME, "Chunk too large: str=" + str + "\"");
-            writeEnable = false;
             bleCB.onWrite(BLESTAT_CALL_FAILED);
+            writeEnable = false;
             return;
         }
 
@@ -172,49 +168,9 @@ class Bluetooth
         if (!bleGatt.writeCharacteristic(bleTx))
         {
             Log.e(LOGNAME, "Chunk write failed: str=" + str + "\"");
-            writeEnable = false;
             bleCB.onWrite(BLESTAT_CALL_FAILED);
-            return;
-        }
-
-        doNextChunk = false; // sent one, wait for completion
-    }
-
-    private void GetStrToSend()
-    {
-        if ((bleTx != null) && (bleGatt != null))
-        {
-            if ((writeChunks != null) && (nextChunk < writeChunks.length))
-                SendNextChunk();
-
-            else if (!writeQueue.empty())
-            {
-                String cmd1 = writeQueue.get();
-                if (cmd1 != null)
-                {
-                    while(true) // coalesce same commands
-                    {
-                        String cmd2 = writeQueue.peek();
-                        if ((cmd2 == null) || !cmd2.substring(0,1).equals(cmd1.substring(0,1)))
-                            break;
-
-                        Log.v(LOGNAME, "Skipping=\"" + cmd1 + "\" (\"" + cmd2 + "\")");
-                        cmd1 = writeQueue.get();
-                    }
-                    Log.v(LOGNAME, "Command=\"" + cmd1 + "\"");
-
-                    writeChunks = cmd1.split(" ");
-                    nextChunk = 0;
-                    SendNextChunk();
-                }
-                else Log.e(LOGNAME, "Queue was empty");
-            }
-            // else wait for next string in queue
-        }
-        else
-        {
             writeEnable = false;
-            bleCB.onWrite(BLESTAT_DISCONNECTED);
+            return;
         }
     }
 
@@ -222,14 +178,50 @@ class Bluetooth
     {
         @Override public void run()
         {
-            senderStarted = true;
             while (writeEnable)
             {
-                if (doNextChunk) GetStrToSend();
-
                 yield();
+
+                if ((bleTx == null) || (bleGatt == null))
+                {
+                    bleCB.onWrite(BLESTAT_DISCONNECTED);
+                    writeEnable = false;
+                }
+                else if (doNextChunk)
+                {
+                    if ((writeChunks != null) && (nextChunk < writeChunks.length))
+                    {
+                        doNextChunk = false; // wait for completion
+                        SendNextChunk();
+                    }
+                    else if (!writeQueue.empty())
+                    {
+                        Log.v(LOGNAME, "Getting next command from queue");
+                        String cmd1 = writeQueue.get();
+                        if (cmd1 != null)
+                        {
+                            while(true) // coalesce same commands
+                            {
+                                String cmd2 = writeQueue.peek();
+                                if ((cmd2 == null) || !cmd2.substring(0,1).equals(cmd1.substring(0,1)))
+                                    break;
+
+                                Log.v(LOGNAME, "Skipping=\"" + cmd1 + "\" (\"" + cmd2 + "\")");
+                                cmd1 = writeQueue.get();
+                            }
+                            Log.v(LOGNAME, "Command=\"" + cmd1 + "\"");
+
+                            writeChunks = cmd1.split(" ");
+                            nextChunk = 0;
+
+                            doNextChunk = false; // wait for completion
+                            SendNextChunk();
+                        }
+                        else Log.e(LOGNAME, "Queue was empty");
+                    }
+                    // else wait for next string in queue
+                }
             }
-            senderStarted = false;
         }
     };
 
@@ -329,13 +321,8 @@ class Bluetooth
                                 config.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
                                 bleGatt.writeDescriptor(config);
 
-                                if (!senderStarted)
-                                {
-                                    Log.d(LOGNAME, "Starting sender thread...");
-                                    writeEnable = true;
-                                    threadSender.start();
-                                }
-
+                                writeEnable = true;
+                                threadSender.start();
                                 bleCB.onConnect(BLESTAT_SUCCESS);
                                 return;
                             }
