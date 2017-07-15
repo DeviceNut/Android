@@ -424,137 +424,140 @@ public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
         reply = reply.trim();
         Log.v(LOGNAME, "Reply=" + reply);
 
-        if (!isConnected || ((replyState > 1) && (optionLines <= 0)))
+        if (!replyFail)
         {
-            Log.w(LOGNAME, "Unexpected reply: " + reply);
-            replyFail = true;
-        }
-
-        if (!replyFail) switch (replyState)
-        {
-            case 0: // first line: title
+            if (!isConnected || ((replyState > 1) && (optionLines <= 0)))
             {
-                if (reply.contains(TITLE_PIXELNUT)) ++replyState;
-                else Log.w(LOGNAME, "Expected title: " + reply);
-                break;
+                Log.w(LOGNAME, "Unexpected reply: " + reply);
+                replyFail = true;
             }
-            case 1: // second line: # of additional lines
+            else switch (replyState)
             {
-                String[] strs = reply.split(" ");
-                optionLines = Integer.parseInt(reply);
-                if ((strs.length == 1) && (optionLines >= 3))
-                    ++replyState;
-
-                else replyFail = true;
-                break;
-            }
-            case 2: // additional line 1: 4 device constants
-            {
-                String[] strs = reply.split(" ");
-                if (strs.length == 4)
+                case 0: // first line: title
                 {
-                    countPixels = Integer.parseInt(strs[0]);
-                    countLayers = Integer.parseInt(strs[1]);
-                    countTracks = Integer.parseInt(strs[2]);
-                    rangeDelay  = Integer.parseInt(strs[3]);
-                    Log.d(LOGNAME, "Constants: Pixels=" + countPixels + " Layers=" + countLayers + " Tracks=" + countTracks + " RangeDelay=" + rangeDelay);
-
-                    if (!CheckValue(countPixels, 1, 0) ||
-                        !CheckValue(countLayers, 2, 0) ||
-                        !CheckValue(countTracks, 1, 0))
-                        replyFail = true;
+                    if (reply.contains(TITLE_PIXELNUT)) ++replyState;
+                    else Log.w(LOGNAME, "Expected title: " + reply);
+                    break;
                 }
-                else replyFail = true;
-
-                ++replyState;
-                --optionLines;
-                break;
-            }
-            case 3: // additional line 2: 4 extern mode values
-            {
-                String[] strs = reply.split(" ");
-                if (strs.length == 4)
+                case 1: // second line: # of additional lines
                 {
-                    xmodeEnabled = (Integer.parseInt(strs[0]) != 0);
-                    xmodeHue     = Integer.parseInt(strs[1]);
-                    xmodeWhite   = Integer.parseInt(strs[2]);
-                    xmodePixCnt  = Integer.parseInt(strs[3]);
-                    Log.d(LOGNAME, "Externs: Enable=" + xmodeEnabled + " Hue=" + xmodeHue + " White=" + xmodeWhite + " PixCnt=" + xmodePixCnt);
+                    String[] strs = reply.split(" ");
+                    optionLines = Integer.parseInt(reply);
+                    if ((strs.length == 1) && (optionLines >= 3))
+                        ++replyState;
 
-                    if (!CheckValue(xmodeHue,    0, MAXVAL_HUE) ||
-                        !CheckValue(xmodeWhite,  0, MAXVAL_PERCENT) ||
-                        !CheckValue(xmodePixCnt, 0, MAXVAL_PERCENT))
-                        replyFail = true;
+                    else replyFail = true;
+                    break;
                 }
-                else replyFail = true;
-
-                ++replyState;
-                --optionLines;
-                break;
-            }
-            case 4: // additional line 3: 3 current settings
-            {
-                String[] strs = reply.split(" ");
-                if (strs.length == 3)
+                case 2: // additional line 1: 4 device constants
                 {
-                    curPattern  = Integer.parseInt(strs[0]);
-                    curDelay    = Integer.parseInt(strs[1]);
-                    curBright   = Integer.parseInt(strs[2]);
-                    Log.d(LOGNAME, "Current: Pattern=" + curPattern + " Delay=" + curDelay + " Bright=" + curBright);
-
-                    if (CheckValue(curPattern, 1, MAXVAL_PATTERN) &&
-                        CheckValue(curBright,  0, MAXVAL_PERCENT))
+                    String[] strs = reply.split(" ");
+                    if (strs.length == 4)
                     {
-                        // allow for bad current delay value
-                        if (curDelay < -rangeDelay) curDelay = -rangeDelay;
-                        else if (curDelay > rangeDelay) curDelay = rangeDelay;
+                        countPixels = Integer.parseInt(strs[0]);
+                        countLayers = Integer.parseInt(strs[1]);
+                        countTracks = Integer.parseInt(strs[2]);
+                        rangeDelay = Integer.parseInt(strs[3]);
+                        Log.d(LOGNAME, "Constants: Pixels=" + countPixels + " Layers=" + countLayers + " Tracks=" + countTracks + " RangeDelay=" + rangeDelay);
+
+                        if (!CheckValue(countPixels, 1, 0) ||
+                                !CheckValue(countLayers, 2, 0) ||
+                                !CheckValue(countTracks, 1, 0))
+                            replyFail = true;
                     }
                     else replyFail = true;
-                }
-                else replyFail = true;
 
-                ++replyState;
-                --optionLines;
-                break;
-            }
-            case 5: // additional line 4: 3 current settings
-            {
-                String[] strs = reply.split(" ");
-                if (strs.length == 3)
+                    ++replyState;
+                    --optionLines;
+                    break;
+                }
+                case 3: // additional line 2: 4 extern mode values
                 {
-                    internalPatterns  = Integer.parseInt(strs[0]);
-                    maxlenSendStrs    = Integer.parseInt(strs[1]);
-                    maxlenEEPROM      = Integer.parseInt(strs[2]);
-                    Log.d(LOGNAME, "Xinfo: IntPatterns=" + internalPatterns + " MaxSendStr=" + maxlenSendStrs + " LenEEPROM=" + maxlenEEPROM);
+                    String[] strs = reply.split(" ");
+                    if (strs.length == 4)
+                    {
+                        xmodeEnabled = (Integer.parseInt(strs[0]) != 0);
+                        xmodeHue = Integer.parseInt(strs[1]);
+                        xmodeWhite = Integer.parseInt(strs[2]);
+                        xmodePixCnt = Integer.parseInt(strs[3]);
+                        Log.d(LOGNAME, "Externs: Enable=" + xmodeEnabled + " Hue=" + xmodeHue + " White=" + xmodeWhite + " PixCnt=" + xmodePixCnt);
 
-                    if (((internalPatterns != 0) && (internalPatterns != 13)) ||
-                        (maxlenSendStrs < 0) ||
-                        (maxlenEEPROM < 0))
-                        replyFail = true;
+                        if (!CheckValue(xmodeHue, 0, MAXVAL_HUE) ||
+                                !CheckValue(xmodeWhite, 0, MAXVAL_PERCENT) ||
+                                !CheckValue(xmodePixCnt, 0, MAXVAL_PERCENT))
+                            replyFail = true;
+                    }
+                    else replyFail = true;
+
+                    ++replyState;
+                    --optionLines;
+                    break;
                 }
-                else replyFail = true;
+                case 4: // additional line 3: 3 current settings
+                {
+                    String[] strs = reply.split(" ");
+                    if (strs.length == 3)
+                    {
+                        curPattern = Integer.parseInt(strs[0]);
+                        curDelay = Integer.parseInt(strs[1]);
+                        curBright = Integer.parseInt(strs[2]);
+                        Log.d(LOGNAME, "Current: Pattern=" + curPattern + " Delay=" + curDelay + " Bright=" + curBright);
 
-                ++replyState;
-                --optionLines;
-                break;
+                        if (curPattern == 0) curPattern = 1; // ok to reset to default
+                        if (CheckValue(curPattern, 1, MAXVAL_PATTERN) &&
+                                CheckValue(curBright, 0, MAXVAL_PERCENT))
+                        {
+                            // allow for bad current delay value
+                            if (curDelay < -rangeDelay) curDelay = -rangeDelay;
+                            else if (curDelay > rangeDelay) curDelay = rangeDelay;
+                        }
+                        else replyFail = true;
+                    }
+                    else replyFail = true;
+
+                    ++replyState;
+                    --optionLines;
+                    break;
+                }
+                case 5: // additional line 4: 3 current settings
+                {
+                    String[] strs = reply.split(" ");
+                    if (strs.length == 3)
+                    {
+                        internalPatterns = Integer.parseInt(strs[0]);
+                        maxlenSendStrs = Integer.parseInt(strs[1]);
+                        maxlenEEPROM = Integer.parseInt(strs[2]);
+                        Log.d(LOGNAME, "Xinfo: IntPatterns=" + internalPatterns + " MaxSendStr=" + maxlenSendStrs + " LenEEPROM=" + maxlenEEPROM);
+
+                        if (((internalPatterns != 0) && (internalPatterns != 13)) ||
+                                (maxlenSendStrs < 0) ||
+                                (maxlenEEPROM < 0))
+                            replyFail = true;
+                    }
+                    else replyFail = true;
+
+                    ++replyState;
+                    --optionLines;
+                    break;
+                }
+                default: // ignore for forward compatibility
+                {
+                    Log.w(LOGNAME, "Unknown settings: " + reply);
+                    --optionLines;
+                    break;
+                }
             }
-            default: // ignore for forward compatibility
+
+            if (replyFail)
             {
-                Log.w(LOGNAME, "Unknown settings: " + reply);
-                --optionLines;
-                break;
+                Log.e(LOGNAME, "Read failed: state=" + replyState);
+                DeviceFailed("Device Not Recognized: Try Again");
             }
-        }
-
-        if (replyFail)
-        {
-            Log.e(LOGNAME, "Read failed: state=" + replyState);
-            DeviceFailed("Device Not Recognized: Try Again");
-        }
-        else if ((replyState > 1) && (optionLines == 0))
-        {
-            Log.i(LOGNAME, "Communication successful <<<<<<<<<<");
-            startActivity( new Intent(Devices.this, Controls.class) );
+            else if ((replyState > 1) && (optionLines == 0))
+            {
+                Log.i(LOGNAME, "Communication successful <<<<<<<<<<");
+                startActivity( new Intent(Devices.this, Controls.class) );
+            }
         }
     }
 

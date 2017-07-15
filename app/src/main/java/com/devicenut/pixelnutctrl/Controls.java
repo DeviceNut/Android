@@ -90,14 +90,20 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
                 //v.setTextColor(ContextCompat.getColor(context, R.color.UserChoice));
                 //v.setTextSize(18);
 
-                if (!firstPattern)
+                if (!firstPattern || (internalPatterns == 0))
                 {
                     // always reset the pattern from scratch
                     Log.d(LOGNAME, "Pattern choice: " + parent.getItemAtPosition(position));
                     curPattern = position+1; // curPattern starts at 1
 
-                    if (internalPatterns > 0) SendAndSavePattern(position);
-                    else SendString("" + curPattern);
+                    SendString("P");
+                    if (internalPatterns == 0)
+                    {
+                        SendString(".");
+                        SendString(patternStrs[position]);
+                        SendString(".");
+                    }
+                    SendString("" + curPattern);
                 }
                 else firstPattern = false;
             }
@@ -187,17 +193,6 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
         if (inHelpMode) SetHelpMode();
 
         else super.onBackPressed();
-    }
-
-    private void SendAndSavePattern(int index)
-    {
-        if (sendEnable)
-        {
-            ble.WriteString("P");
-            ble.WriteString(".");
-            ble.WriteString(patternStrs[index]);
-            ble.WriteString(".");
-        }
     }
 
     private void SendString(String str)
