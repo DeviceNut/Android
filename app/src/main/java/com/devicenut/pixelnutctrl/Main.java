@@ -56,6 +56,27 @@ public class Main extends Application
                 "E50 B65 W30 H50 Q1 T V1 E40 H270 C10 D50 T E20 L0 V1 D15 C20 A1 I G",
             };
 
+    public static final int[] patternControlBits =
+            {
+                    0,
+                    0,
+                    7,
+                    3,
+                    3,
+                    7,
+                    5,
+                    7,
+                    5,
+                    3,
+                    7,
+                    7,
+                    1,
+            };
+
+    public static int pixelWidth = 0;
+    public static int pixelLength = 0;
+    public static int pixelDensity = 0;
+
     public static int countPixels       = 0;
     public static int countLayers       = 0;
     public static int countTracks       = 0;

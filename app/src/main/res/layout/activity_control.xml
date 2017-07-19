@@ -86,7 +86,8 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="10dp"
         android:layout_marginLeft="@dimen/activity_horizontal_margin"
-        android:layout_marginRight="@dimen/activity_horizontal_margin">
+        android:layout_marginRight="@dimen/activity_horizontal_margin"
+        android:id="@+id/scroll_Controls">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -140,7 +141,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="5dp"
+                    android:layout_marginTop="10dp"
                     android:textAppearance="@style/TextAppearance.AppCompat.Medium"
                     android:textStyle="italic"
                     android:text="@string/title_adjust"
@@ -149,7 +150,7 @@
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="10dp"
+                    android:layout_marginTop="12dp"
                     android:orientation="horizontal">
 
                     <TextView
@@ -158,7 +159,6 @@
                         android:minWidth="50dp"
                         android:gravity="left"
                         android:text="Dim"
-                        android:id="@+id/text_BrightDim"
                         tools:ignore="RtlHardcoded"/>
 
                     <SeekBar
@@ -174,7 +174,6 @@
                         android:minWidth="50dp"
                         android:gravity="right"
                         android:text="Bright"
-                        android:id="@+id/text_BrightFull"
                         tools:ignore="RtlHardcoded"/>
 
                 </LinearLayout>
@@ -182,7 +181,7 @@
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="7dp"
+                    android:layout_marginTop="12dp"
                     android:layout_marginBottom="12dp"
                     android:orientation="horizontal">
 
@@ -192,7 +191,6 @@
                         android:minWidth="50dp"
                         android:gravity="left"
                         android:text="Slow"
-                        android:id="@+id/text_DelaySlow"
                         tools:ignore="RtlHardcoded"/>
 
                     <SeekBar
@@ -208,7 +206,6 @@
                         android:minWidth="50dp"
                         android:gravity="right"
                         android:text="Fast"
-                        android:id="@+id/text_DelayFast"
                         tools:ignore="RtlHardcoded"/>
 
                 </LinearLayout>
@@ -218,14 +215,13 @@
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:visibility="visible"
-                    android:id="@+id/layout_Basic">
+                    android:orientation="vertical">
 
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="5dp"
+                        android:layout_marginTop="10dp"
+                        android:layout_marginBottom="5dp"
                         android:orientation="horizontal">
 
                         <TextView
@@ -253,62 +249,67 @@
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="7dp"
-                        android:orientation="horizontal">
+                        android:orientation="vertical"
+                        android:id="@+id/auto_Controls">
 
-                        <TextView
-                            android:layout_width="80dp"
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:text="ColorHue"
-                            android:id="@+id/text_PropColor"/>
+                            android:layout_marginTop="7dp"
+                            android:orientation="horizontal">
 
-                        <SeekBar
-                            android:layout_width="0dp"
+                            <TextView
+                                android:layout_width="80dp"
+                                android:layout_height="wrap_content"
+                                android:text="ColorHue"/>
+
+                            <SeekBar
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:id="@+id/seek_PropColor"/>
+
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:id="@+id/seek_PropColor"/>
+                            android:layout_marginTop="12dp"
+                            android:orientation="horizontal">
 
-                    </LinearLayout>
+                            <TextView
+                                android:layout_width="80dp"
+                                android:layout_height="wrap_content"
+                                android:text="Whiteness"/>
 
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="7dp"
-                        android:orientation="horizontal">
+                            <SeekBar
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:id="@+id/seek_PropWhite"/>
 
-                        <TextView
-                            android:layout_width="80dp"
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:text="Whiteness"
-                            android:id="@+id/text_PropWhite"/>
+                            android:layout_marginTop="12dp"
+                            android:layout_marginBottom="12dp"
+                            android:orientation="horizontal">
 
-                        <SeekBar
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:id="@+id/seek_PropWhite"/>
+                            <TextView
+                                android:layout_width="80dp"
+                                android:layout_height="wrap_content"
+                                android:text="Length"/>
 
-                    </LinearLayout>
+                            <SeekBar
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:id="@+id/seek_PropCount"/>
 
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="7dp"
-                        android:layout_marginBottom="12dp"
-                        android:orientation="horizontal">
-
-                        <TextView
-                            android:layout_width="80dp"
-                            android:layout_height="wrap_content"
-                            android:text="Length"
-                            android:id="@+id/text_PropCount"/>
-
-                        <SeekBar
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:id="@+id/seek_PropCount"/>
-
+                        </LinearLayout>
                     </LinearLayout>
                 </LinearLayout>
 
@@ -320,13 +321,12 @@
                     android:layout_marginTop="10dp"
                     android:textAppearance="@style/TextAppearance.AppCompat.Medium"
                     android:textStyle="italic"
-                    android:text="@string/title_trigger"
-                    android:id="@+id/text_TriggerForce"/>
+                    android:text="@string/title_trigger"/>
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="10dp"
+                    android:layout_marginTop="12dp"
                     android:orientation="horizontal">
 
                     <TextView
@@ -335,7 +335,6 @@
                         android:minWidth="50dp"
                         android:gravity="left"
                         android:text="Min"
-                        android:id="@+id/text_TrigMin"
                         tools:ignore="RtlHardcoded"/>
 
                     <SeekBar
@@ -350,7 +349,6 @@
                         android:minWidth="50dp"
                         android:gravity="left"
                         android:text="Max"
-                        android:id="@+id/text_TrigMax"
                         tools:ignore="RtlHardcoded"/>
 
                 </LinearLayout>
@@ -358,7 +356,7 @@
                 <Button
                     android:layout_width="match_parent"
                     android:layout_height="40dp"
-                    android:layout_marginTop="5dp"
+                    android:layout_marginTop="10dp"
                     android:textColorLink="@color/UserChoice"
                     android:text="@string/name_trigger"
                     android:onClick="onClick"

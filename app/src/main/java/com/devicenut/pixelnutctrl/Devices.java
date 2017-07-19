@@ -9,6 +9,7 @@ import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -36,6 +37,9 @@ import static com.devicenut.pixelnutctrl.Main.curPattern;
 import static com.devicenut.pixelnutctrl.Main.internalPatterns;
 import static com.devicenut.pixelnutctrl.Main.maxlenEEPROM;
 import static com.devicenut.pixelnutctrl.Main.maxlenSendStrs;
+import static com.devicenut.pixelnutctrl.Main.pixelLength;
+import static com.devicenut.pixelnutctrl.Main.pixelWidth;
+import static com.devicenut.pixelnutctrl.Main.pixelDensity;
 import static com.devicenut.pixelnutctrl.Main.rangeDelay;
 import static com.devicenut.pixelnutctrl.Main.xmodeEnabled;
 import static com.devicenut.pixelnutctrl.Main.xmodeHue;
@@ -99,16 +103,28 @@ public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
         if (!ble.checkForBlePresent())
         {
             Toast.makeText(this, "Cannot find Bluetooth LE", Toast.LENGTH_LONG).show();
-            threadFinish.start();
             blePresentAndEnabled = false;
+            threadFinish.start();
+            return;
         }
-        else
+
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)   != PackageManager.PERMISSION_GRANTED ||
             ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED)
         {
             Log.w(LOGNAME, "Asking for location permission...");
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION}, 0);
         }
+
+        DisplayMetrics metrics = new DisplayMetrics();
+        getWindowManager().getDefaultDisplay().getMetrics(metrics);
+        pixelLength = metrics.heightPixels;
+        pixelWidth = metrics.widthPixels;
+
+        DisplayMetrics dm = new DisplayMetrics();
+        getWindowManager().getDefaultDisplay().getMetrics(dm);
+        pixelDensity = dm.densityDpi;
+
+        Log.w(LOGNAME, "Screen: width=" + pixelWidth + " length=" + pixelLength + " density=" + pixelDensity);
     }
 
     @Override protected void onResume()

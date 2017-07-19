@@ -2,14 +2,18 @@ package com.devicenut.pixelnutctrl;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.graphics.Rect;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
+import android.view.ViewTreeObserver;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.LinearLayout;
+import android.widget.ScrollView;
 import android.widget.SeekBar;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -27,11 +31,13 @@ import static com.devicenut.pixelnutctrl.Main.CMD_TRIGGER;
 import static com.devicenut.pixelnutctrl.Main.ble;
 import static com.devicenut.pixelnutctrl.Main.internalPatterns;
 import static com.devicenut.pixelnutctrl.Main.maxlenSendStrs;
+import static com.devicenut.pixelnutctrl.Main.patternControlBits;
 import static com.devicenut.pixelnutctrl.Main.patternNames;
 import static com.devicenut.pixelnutctrl.Main.curBright;
 import static com.devicenut.pixelnutctrl.Main.curDelay;
 import static com.devicenut.pixelnutctrl.Main.curPattern;
 import static com.devicenut.pixelnutctrl.Main.patternStrs;
+import static com.devicenut.pixelnutctrl.Main.pixelLength;
 import static com.devicenut.pixelnutctrl.Main.rangeDelay;
 import static com.devicenut.pixelnutctrl.Main.xmodeEnabled;
 import static com.devicenut.pixelnutctrl.Main.xmodeHue;
@@ -51,6 +57,7 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
     private TextView helpText;
     private TextView helpTitle;
     private LinearLayout layoutControls;
+    private LinearLayout autoControls;
     private Spinner selectPattern;
     private SeekBar seekBright;
     private SeekBar seekDelay;
@@ -67,13 +74,46 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
     private boolean isConnected = false;
     private boolean sendEnable = false;
     private boolean isEditing = false;
-    private boolean firstPattern = true;
+    private boolean changePattern = true;
 
     @Override protected void onCreate(Bundle savedInstanceState)
     {
         Log.d(LOGNAME, ">>onCreate");
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_control);
+        //setContentView(R.layout.activity_control);
+
+        final LinearLayout mainLayout = (LinearLayout) this.getLayoutInflater().inflate(R.layout.activity_control, null);
+
+        // set a global layout listener which will be called when the layout pass is completed and the view is drawn
+        mainLayout.getViewTreeObserver().addOnGlobalLayoutListener(
+                new ViewTreeObserver.OnGlobalLayoutListener()
+                {
+                    public void onGlobalLayout()
+                    {
+                        //Remove the listener before proceeding
+                        mainLayout.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+
+                        /*
+                        ScrollView v = (ScrollView) findViewById(R.id.scroll_Controls);
+                        Rect r = new Rect();
+
+                        v.getGlobalVisibleRect(r);
+                        Log.w(LOGNAME, "ScrollView top=" + String.valueOf(r.top));
+                        Log.w(LOGNAME, "ScrollView bottom=" + String.valueOf(r.bottom));
+
+                        int height = v.getChildAt(0).getHeight();
+                        Log.w(LOGNAME, "Scroll height=" + height);
+
+                        if (height <= (r.bottom - r.top))
+                        {
+                            int extra = (pixelLength - r.top - height);
+                            Log.w(LOGNAME, "Excess pixels=" + extra);
+                        }
+                        */
+                    }
+                }
+        );
+        setContentView(mainLayout);
 
         //getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN); // hides keyboard on entry?
 
@@ -82,33 +122,7 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
 
         selectPattern = (Spinner) findViewById(R.id.spinner_Pattern);
         selectPattern.setAdapter(spinnerArrayAdapter);
-        selectPattern.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener()
-        {
-            @Override public void onItemSelected(AdapterView<?> parent, View view, int position, long id)
-            {
-                //TextView v = (TextView)view;
-                //v.setTextColor(ContextCompat.getColor(context, R.color.UserChoice));
-                //v.setTextSize(18);
-
-                if (!firstPattern || (internalPatterns == 0))
-                {
-                    // always reset the pattern from scratch
-                    Log.d(LOGNAME, "Pattern choice: " + parent.getItemAtPosition(position));
-                    curPattern = position+1; // curPattern starts at 1
-
-                    SendString("P");
-                    if (internalPatterns == 0)
-                    {
-                        SendString(".");
-                        SendString(patternStrs[position]);
-                        SendString(".");
-                    }
-                    SendString("" + curPattern);
-                }
-                else firstPattern = false;
-            }
-            @Override public void onNothingSelected(AdapterView<?> parent) {}
-        });
+        selectPattern.setOnItemSelectedListener(patternListener);
 
         seekBright    = (SeekBar) findViewById(R.id.seek_Bright);
         seekDelay     = (SeekBar) findViewById(R.id.seek_Delay);
@@ -127,6 +141,7 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
         seekTrigForce.setOnSeekBarChangeListener(this);
 
         layoutControls  = (LinearLayout) findViewById(R.id.layout_Controls);
+        autoControls    = (LinearLayout) findViewById(R.id.auto_Controls);
         nameText        = (TextView)     findViewById(R.id.text_Devname);
         pauseButton     = (Button)       findViewById(R.id.button_Pause);
         helpButton      = (Button)       findViewById(R.id.button_Help);
@@ -163,11 +178,12 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
 
             isConnected = true;
             sendEnable = false; // prevent following from writing commands
-            firstPattern = true; // prevent sending pattern on initial selection
+            changePattern = (internalPatterns == 0); // don't change on initial selection if have built-in patterns
 
             SetManualControls();
             toggleAutoProp.setChecked(xmodeEnabled);
             selectPattern.setSelection(curPattern-1, false); // curPattern starts at 1
+
             seekBright.setProgress(curBright);
             seekDelay.setProgress(((rangeDelay - curDelay) * 100) / (rangeDelay + rangeDelay));
             seekPropColor.setProgress(((xmodeHue * 100) / 360));
@@ -194,6 +210,35 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
 
         else super.onBackPressed();
     }
+
+    AdapterView.OnItemSelectedListener patternListener = new AdapterView.OnItemSelectedListener()
+    {
+        @Override public void onItemSelected(AdapterView<?> parent, View view, int position, long id)
+        {
+            //TextView v = (TextView)view;
+            //v.setTextColor(ContextCompat.getColor(context, R.color.UserChoice));
+            //v.setTextSize(18);
+
+            if (changePattern)
+            {
+                Log.d(LOGNAME, "Pattern choice: " + parent.getItemAtPosition(position));
+                curPattern = position+1; // curPattern starts at 1
+
+                SetManualControls();
+
+                SendString("P");
+                if (internalPatterns == 0)
+                {
+                    SendString(".");
+                    SendString(patternStrs[position]);
+                    SendString(".");
+                }
+                SendString("" + curPattern);
+            }
+            else changePattern = true;
+        }
+        @Override public void onNothingSelected(AdapterView<?> parent) {}
+    };
 
     private void SendString(String str)
     {
@@ -222,9 +267,21 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
 
     private void SetManualControls()
     {
-        seekPropColor.setEnabled(xmodeEnabled);
-        seekPropWhite.setEnabled(xmodeEnabled);
-        seekPropCount.setEnabled(xmodeEnabled);
+        int bits = patternControlBits[curPattern-1];
+        if (xmodeEnabled && (bits != 0))
+        {
+            autoControls.setVisibility(View.VISIBLE);
+            toggleAutoProp.setEnabled(true);
+
+            seekPropColor.setEnabled((bits & 1) != 0);
+            seekPropWhite.setEnabled((bits & 2) != 0);
+            seekPropCount.setEnabled((bits & 4) != 0);
+        }
+        else
+        {
+            autoControls.setVisibility(View.GONE);
+            toggleAutoProp.setEnabled(bits != 0);
+        }
     }
 
     public void onClick(View v)
