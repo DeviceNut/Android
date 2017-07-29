@@ -122,7 +122,7 @@ class Bluetooth
 
     void disconnect()
     {
-        writeEnable = false; // stop threadSender
+        writeEnable = false; // stop write sender thread
 
         if (bleGatt != null)
         {
@@ -174,56 +174,61 @@ class Bluetooth
         }
     }
 
-    private final Thread threadSender = new Thread()
+    private void StartSender()
     {
-        @Override public void run()
+        new Thread()
         {
-            while (writeEnable)
+            @Override public void run()
             {
-                yield();
+                Log.i(LOGNAME, "SenderThread starting...");
+                while (writeEnable)
+                {
+                    yield();
 
-                if ((bleTx == null) || (bleGatt == null))
-                {
-                    bleCB.onWrite(BLESTAT_DISCONNECTED);
-                    writeEnable = false;
-                }
-                else if (doNextChunk)
-                {
-                    if ((writeChunks != null) && (nextChunk < writeChunks.length))
+                    if ((bleTx == null) || (bleGatt == null))
                     {
-                        doNextChunk = false; // wait for completion
-                        SendNextChunk();
+                        bleCB.onWrite(BLESTAT_DISCONNECTED);
+                        writeEnable = false;
                     }
-                    else if (!writeQueue.empty())
+                    else if (doNextChunk)
                     {
-                        Log.v(LOGNAME, "Getting next command from queue");
-                        String cmd1 = writeQueue.get();
-                        if (cmd1 != null)
+                        if ((writeChunks != null) && (nextChunk < writeChunks.length))
                         {
-                            while(true) // coalesce same commands
-                            {
-                                String cmd2 = writeQueue.peek();
-                                if ((cmd2 == null) || !cmd2.substring(0,1).equals(cmd1.substring(0,1)))
-                                    break;
-
-                                Log.v(LOGNAME, "Skipping=\"" + cmd1 + "\" (\"" + cmd2 + "\")");
-                                cmd1 = writeQueue.get();
-                            }
-                            Log.v(LOGNAME, "Command=\"" + cmd1 + "\"");
-
-                            writeChunks = cmd1.split(" ");
-                            nextChunk = 0;
-
                             doNextChunk = false; // wait for completion
                             SendNextChunk();
                         }
-                        else Log.e(LOGNAME, "Queue was empty");
+                        else if (!writeQueue.empty())
+                        {
+                            Log.v(LOGNAME, "Getting next command from queue");
+                            String cmd1 = writeQueue.get();
+                            if (cmd1 != null)
+                            {
+                                while(true) // coalesce same commands
+                                {
+                                    String cmd2 = writeQueue.peek();
+                                    if ((cmd2 == null) || !cmd2.substring(0,1).equals(cmd1.substring(0,1)))
+                                        break;
+
+                                    Log.v(LOGNAME, "Skipping=\"" + cmd1 + "\" (\"" + cmd2 + "\")");
+                                    cmd1 = writeQueue.get();
+                                }
+                                Log.v(LOGNAME, "Command=\"" + cmd1 + "\"");
+
+                                writeChunks = cmd1.split(" ");
+                                nextChunk = 0;
+
+                                doNextChunk = false; // wait for completion
+                                SendNextChunk();
+                            }
+                            else Log.e(LOGNAME, "Queue was empty");
+                        }
+                        // else wait for next string in queue
                     }
-                    // else wait for next string in queue
                 }
+                Log.i(LOGNAME, "SenderThread has ended");
             }
-        }
-    };
+        }.start();
+    }
 
     private void ShowProperties(String type, BluetoothGattCharacteristic ch)
     {
@@ -322,7 +327,7 @@ class Bluetooth
                                 bleGatt.writeDescriptor(config);
 
                                 writeEnable = true;
-                                threadSender.start();
+                                StartSender();
                                 bleCB.onConnect(BLESTAT_SUCCESS);
                                 return;
                             }
