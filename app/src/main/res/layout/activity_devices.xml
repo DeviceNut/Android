@@ -15,10 +15,23 @@
         style="?android:attr/progressBarStyle"
         android:layout_width="match_parent"
         android:layout_height="70dp"
-        android:visibility="invisible"
+        android:visibility="gone"
         android:translationZ="2dp"
         android:layout_centerVertical="true"
         android:id="@+id/progress_Scanner"/>
+
+    <ProgressBar
+        style="@style/tallerBarStyle"
+        android:layout_width="match_parent"
+        android:layout_height="30dp"
+        android:layout_marginLeft="20dp"
+        android:layout_marginRight="20dp"
+        android:progressBackgroundTint="@color/DarkHeader"
+        android:progressTint="@color/UserChoice"
+        android:visibility="gone"
+        android:translationZ="2dp"
+        android:layout_centerVertical="true"
+        android:id="@+id/progress_Loader"/>
 
     <TextView
         android:layout_width="match_parent"

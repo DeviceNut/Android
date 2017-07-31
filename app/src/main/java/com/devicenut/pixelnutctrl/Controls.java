@@ -1,25 +1,31 @@
 package com.devicenut.pixelnutctrl;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
-import android.graphics.Rect;
-import android.os.Build;
+import android.graphics.Color;
 import android.os.Bundle;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.LinearLayout;
-import android.widget.ScrollView;
+import android.widget.ListView;
 import android.widget.SeekBar;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ToggleButton;
 
+import static android.view.View.GONE;
+import static android.view.View.VISIBLE;
 import static com.devicenut.pixelnutctrl.Main.CMD_BLUENAME;
 import static com.devicenut.pixelnutctrl.Main.CMD_BRIGHT;
 import static com.devicenut.pixelnutctrl.Main.CMD_DELAY;
@@ -29,16 +35,20 @@ import static com.devicenut.pixelnutctrl.Main.CMD_PROPVALS;
 import static com.devicenut.pixelnutctrl.Main.CMD_RESUME;
 import static com.devicenut.pixelnutctrl.Main.CMD_TRIGGER;
 import static com.devicenut.pixelnutctrl.Main.ble;
-import static com.devicenut.pixelnutctrl.Main.internalPatterns;
-import static com.devicenut.pixelnutctrl.Main.maxlenSendStrs;
-import static com.devicenut.pixelnutctrl.Main.patternControlBits;
-import static com.devicenut.pixelnutctrl.Main.patternNames;
+import static com.devicenut.pixelnutctrl.Main.customPatterns;
+import static com.devicenut.pixelnutctrl.Main.devPatternNames;
+import static com.devicenut.pixelnutctrl.Main.devPatternCmds;
+import static com.devicenut.pixelnutctrl.Main.devPatternBits;
+import static com.devicenut.pixelnutctrl.Main.maxlenCmdStrs;
+import static com.devicenut.pixelnutctrl.Main.numSegments;
+import static com.devicenut.pixelnutctrl.Main.numPatterns;
 import static com.devicenut.pixelnutctrl.Main.curBright;
 import static com.devicenut.pixelnutctrl.Main.curDelay;
 import static com.devicenut.pixelnutctrl.Main.curPattern;
-import static com.devicenut.pixelnutctrl.Main.patternStrs;
-import static com.devicenut.pixelnutctrl.Main.pixelLength;
+import static com.devicenut.pixelnutctrl.Main.posSegStart;
+import static com.devicenut.pixelnutctrl.Main.posSegCount;
 import static com.devicenut.pixelnutctrl.Main.rangeDelay;
+import static com.devicenut.pixelnutctrl.Main.stdPatternsCount;
 import static com.devicenut.pixelnutctrl.Main.xmodeEnabled;
 import static com.devicenut.pixelnutctrl.Main.xmodeHue;
 import static com.devicenut.pixelnutctrl.Main.xmodePixCnt;
@@ -76,12 +86,30 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
     private boolean isEditing = false;
     private boolean changePattern = true;
 
+    private final int segRadioIds[] =
+            {
+                    R.id.radio_1,
+                    R.id.radio_2,
+                    R.id.radio_3,
+                    R.id.radio_4,
+                    R.id.radio_5,
+                    R.id.radio_6,
+            };
+
+    private String[] patternNames;
+    private boolean[] listEnables;
+    private int[] mapPatternToIndex;
+    private int[] mapIndexToPattern;
+    private final boolean segEnables[] = { true, false, false, false, false, false };
+    private final int segPatterns[] = { 0,0,0,0,0,0 };
+
     @Override protected void onCreate(Bundle savedInstanceState)
     {
         Log.d(LOGNAME, ">>onCreate");
         super.onCreate(savedInstanceState);
-        //setContentView(R.layout.activity_control);
+        setContentView(R.layout.activity_control);
 
+        /*
         final LinearLayout mainLayout = (LinearLayout) this.getLayoutInflater().inflate(R.layout.activity_control, null);
 
         // set a global layout listener which will be called when the layout pass is completed and the view is drawn
@@ -93,7 +121,6 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
                         //Remove the listener before proceeding
                         mainLayout.getViewTreeObserver().removeOnGlobalLayoutListener(this);
 
-                        /*
                         ScrollView v = (ScrollView) findViewById(R.id.scroll_Controls);
                         Rect r = new Rect();
 
@@ -109,16 +136,89 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
                             int extra = (pixelLength - r.top - height);
                             Log.w(LOGNAME, "Excess pixels=" + extra);
                         }
-                        */
+
+                        LinearLayout ll = (LinearLayout) findViewById(R.id.auto_Controls);
+                        LinearLayout.LayoutParams layoutParams = (LinearLayout.LayoutParams) ll.getLayoutParams();
+                        layoutParams.topMargin = 200;
+                        ll.setLayoutParams(layoutParams);
                     }
                 }
         );
         setContentView(mainLayout);
+        */
 
         //getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN); // hides keyboard on entry?
 
-        ArrayAdapter<String> spinnerArrayAdapter = new ArrayAdapter<>(this, R.layout.layout_spinner, patternNames);
-        spinnerArrayAdapter.setDropDownViewResource(R.layout.layout_spinner);
+        SetupSegments(numSegments);
+
+        int j = 0;
+        int extra = 0;
+        if (customPatterns > 0)
+        {
+            ++extra;
+            if (stdPatternsCount > 0) ++extra;
+        }
+        patternNames = new String[numPatterns + extra];
+        listEnables = new boolean[numPatterns + extra];
+        mapIndexToPattern = new int[numPatterns + extra];
+        mapPatternToIndex = new int[numPatterns];
+
+        if ((customPatterns > 0) && (stdPatternsCount > 0))
+        {
+            patternNames[j] = "Custom Patterns";
+            listEnables[j] = false;
+            ++j;
+        }
+
+        for (int i = 0; i < numPatterns; ++i)
+        {
+            if (i == customPatterns)
+            {
+                patternNames[j] = "Standard Patterns";
+                listEnables[j] = false;
+                ++j;
+            }
+            Log.v(LOGNAME, "Adding pattern: " + devPatternNames[i]);
+
+            patternNames[j] = devPatternNames[i];
+            listEnables[j] = true;
+            mapIndexToPattern[j] = i + 1; // curPattern starts at 1;
+            mapPatternToIndex[i] = j;
+            ++j;
+        }
+
+        ArrayAdapter<String> spinnerArrayAdapter = new ArrayAdapter<String>(this, R.layout.layout_spinner, patternNames)
+        {
+            @Override public boolean isEnabled(int position)
+            {
+                return listEnables[position];
+            }
+
+            @Override public boolean areAllItemsEnabled()
+            {
+                return ((customPatterns == 0) || (stdPatternsCount == 0));
+            }
+
+            @Override public View getDropDownView(int position, View convertView, ViewGroup parent)
+            {
+                View v = convertView;
+                if (v == null)
+                {
+                    Context mContext = this.getContext();
+                    LayoutInflater vi = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+                    v = vi.inflate(R.layout.layout_spinner, null);
+                }
+
+                TextView tv = (TextView) v.findViewById(R.id.spinnerText);
+                tv.setText(patternNames[position]);
+
+                if (!listEnables[position]) tv.setTextColor(Color.GRAY);
+                else tv.setTextColor(ContextCompat.getColor(context, R.color.UserChoice));
+
+                return v;
+            }
+        };
+        //spinnerArrayAdapter.setDropDownViewResource(R.layout.layout_spinner);
 
         selectPattern = (Spinner) findViewById(R.id.spinner_Pattern);
         selectPattern.setAdapter(spinnerArrayAdapter);
@@ -178,11 +278,16 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
 
             isConnected = true;
             sendEnable = false; // prevent following from writing commands
-            changePattern = (internalPatterns == 0); // don't change on initial selection if have built-in patterns
+            changePattern = (curPattern == 0); // set initial selection if one not already set
+            if (changePattern) curPattern = 1; // default to first pattern
+
+            CheckBox b = (CheckBox) findViewById(segRadioIds[0]);
+            segEnables[0] = true;
+            b.setChecked(true);
 
             SetManualControls();
             toggleAutoProp.setChecked(xmodeEnabled);
-            selectPattern.setSelection(curPattern-1, false); // curPattern starts at 1
+            selectPattern.setSelection(mapPatternToIndex[curPattern-1], false);
 
             seekBright.setProgress(curBright);
             seekDelay.setProgress(((rangeDelay - curDelay) * 100) / (rangeDelay + rangeDelay));
@@ -222,18 +327,38 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
             if (changePattern)
             {
                 Log.d(LOGNAME, "Pattern choice: " + parent.getItemAtPosition(position));
-                curPattern = position+1; // curPattern starts at 1
 
+                curPattern = mapIndexToPattern[position];
+                int index = curPattern-1;
                 SetManualControls();
 
-                SendString("P");
-                if (internalPatterns == 0)
+                if (curPattern > customPatterns)
                 {
+                    SendString("P X Y"); // clear stack and segment info
                     SendString(".");
-                    SendString(patternStrs[position]);
+
+                    if (numSegments == 1)
+                    {
+                        SendString(devPatternCmds[index]);
+                        SendString("" + curPattern);
+                    }
+                    else
+                    {
+                        for (int i = 0; i < numSegments; ++i)
+                        {
+                            if (segEnables[i])
+                            {
+                                SendString("X" + posSegStart[i] + " Y" + posSegCount[i]);
+                                SendString(devPatternCmds[ segPatterns[i] ]);
+                                segPatterns[i] = position;
+                            }
+                        }
+                        SendString("0"); // pattern=0 indicates custom pattern command
+                    }
+
                     SendString(".");
                 }
-                SendString("" + curPattern);
+                else SendString("" + curPattern); // just send device specific custom pattern number
             }
             else changePattern = true;
         }
@@ -249,17 +374,17 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
     {
         if (inHelpMode)
         {
-            helpText.setVisibility(View.GONE);
-            helpTitle.setVisibility(View.GONE);
-            layoutControls.setVisibility(View.VISIBLE);
+            helpText.setVisibility(GONE);
+            helpTitle.setVisibility(GONE);
+            layoutControls.setVisibility(VISIBLE);
             helpButton.setText(getResources().getString(R.string.name_help));
             inHelpMode = false;
         }
         else
         {
-            layoutControls.setVisibility(View.GONE);
-            helpTitle.setVisibility(View.VISIBLE);
-            helpText.setVisibility(View.VISIBLE);
+            layoutControls.setVisibility(GONE);
+            helpTitle.setVisibility(VISIBLE);
+            helpText.setVisibility(VISIBLE);
             helpButton.setText(getResources().getString(R.string.name_controls));
             inHelpMode = true;
         }
@@ -267,10 +392,10 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
 
     private void SetManualControls()
     {
-        int bits = patternControlBits[curPattern-1];
+        int bits = devPatternBits[curPattern-1];
         if (xmodeEnabled && (bits != 0))
         {
-            autoControls.setVisibility(View.VISIBLE);
+            autoControls.setVisibility(VISIBLE);
             toggleAutoProp.setEnabled(true);
 
             seekPropColor.setEnabled((bits & 1) != 0);
@@ -279,15 +404,82 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
         }
         else
         {
-            autoControls.setVisibility(View.GONE);
+            autoControls.setVisibility(GONE);
             toggleAutoProp.setEnabled(bits != 0);
         }
+    }
+
+    private void SetupSegments(int count)
+    {
+        LinearLayout ll = (LinearLayout) findViewById(R.id.ll_SelectSegments);
+        if (count > 1)
+        {
+            ll.setVisibility(VISIBLE);
+
+            for (int i = 0; i < segRadioIds.length; ++i)
+            {
+                boolean doshow = (i < count);
+                CheckBox b = (CheckBox) findViewById(segRadioIds[i]);
+                b.setVisibility(doshow ? VISIBLE : GONE);
+                b.setEnabled(doshow);
+                b.setFocusable(doshow);
+                b.setClickable(doshow);
+                b.setChecked(doshow);
+                segEnables[i] = doshow;
+            }
+        }
+        else ll.setVisibility(GONE);
+    }
+
+    private void SetSegment(int n)
+    {
+        segEnables[n] = ((CheckBox)findViewById(segRadioIds[n])).isChecked();
+
+        boolean haveseg = false;
+        for (int i = 0; i < numSegments; ++i)
+            if (segEnables[i]) haveseg = true;
+
+        //selectPattern.setEnabled(haveseg);
+        //selectPattern.setFocusable(haveseg);
+
+        LinearLayout ll = (LinearLayout) findViewById(R.id.ll_SelectPattern);
+        ll.setVisibility(haveseg ? VISIBLE : GONE);
     }
 
     public void onClick(View v)
     {
         switch (v.getId())
         {
+            case R.id.radio_1:
+            {
+                SetSegment(0);
+                break;
+            }
+            case R.id.radio_2:
+            {
+                SetSegment(1);
+                break;
+            }
+            case R.id.radio_3:
+            {
+                SetSegment(2);
+                break;
+            }
+            case R.id.radio_4:
+            {
+                SetSegment(3);
+                break;
+            }
+            case R.id.radio_5:
+            {
+                SetSegment(4);
+                break;
+            }
+            case R.id.radio_6:
+            {
+                SetSegment(5);
+                break;
+            }
             case R.id.text_Devname:
             {
                 isEditing = true;

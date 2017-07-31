@@ -18,7 +18,9 @@
     <string name="title_allrights">All rights reserved</string>
     <string name="title_select">Select A PixelNut Device</string>
     <string name="title_connecting">Connecting…</string>
-    <string name="title_pattern">Choose preset effect pattern</string>
+    <string name="title_configuring">Configuring…</string>
+    <string name="title_segment">Select segment(s) to control</string>
+    <string name="title_pattern">Choose effect pattern</string>
     <string name="title_adjust">Adjust brightness and speed</string>
     <string name="title_modify">Modify effect properties</string>
     <string name="title_trigger">Select force then trigger</string>

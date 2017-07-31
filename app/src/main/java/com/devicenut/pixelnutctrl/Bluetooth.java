@@ -62,7 +62,7 @@ class Bluetooth
 
     Bluetooth(Context ctx)
     {
-        context = ctx;
+        context = ctx; //getApplicationContext();
 
         if (context.getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE))
         {

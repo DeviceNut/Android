@@ -2,10 +2,12 @@ package com.devicenut.pixelnutctrl;
 
 import android.Manifest;
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -34,12 +36,24 @@ import static com.devicenut.pixelnutctrl.Main.countTracks;
 import static com.devicenut.pixelnutctrl.Main.curBright;
 import static com.devicenut.pixelnutctrl.Main.curDelay;
 import static com.devicenut.pixelnutctrl.Main.curPattern;
-import static com.devicenut.pixelnutctrl.Main.internalPatterns;
-import static com.devicenut.pixelnutctrl.Main.maxlenEEPROM;
-import static com.devicenut.pixelnutctrl.Main.maxlenSendStrs;
+import static com.devicenut.pixelnutctrl.Main.customPatterns;
+import static com.devicenut.pixelnutctrl.Main.customPlugins;
+import static com.devicenut.pixelnutctrl.Main.editPatterns;
+import static com.devicenut.pixelnutctrl.Main.stdPatternNames;
+import static com.devicenut.pixelnutctrl.Main.stdPatternCmds;
+import static com.devicenut.pixelnutctrl.Main.stdPatternBits;
+import static com.devicenut.pixelnutctrl.Main.stdPatternsCount;
+import static com.devicenut.pixelnutctrl.Main.devPatternNames;
+import static com.devicenut.pixelnutctrl.Main.devPatternCmds;
+import static com.devicenut.pixelnutctrl.Main.devPatternBits;
+import static com.devicenut.pixelnutctrl.Main.maxlenCmdStrs;
+import static com.devicenut.pixelnutctrl.Main.numSegments;
+import static com.devicenut.pixelnutctrl.Main.numPatterns;
+import static com.devicenut.pixelnutctrl.Main.pixelDensity;
 import static com.devicenut.pixelnutctrl.Main.pixelLength;
 import static com.devicenut.pixelnutctrl.Main.pixelWidth;
-import static com.devicenut.pixelnutctrl.Main.pixelDensity;
+import static com.devicenut.pixelnutctrl.Main.posSegStart;
+import static com.devicenut.pixelnutctrl.Main.posSegCount;
 import static com.devicenut.pixelnutctrl.Main.rangeDelay;
 import static com.devicenut.pixelnutctrl.Main.xmodeEnabled;
 import static com.devicenut.pixelnutctrl.Main.xmodeHue;
@@ -55,6 +69,9 @@ public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
     private TextView textSelectDevice;
     private Button buttonScan;
     private ProgressBar progressBar;
+    private ProgressBar progressLine;
+    private Handler progressHandler = new Handler();
+    private ProgressDialog progressDialog;
     private ScrollView scrollDevices;
     private final ArrayList<Integer> bleDevIDs = new ArrayList<>();
 
@@ -96,6 +113,15 @@ public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
         buttonScan = (Button) findViewById(R.id.button_ScanStop);
         scrollDevices = (ScrollView) findViewById(R.id.scroll_Devices);
         progressBar = (ProgressBar) findViewById(R.id.progress_Scanner);
+        progressLine = (ProgressBar) findViewById(R.id.progress_Loader);
+
+        /*
+        progressDialog = new ProgressDialog(this);
+        progressDialog.setMessage("Reading device configuration...");
+        progressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+        progressDialog.setProgress(0);
+        progressDialog.setMax(100);
+        */
 
         blePresentAndEnabled = true;
 
@@ -104,7 +130,7 @@ public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
         {
             Toast.makeText(this, "Cannot find Bluetooth LE", Toast.LENGTH_LONG).show();
             blePresentAndEnabled = false;
-            threadFinish.start();
+            DoFinish();
             return;
         }
 
@@ -138,7 +164,7 @@ public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
         if (!bleEnabled)
         {
             Toast.makeText(this, "Bluetooth LE not enabled", Toast.LENGTH_LONG).show();
-            threadFinish.start();
+            DoFinish();
             blePresentAndEnabled = false;
         }
         else
@@ -175,14 +201,17 @@ public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
         catch (Exception ignored) {}
     }
 
-    private final Thread threadFinish = new Thread()
+    private void DoFinish()
     {
-        @Override public void run()
+        new Thread()
         {
-            SleepMsecs(2000);
-            Devices.this.finish();
-        }
-    };
+            @Override public void run()
+            {
+                SleepMsecs(2000);
+                Devices.this.finish();
+            }
+        }.start();
+    }
 
     public void onClick(View v)
     {
@@ -262,27 +291,30 @@ public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
 
     private void SetupUserDisplay()
     {
+        progressLine.setVisibility(View.GONE);
+
         if (isConnecting)
         {
             HideButtons();
             textSelectDevice.setVisibility(View.GONE);
             textConnecting.setVisibility(View.VISIBLE);
+            textConnecting.setText(getResources().getString(R.string.title_connecting));
             progressBar.setVisibility(View.VISIBLE);
             buttonScan.setText(getResources().getString(R.string.name_cancel));
         }
         else if (isScanning)
         {
             HideButtons();
-            textConnecting.setVisibility(View.INVISIBLE);
             textSelectDevice.setVisibility(View.VISIBLE);
+            textConnecting.setVisibility(View.GONE);
             progressBar.setVisibility(View.VISIBLE);
             buttonScan.setText(getResources().getString(R.string.name_stop));
         }
         else // scan stopped, waiting for user
         {
-            progressBar.setVisibility(View.INVISIBLE);
-            textConnecting.setVisibility(View.INVISIBLE);
             textSelectDevice.setVisibility(View.VISIBLE);
+            textConnecting.setVisibility(View.GONE);
+            progressBar.setVisibility(View.GONE);
             buttonScan.setText(getResources().getString(R.string.name_scan));
         }
         buttonScan.setEnabled(true);
@@ -355,7 +387,8 @@ public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
                     ++buttonCount;
                     bleDevIDs.add(id);
 
-                    scrollDevices.post(new Runnable() {
+                    scrollDevices.post(new Runnable()
+                    {
                         @Override public void run() {
                             scrollDevices.scrollTo(0, scrollDevices.getBottom());
                         }
@@ -389,18 +422,35 @@ public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
             {
                 @Override public void run()
                 {
+                    progressBar.setVisibility(View.INVISIBLE);
+                    //textConnecting.setVisibility(View.INVISIBLE);
+                    progressLine.setVisibility(View.VISIBLE);
+                    textConnecting.setText(getResources().getString(R.string.title_configuring));
+
                     buttonScan.setText(getResources().getString(R.string.name_wait));
                     buttonScan.setEnabled(false);
                 }
             });
 
+            /*
+            progressPercent = 0;
+            progressHandler.post(new Runnable()
+            {
+                @Override public void run()
+                {
+                    progressDialog.show();
+                }
+            });
+            */
+
             new Thread()
             {
                 @Override public void run()
                 {
-                    SleepMsecs(500); // don't send too soon...hack!
 
-                    Log.d(LOGNAME, "Sending GetInfo command...");
+                    SleepMsecs(500); // don't send too soon...hack!
+                    didFinishReading = false;
+                    Log.d(LOGNAME, "Sending command: " + CMD_GETINFO);
                     ble.WriteString(CMD_GETINFO);
                 }
 
@@ -442,17 +492,90 @@ public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
 
         if (!replyFail)
         {
-            if (!isConnected || ((replyState > 1) && (optionLines <= 0)))
+            if (didFinishReading)
+            {
+                Log.e(LOGNAME, "Reply after finish: " + reply);
+                replyFail = true;
+                return;
+            }
+            else if (!isConnected || ((replyState > 1) && (optionLines <= 0)))
             {
                 Log.w(LOGNAME, "Unexpected reply: " + reply);
                 replyFail = true;
             }
-            else switch (replyState)
+            else if (getSegments)
+            {
+                if (replyState == 1)
+                {
+                    String[] strs = reply.split(" ");
+                    for (int i = 0, j = 0; i < strs.length; ++j)
+                    {
+                        int val1 = Integer.parseInt(strs[i++]);
+                        int val2 = Integer.parseInt(strs[i++]);
+                        Log.v(LOGNAME, "Segment " + i + ": " + val2 + "." + val2);
+
+                        if ((val1 < 0) || (val1 >= countPixels-1) ||
+                            (val2 < 0) || (val2 >= (countPixels-val1)))
+                        {
+                            replyFail = true;
+                            break;
+                        }
+
+                        posSegStart[j] = val1;
+                        posSegCount[j] = val2;
+
+                        if (i >= 12) break; // only support for 6 segments, just ignore if more
+                    }
+
+                    getSegments = false; // only single line to read
+                    replyState = 2; // trigger completion
+                    optionLines = 0;
+                }
+                else replyFail = true;
+            }
+            else if (getPatterns)
+            {
+                int index = (replyState-1)/2;
+                if (index < customPatterns)
+                {
+                    if (((replyState-1) & 1) == 0)
+                    {
+                        devPatternNames[index] = new String(reply);
+                        ++devPatternOffset;
+                    }
+                    else
+                    {
+                        devPatternCmds[index] = new String(reply);
+                        devPatternBits[index] = 0;
+
+                        String[] strs = reply.split(" ");
+                        for (int i = 0; i < strs.length; ++i)
+                        {
+                            if ((strs[i].charAt(0) == 'Q') && (strs[i].length() > 1))
+                            {
+                                int val = Integer.parseInt(strs[i].substring(1));
+                                devPatternBits[index] |= val;
+                            }
+                        }
+                    }
+
+                    if (--optionLines == 0) getPatterns = false; // finished with patterns
+
+                    else ++replyState;
+                }
+                else replyFail = true;
+            }
+            else if (getPlugins)
+            {
+                throw new NullPointerException("Custom Plugins Not Supported Yet");
+            }
+            else switch(replyState)
             {
                 case 0: // first line: title
                 {
                     if (reply.contains(TITLE_PIXELNUT)) ++replyState;
                     else Log.w(LOGNAME, "Expected title: " + reply);
+                    progressPcentInc = 5;
                     break;
                 }
                 case 1: // second line: # of additional lines
@@ -463,6 +586,9 @@ public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
                         ++replyState;
 
                     else replyFail = true;
+
+                    progressPercent = 0;
+                    progressPcentInc = 100/(optionLines+1);
                     break;
                 }
                 case 2: // additional line 1: 4 device constants
@@ -535,20 +661,50 @@ public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
                     --optionLines;
                     break;
                 }
-                case 5: // additional line 4: 3 current settings
+                case 5: // additional line 4: 4 current settings
                 {
                     String[] strs = reply.split(" ");
-                    if (strs.length == 3)
+                    if (strs.length == 4)
                     {
-                        internalPatterns = Integer.parseInt(strs[0]);
-                        maxlenSendStrs = Integer.parseInt(strs[1]);
-                        maxlenEEPROM = Integer.parseInt(strs[2]);
-                        Log.d(LOGNAME, "Xinfo: IntPatterns=" + internalPatterns + " MaxSendStr=" + maxlenSendStrs + " LenEEPROM=" + maxlenEEPROM);
+                        numSegments = Integer.parseInt(strs[0]);
+                        customPatterns = Integer.parseInt(strs[1]);
+                        customPlugins = Integer.parseInt(strs[2]);
+                        maxlenCmdStrs = Integer.parseInt(strs[3]);
+                        Log.d(LOGNAME, "Xinfo: Segments=" + numSegments + " XPatterns=" + customPatterns + " XPlugins=" + customPlugins + " MaxCmdStr=" + maxlenCmdStrs);
 
-                        if (((internalPatterns != 0) && (internalPatterns != 13)) ||
-                                (maxlenSendStrs < 0) ||
-                                (maxlenEEPROM < 0))
+                        if ((numSegments < 1)    ||
+                            (customPlugins < 0)  ||
+                            (maxlenCmdStrs < 80))
                             replyFail = true;
+
+                        else if (customPatterns < 0) // indicates fixed internal device patterns
+                        {
+                            editPatterns = false;
+                            customPatterns = -customPatterns;
+                            stdPatternsCount = 0;
+                        }
+                        else stdPatternsCount = stdPatternCmds.length;
+
+                        if (!replyFail)
+                        {
+                            getSegments = (numSegments > 1);
+                            getPatterns = (customPatterns > 0);
+                            getPlugins = (customPlugins > 0);
+
+                            if (!getPatterns)
+                            {
+                                int count = stdPatternNames.length;
+                                devPatternNames = new String[count];
+                                devPatternCmds = new String[count];
+                                devPatternBits = new int[count];
+                            }
+
+                            devPatternOffset = 0;
+                            numPatterns = customPatterns + stdPatternsCount;
+
+                            progressPercent = 0;
+                            progressPcentInc = 100 / ((numSegments-1) + (customPatterns*2) + (customPlugins*2));
+                        }
                     }
                     else replyFail = true;
 
@@ -564,18 +720,102 @@ public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
                 }
             }
 
+            SleepMsecs(100);
+            //progressHandler.post(new Runnable()
+            progressLine.post(new Runnable()
+            {
+                @Override public void run()
+                {
+                    Log.v(LOGNAME, "Progress=" + progressPercent);
+                    //progressDialog.setProgress(progressPercent);
+                    progressLine.setProgress(progressPercent);
+                    progressPercent += progressPcentInc;
+                }
+            });
+
             if (replyFail)
             {
+                //progressDialog.dismiss();
+                progressLine.post(new Runnable()
+                {
+                    @Override public void run()
+                    {
+                        progressLine.setVisibility(View.GONE);
+                    }
+                });
+
                 Log.e(LOGNAME, "Read failed: state=" + replyState);
                 DeviceFailed("Device Not Recognized: Try Again");
             }
             else if ((replyState > 1) && (optionLines == 0))
             {
-                Log.i(LOGNAME, "Communication successful <<<<<<<<<<");
-                startActivity( new Intent(Devices.this, Controls.class) );
+                boolean moreinfo = false;
+
+                if (getSegments)
+                {
+                    infostr = "?S";
+                    moreinfo = true;
+                    optionLines = 1;
+                }
+                else if (getPatterns)
+                {
+                    infostr = "?P";
+                    moreinfo = true;
+                    optionLines = customPatterns*2;
+
+                    devPatternNames = new String[numPatterns];
+                    devPatternCmds = new String[numPatterns];
+                    devPatternBits = new int[numPatterns];
+                }
+                else if (getPlugins)
+                {
+                    infostr = "?X";
+                    moreinfo = true;
+                    optionLines = customPlugins*2;
+                }
+
+                if (moreinfo)
+                {
+                    replyState = 1;
+                    new Thread()
+                    {
+                        @Override public void run()
+                        {
+                            SleepMsecs(250); // don't send too soon...hack!
+                            Log.d(LOGNAME, "Sending command: " + infostr);
+                            ble.WriteString(infostr);
+                        }
+
+                    }.start();
+                }
+                else
+                {
+                    if (stdPatternsCount > 0)
+                    {
+                        for (int i = 0; i < stdPatternNames.length; ++i)
+                        {
+                            devPatternNames[devPatternOffset+i] = stdPatternNames[i];
+                            devPatternCmds[ devPatternOffset+i] = stdPatternCmds[i];
+                            devPatternBits[ devPatternOffset+i] = stdPatternBits[i];
+                        }
+                    }
+
+                    //progressDialog.dismiss();
+                    didFinishReading = true;
+                    Log.i(LOGNAME, ">>>>>>>>>> Device Setup Successful <<<<<<<<<<");
+                    startActivity( new Intent(Devices.this, Controls.class) );
+                }
             }
         }
     }
+    private int progressPercent = 0;
+    private int progressPcentInc = 0;
+    private boolean getSegments = false;
+    private boolean getPatterns = false;
+    private boolean getPlugins = false;
+    private int devPatternOffset = 0;
+    private static String infostr = null;
+    private boolean didFinishReading = false;
 
     private boolean CheckValue(int val, int min, int max)
     {

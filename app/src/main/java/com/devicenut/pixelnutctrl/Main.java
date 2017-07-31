@@ -22,24 +22,24 @@ public class Main extends Application
     public static final int MAXVAL_HUE          = 359;
     public static final int MAXVAL_PERCENT      = 100;
 
-    public static final String[] patternNames =
+    public static final String[] stdPatternNames =
             {
                 "Rainbow Wipe     ",
                 "Rainbow Roll     ",
                 "Light Waves      ",
-                "Blue Twinkle     ",
+                "Color Twinkles   ",
                 "Twinkle Comets   ",
                 "Dueling Comets   ",
                 "Dueling Scanners ",
                 "Ferris Wheel     ",
-                "White Noise      ",
+                "Expanding Noise  ",
                 "Bright Blinks    ",
                 "Bright Swells    ",
                 "Color Smooth     ",
                 "All Together     ",
             };
 
-    public static final String[] patternStrs =
+    public static final String[] stdPatternCmds =
             {
                 "E2 D10 T E101 F1000 I T G",
                 "E1 D10 I T E101 F1000 I T G",
@@ -53,10 +53,10 @@ public class Main extends Application
                 "E0 B50 W10 Q3 E140 D10 F250 I E51 D10 T E112 T G",
                 "E0 B80 T E140 F250 Q7 I T E111 F I O10 T10 G",
                 "E0 H30 D30 Q7 T E110 F600 I T E111 A1 G",
-                "E50 B65 W30 H50 Q1 T V1 E40 H270 C10 D50 T E20 L0 V1 D15 C20 A1 I G",
+                "E50 B65 W30 H50 Q1 T V1 E40 H270 C10 D50 T E20 L0 V1 D15 C20 A1 I G", // <<<<< L0 was eliminated !!!
             };
 
-    public static final int[] patternControlBits =
+    public static final int[] stdPatternBits =
             {
                     0,
                     0,
@@ -72,6 +72,12 @@ public class Main extends Application
                     7,
                     1,
             };
+
+    public static int stdPatternsCount  = stdPatternNames.length;
+
+    public static String[] devPatternNames;
+    public static String[] devPatternCmds;
+    public static int[] devPatternBits;
 
     public static int pixelWidth = 0;
     public static int pixelLength = 0;
@@ -89,11 +95,17 @@ public class Main extends Application
     public static int xmodeWhite        = 0;
     public static int xmodePixCnt       = 0;
 
-    // extended info:
-    public static int internalPatterns  = 0;    // number of internal patterns: 0 if none
-    public static int maxlenSendStrs    = 0;    // max length of command string to send
-    public static int maxlenEEPROM      = 0;    // max length of internal EEPROM to store pattern(s)
+    public static int numSegments       = 0;    // total number of pixel segments
+    public static int customPatterns    = 0;    // number of custom patterns defined by device
+    public static int customPlugins     = 0;    // number of custom plugins defined by device
+    public static int maxlenCmdStrs     = 0;    // max length of command string that can be sent
+
+    public static int numPatterns       = 0;    // total number of patterns that can be chosen by user
+    public static boolean editPatterns = true;  // false if device has fixed patterns that cannot be changed
+
+    public static int posSegStart[] = { 0,0,0,0,0,0 }; // starting positions for each segment
+    public static int posSegCount[] = { 0,0,0,0,0,0 }; // number of pixels for each segment
 
     public static String devName;
-    public static Bluetooth ble;
+    public static Bluetooth ble; // = new Bluetooth();
 }

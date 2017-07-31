@@ -10,4 +10,9 @@
         <item name="android:layout_height">3dp</item>
         <item name="android:background">?android:attr/listDivider</item>
     </style>
+    <style name="tallerBarStyle" parent="@android:style/Widget.SeekBar">
+        <item name="android:indeterminateOnly">false</item>
+        <item name="android:progressDrawable">@android:drawable/progress_horizontal</item>
+        <item name="android:indeterminateDrawable">@android:drawable/progress_horizontal</item>
+    </style>
 </resources>
