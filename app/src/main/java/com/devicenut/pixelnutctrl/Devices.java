@@ -112,6 +112,7 @@ public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
         textConnecting = (TextView) findViewById(R.id.text_Connecting);
         buttonScan = (Button) findViewById(R.id.button_ScanStop);
         scrollDevices = (ScrollView) findViewById(R.id.scroll_Devices);
+
         progressBar = (ProgressBar) findViewById(R.id.progress_Scanner);
         progressLine = (ProgressBar) findViewById(R.id.progress_Loader);
 
@@ -423,9 +424,9 @@ public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
                 @Override public void run()
                 {
                     progressBar.setVisibility(View.INVISIBLE);
-                    //textConnecting.setVisibility(View.INVISIBLE);
-                    progressLine.setVisibility(View.VISIBLE);
                     textConnecting.setText(getResources().getString(R.string.title_configuring));
+                    progressLine.setProgress(0);
+                    progressLine.setVisibility(View.VISIBLE);
 
                     buttonScan.setText(getResources().getString(R.string.name_wait));
                     buttonScan.setEnabled(false);
