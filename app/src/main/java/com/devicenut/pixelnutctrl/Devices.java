@@ -576,7 +576,8 @@ public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
                 {
                     if (reply.contains(TITLE_PIXELNUT)) ++replyState;
                     else Log.w(LOGNAME, "Expected title: " + reply);
-                    progressPcentInc = 5;
+                    progressPercent = 0;
+                    progressPcentInc = 15;
                     break;
                 }
                 case 1: // second line: # of additional lines
@@ -588,7 +589,6 @@ public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
 
                     else replyFail = true;
 
-                    progressPercent = 0;
                     progressPcentInc = 100/(optionLines+1);
                     break;
                 }
@@ -702,9 +702,7 @@ public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
 
                             devPatternOffset = 0;
                             numPatterns = customPatterns + stdPatternsCount;
-
-                            progressPercent = 0;
-                            progressPcentInc = 100 / ((numSegments-1) + (customPatterns*2) + (customPlugins*2));
+                            setPercentage = true;
                         }
                     }
                     else replyFail = true;
@@ -727,10 +725,10 @@ public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
             {
                 @Override public void run()
                 {
-                    Log.v(LOGNAME, "Progress=" + progressPercent);
-                    //progressDialog.setProgress(progressPercent);
-                    progressLine.setProgress(progressPercent);
                     progressPercent += progressPcentInc;
+                    Log.v(LOGNAME, "Progress=" + (int)progressPercent);
+                    //progressDialog.setProgress((int)progressPercent);
+                    progressLine.setProgress((int)progressPercent);
                 }
             });
 
@@ -751,6 +749,14 @@ public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
             else if ((replyState > 1) && (optionLines == 0))
             {
                 boolean moreinfo = false;
+
+                if (setPercentage)
+                {
+                    progressPercent = 0;
+                    progressPcentInc = 100.0 / ((numSegments-1) + (customPatterns*2) + (customPlugins*2));
+                    Log.v(LOGNAME, "Progress=PercentageInc=" + (int)progressPcentInc);
+                    setPercentage = false;
+                }
 
                 if (getSegments)
                 {
@@ -809,8 +815,10 @@ public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
             }
         }
     }
-    private int progressPercent = 0;
-    private int progressPcentInc = 0;
+
+    private boolean setPercentage = false;
+    private double progressPercent = 0;
+    private double progressPcentInc = 0;
     private boolean getSegments = false;
     private boolean getPatterns = false;
     private boolean getPlugins = false;
