@@ -11,13 +11,11 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.ViewTreeObserver;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.LinearLayout;
-import android.widget.ListView;
 import android.widget.SeekBar;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -34,12 +32,13 @@ import static com.devicenut.pixelnutctrl.Main.CMD_PAUSE;
 import static com.devicenut.pixelnutctrl.Main.CMD_PROPVALS;
 import static com.devicenut.pixelnutctrl.Main.CMD_RESUME;
 import static com.devicenut.pixelnutctrl.Main.CMD_TRIGGER;
+import static com.devicenut.pixelnutctrl.Main.basicPatternsCount;
 import static com.devicenut.pixelnutctrl.Main.ble;
 import static com.devicenut.pixelnutctrl.Main.customPatterns;
+import static com.devicenut.pixelnutctrl.Main.devPatternHelp;
 import static com.devicenut.pixelnutctrl.Main.devPatternNames;
 import static com.devicenut.pixelnutctrl.Main.devPatternCmds;
 import static com.devicenut.pixelnutctrl.Main.devPatternBits;
-import static com.devicenut.pixelnutctrl.Main.maxlenCmdStrs;
 import static com.devicenut.pixelnutctrl.Main.numSegments;
 import static com.devicenut.pixelnutctrl.Main.numPatterns;
 import static com.devicenut.pixelnutctrl.Main.curBright;
@@ -62,23 +61,18 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
     private final Activity context = this;
 
     private TextView nameText;
-    private Button pauseButton;
-    private Button helpButton;
-    private TextView helpText;
-    private TextView helpTitle;
-    private LinearLayout layoutControls;
-    private LinearLayout autoControls;
+    private Button pauseButton, helpButton, helpButton2;
+    private TextView helpText, helpText2, helpTitle;
+    private LinearLayout outerControls, innerControls, patternHelp;
+    private LinearLayout autoControls, trigControls;
     private Spinner selectPattern;
-    private SeekBar seekBright;
-    private SeekBar seekDelay;
-    private SeekBar seekPropColor;
-    private SeekBar seekPropWhite;
-    private SeekBar seekPropCount;
+    private SeekBar seekBright, seekDelay;
+    private SeekBar seekPropColor, seekPropWhite, seekPropCount;
     private SeekBar seekTrigForce;
     private ToggleButton toggleAutoProp;
 
     private int trigForce = 500;
-    private boolean inHelpMode = false;
+    private int helpMode = 0;
     private boolean doUpdate = true;
 
     private boolean isConnected = false;
@@ -107,10 +101,10 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
     {
         Log.d(LOGNAME, ">>onCreate");
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_control);
+        setContentView(R.layout.activity_controls);
 
         /*
-        final LinearLayout mainLayout = (LinearLayout) this.getLayoutInflater().inflate(R.layout.activity_control, null);
+        final LinearLayout mainLayout = (LinearLayout) this.getLayoutInflater().inflate(R.layout.activity_controls, null);
 
         // set a global layout listener which will be called when the layout pass is completed and the view is drawn
         mainLayout.getViewTreeObserver().addOnGlobalLayoutListener(
@@ -152,32 +146,46 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
         SetupSegments(numSegments);
 
         int j = 0;
-        int extra = 0;
-        if (customPatterns > 0)
-        {
-            ++extra;
-            if (stdPatternsCount > 0) ++extra;
-        }
+        int extra = (customPatterns > 0) ? 1 : 0;
+        if (stdPatternsCount > 0) extra += 2;
         patternNames = new String[numPatterns + extra];
         listEnables = new boolean[numPatterns + extra];
         mapIndexToPattern = new int[numPatterns + extra];
         mapPatternToIndex = new int[numPatterns];
 
-        if ((customPatterns > 0) && (stdPatternsCount > 0))
+        if (customPatterns > 0)
         {
             patternNames[j] = "Custom Patterns";
             listEnables[j] = false;
+            mapIndexToPattern[j] = 0;
+            ++j;
+        }
+        else
+        {
+            patternNames[j] = "Basic Patterns";
+            listEnables[j] = false;
+            mapIndexToPattern[j] = 0;
             ++j;
         }
 
         for (int i = 0; i < numPatterns; ++i)
         {
-            if (i == customPatterns)
+            if ((i > 0) && (i == customPatterns))
             {
-                patternNames[j] = "Standard Patterns";
+                patternNames[j] = "Basic Patterns";
                 listEnables[j] = false;
+                mapIndexToPattern[j] = 0;
                 ++j;
             }
+
+            if ((i > customPatterns) && (i == basicPatternsCount))
+            {
+                patternNames[j] = "Advanced Patterns";
+                listEnables[j] = false;
+                mapIndexToPattern[j] = 0;
+                ++j;
+            }
+
             Log.v(LOGNAME, "Adding pattern: " + devPatternNames[i]);
 
             patternNames[j] = devPatternNames[i];
@@ -240,13 +248,18 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
         seekPropCount.setOnSeekBarChangeListener(this);
         seekTrigForce.setOnSeekBarChangeListener(this);
 
-        layoutControls  = (LinearLayout) findViewById(R.id.layout_Controls);
+        outerControls  = (LinearLayout) findViewById(R.id.ll_OuterControls);
+        innerControls  = (LinearLayout) findViewById(R.id.ll_InnerControls);
+        patternHelp    = (LinearLayout) findViewById(R.id.ll_PatternHelp);
         autoControls    = (LinearLayout) findViewById(R.id.auto_Controls);
+        trigControls    = (LinearLayout) findViewById(R.id.trig_Controls);
         nameText        = (TextView)     findViewById(R.id.text_Devname);
         pauseButton     = (Button)       findViewById(R.id.button_Pause);
-        helpButton      = (Button)       findViewById(R.id.button_Help);
-        helpTitle       = (TextView)     findViewById(R.id.view_HelpTitle);
-        helpText        = (TextView)     findViewById(R.id.view_HelpText);
+        helpButton      = (Button)       findViewById(R.id.button_ControlsHelp);
+        helpButton2     = (Button)       findViewById(R.id.button_PatternHelp);
+        helpTitle       = (TextView)     findViewById(R.id.title_ControlsHelp);
+        helpText        = (TextView)     findViewById(R.id.text_ControlsHelp);
+        helpText2       = (TextView)     findViewById(R.id.text_PatternHelp);
     }
 
     @Override protected void onResume()
@@ -285,7 +298,7 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
             segEnables[0] = true;
             b.setChecked(true);
 
-            SetManualControls();
+            SetupControls();
             toggleAutoProp.setChecked(xmodeEnabled);
             selectPattern.setSelection(mapPatternToIndex[curPattern-1], false);
 
@@ -311,7 +324,7 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
 
     @Override public void onBackPressed()
     {
-        if (inHelpMode) SetHelpMode();
+        if (helpMode < 0) SetHelpMode(true, 0);
 
         else super.onBackPressed();
     }
@@ -330,20 +343,25 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
 
                 curPattern = mapIndexToPattern[position];
                 int index = curPattern-1;
-                SetManualControls();
+
+                SetupControls();
+                if (helpMode > 0) SetHelpMode(false, curPattern);
 
                 if (curPattern > customPatterns)
                 {
-                    SendString("P X Y"); // clear stack and segment info
-                    SendString(".");
-
                     if (numSegments == 1)
                     {
+                        SendString(".");
+                        //SendString("P"); // clear stack - don't need to if no segments
                         SendString(devPatternCmds[index]);
-                        SendString("" + curPattern);
+                        SendString(".");
+                        SendString("" + curPattern); // this clears by default
                     }
                     else
                     {
+                        SendString(".");
+                        SendString("X Y"); // clear segment info
+
                         for (int i = 0; i < numSegments; ++i)
                         {
                             if (segEnables[i])
@@ -353,10 +371,10 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
                                 segPatterns[i] = position;
                             }
                         }
-                        SendString("0"); // pattern=0 indicates custom pattern command
-                    }
+                        SendString(".");
 
-                    SendString(".");
+                        SendString("1"); // FIXME??? pattern=0 indicates custom pattern command
+                    }
                 }
                 else SendString("" + curPattern); // just send device specific custom pattern number
             }
@@ -370,30 +388,52 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
         if (sendEnable) ble.WriteString(str);
     }
 
-    private void SetHelpMode()
+    private void SetHelpMode(boolean toggle, int newmode)
     {
-        if (inHelpMode)
+        if ((helpMode < 0) || (newmode < 0))
         {
-            helpText.setVisibility(GONE);
-            helpTitle.setVisibility(GONE);
-            layoutControls.setVisibility(VISIBLE);
-            helpButton.setText(getResources().getString(R.string.name_help));
-            inHelpMode = false;
+            if ((newmode == 0) || (helpMode < 0))
+            {
+                helpText.setVisibility(GONE);
+                helpTitle.setVisibility(GONE);
+                outerControls.setVisibility(VISIBLE);
+                helpButton.setText(getResources().getString(R.string.name_help));
+                helpMode = 0;
+            }
+            else
+            {
+                outerControls.setVisibility(GONE);
+                helpTitle.setVisibility(VISIBLE);
+                helpText.setVisibility(VISIBLE);
+                helpButton.setText(getResources().getString(R.string.name_controls));
+                helpMode = newmode;
+            }
+        }
+        else if (((newmode == 0) || (helpMode > 0)) && toggle)
+        {
+            //innerControls.setVisibility(VISIBLE);
+            helpButton2.setText("?");
+            helpButton2.setTextSize(22);
+            patternHelp.setVisibility(GONE);
+            helpMode = 0;
         }
         else
         {
-            layoutControls.setVisibility(GONE);
-            helpTitle.setVisibility(VISIBLE);
-            helpText.setVisibility(VISIBLE);
-            helpButton.setText(getResources().getString(R.string.name_controls));
-            inHelpMode = true;
+            //innerControls.setVisibility(GONE);
+            patternHelp.setVisibility(VISIBLE);
+            helpButton2.setText("x");
+            helpButton2.setTextSize(18);
+            helpText2.setText( devPatternHelp[newmode-1]);
+            helpMode = newmode;
         }
     }
 
-    private void SetManualControls()
+    private void SetupControls()
     {
         int bits = devPatternBits[curPattern-1];
-        if (xmodeEnabled && (bits != 0))
+        boolean domode = ((bits & 7) != 0);
+
+        if (xmodeEnabled && domode)
         {
             autoControls.setVisibility(VISIBLE);
             toggleAutoProp.setEnabled(true);
@@ -405,8 +445,15 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
         else
         {
             autoControls.setVisibility(GONE);
-            toggleAutoProp.setEnabled(bits != 0);
+            toggleAutoProp.setEnabled(domode);
         }
+
+        if ((bits & 0x10) != 0) // enable triggering
+        {
+            trigControls.setVisibility(VISIBLE);
+            seekTrigForce.setEnabled((bits & 0x20) != 0);
+        }
+        else trigControls.setVisibility(GONE);
     }
 
     private void SetupSegments(int count)
@@ -493,16 +540,21 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
                 pauseButton.setText(doUpdate ? "Pause" : "Resume");
                 break;
             }
-            case R.id.button_Help:
+            case R.id.button_PatternHelp:
             {
-                SetHelpMode();
+                SetHelpMode(true, curPattern);
+                break;
+            }
+            case R.id.button_ControlsHelp:
+            {
+                SetHelpMode(true, -1);
                 break;
             }
             case R.id.toggle_AutoProp:
             {
                 xmodeEnabled = toggleAutoProp.isChecked();
                 Log.d(LOGNAME, "AutoProp: manual=" + xmodeEnabled);
-                SetManualControls();
+                SetupControls();
 
                 if (xmodeEnabled)
                      SendString(CMD_EXTMODE + "1");
@@ -511,7 +563,9 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
             }
             case R.id.button_TrigAction:
             {
-                SendString(CMD_TRIGGER + trigForce);
+                if ((devPatternBits[curPattern-1] & 0x30) != 0)
+                     SendString(CMD_TRIGGER + trigForce);
+                else SendString(CMD_TRIGGER + 0);
                 break;
             }
         }
@@ -572,7 +626,7 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
                 public void run()
                 {
                     Toast.makeText(context, "Disconnect: " + reason, Toast.LENGTH_SHORT).show();
-                    inHelpMode = false;
+                    helpMode = 0;
 
                     if (!isFinishing()) onBackPressed();
                 }

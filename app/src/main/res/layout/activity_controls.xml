@@ -49,14 +49,14 @@
             android:textAppearance="@style/TextAppearance.AppCompat.Small"
             android:textColor="@color/UserChoice"
             android:onClick="onClick"
-            android:id="@+id/button_Help"/>
+            android:id="@+id/button_ControlsHelp"/>
 
         <Button
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="5dp"
             android:layout_marginBottom="5dp"
-            android:layout_toLeftOf="@id/button_Help"
+            android:layout_toLeftOf="@id/button_ControlsHelp"
             android:text="@string/name_pause"
             android:textAppearance="@style/TextAppearance.AppCompat.Small"
             android:textColor="@color/UserChoice"
@@ -86,8 +86,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="10dp"
         android:layout_marginLeft="@dimen/activity_horizontal_margin"
-        android:layout_marginRight="@dimen/activity_horizontal_margin"
-        android:id="@+id/scroll_Controls">
+        android:layout_marginRight="@dimen/activity_horizontal_margin">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -102,7 +101,7 @@
                 android:textAppearance="@style/TextAppearance.AppCompat.Large"
                 android:textStyle="italic"
                 android:visibility="gone"
-                android:id="@+id/view_HelpTitle"/>
+                android:id="@+id/title_ControlsHelp"/>
 
             <TextView
                 android:layout_width="match_parent"
@@ -110,95 +109,14 @@
                 android:textAppearance="@style/TextAppearance.AppCompat.Medium"
                 android:text="@string/text_help"
                 android:visibility="gone"
-                android:id="@+id/view_HelpText"/>
+                android:id="@+id/text_ControlsHelp"/>
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:orientation="vertical"
                 android:visibility="visible"
-                android:id="@+id/layout_Controls">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:visibility="visible"
-                    android:id="@+id/ll_SelectSegments">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:textAppearance="@style/TextAppearance.AppCompat.Medium"
-                        android:textStyle="italic"
-                        android:text="@string/title_segment"/>
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="5dp"
-                        android:layout_marginBottom="12dp"
-                        android:orientation="horizontal">
-
-                        <CheckBox
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginRight="4dp"
-                            android:onClick="onClick"
-                            android:visibility="gone"
-                            android:text="1"
-                            android:id="@+id/radio_1"/>
-
-                        <CheckBox
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginRight="4dp"
-                            android:visibility="gone"
-                            android:onClick="onClick"
-                            android:text="2"
-                            android:id="@+id/radio_2"/>
-
-                        <CheckBox
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginRight="4dp"
-                            android:visibility="gone"
-                            android:onClick="onClick"
-                            android:text="3"
-                            android:id="@+id/radio_3"/>
-
-                        <CheckBox
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginRight="4dp"
-                            android:visibility="gone"
-                            android:onClick="onClick"
-                            android:text="4"
-                            android:id="@+id/radio_4"/>
-
-                        <CheckBox
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginRight="4dp"
-                            android:visibility="gone"
-                            android:onClick="onClick"
-                            android:text="5"
-                            android:id="@+id/radio_5"/>
-
-                        <CheckBox
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginRight="4dp"
-                            android:visibility="gone"
-                            android:onClick="onClick"
-                            android:text="6"
-                            android:id="@+id/radio_6"/>
-
-                    </LinearLayout>
-
-                    <View style="@style/DividerHorz" android:layout_marginBottom="5dp" />
-
-                </LinearLayout>
+                android:id="@+id/ll_OuterControls">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -214,87 +132,56 @@
                         android:textStyle="italic"
                         android:text="@string/title_pattern"/>
 
-                    <Spinner
+                    <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:dropDownWidth="wrap_content"
-                        android:layout_marginTop="5dp"
-                        android:layout_marginBottom="12dp"
-                        android:focusable="true"
-                        android:id="@+id/spinner_Pattern"/>
+                        android:orientation="horizontal">
 
-                    <View style="@style/DividerHorz" />
+                        <Button
+                            android:layout_width="35dp"
+                            android:layout_height="35dp"
+                            android:layout_marginTop="8dp"
+                            android:layout_marginRight="10dp"
+                            android:textColor="@color/UserChoice"
+                            android:background="@drawable/roundbutton"
+                            android:text="\?"
+                            android:textStyle="bold"
+                            android:textSize="22dp"
+                            android:onClick="onClick"
+                            android:id="@+id/button_PatternHelp"/>
 
-                </LinearLayout>
+                        <Spinner
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:dropDownWidth="wrap_content"
+                            android:layout_marginTop="5dp"
+                            android:layout_marginBottom="12dp"
+                            android:focusable="true"
+                            android:id="@+id/spinner_Pattern"/>
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="10dp"
-                    android:textAppearance="@style/TextAppearance.AppCompat.Medium"
-                    android:textStyle="italic"
-                    android:text="@string/title_adjust"/>
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="12dp"
-                    android:orientation="horizontal">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:minWidth="50dp"
-                        android:gravity="left"
-                        android:text="Dim"
-                        tools:ignore="RtlHardcoded"/>
-
-                    <SeekBar
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:id="@+id/seek_Bright"/>
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:textAlignment="viewStart"
-                        android:minWidth="50dp"
-                        android:gravity="right"
-                        android:text="Bright"
-                        tools:ignore="RtlHardcoded"/>
+                    </LinearLayout>
 
                 </LinearLayout>
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="12dp"
-                    android:layout_marginBottom="12dp"
-                    android:orientation="horizontal">
+                    android:orientation="vertical"
+                    android:visibility="gone"
+                    android:background="@color/Background2"
+                    android:id="@+id/ll_PatternHelp">
 
                     <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:minWidth="50dp"
-                        android:gravity="left"
-                        android:text="Slow"
-                        tools:ignore="RtlHardcoded"/>
-
-                    <SeekBar
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:id="@+id/seek_Delay"/>
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:textAlignment="viewStart"
-                        android:minWidth="50dp"
-                        android:gravity="right"
-                        android:text="Fast"
-                        tools:ignore="RtlHardcoded"/>
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_marginTop="10dp"
+                        android:layout_marginBottom="10dp"
+                        android:layout_marginLeft="10dp"
+                        android:layout_marginRight="10dp"
+                        android:textSize="16dp"
+                        android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+                        android:text="Description of pattern here..."
+                        android:id="@+id/text_PatternHelp"/>
 
                 </LinearLayout>
 
@@ -303,151 +190,321 @@
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="vertical">
+                    android:orientation="vertical"
+                    android:visibility="visible"
+                    android:id="@+id/ll_InnerControls">
 
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="10dp"
-                        android:layout_marginBottom="10dp"
-                        android:orientation="horizontal">
+                        android:orientation="vertical"
+                        android:visibility="visible"
+                        android:id="@+id/ll_SelectSegments">
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:textAppearance="@style/TextAppearance.AppCompat.Medium"
                             android:textStyle="italic"
-                            android:text="@string/title_modify"/>
+                            android:text="@string/title_segment"/>
 
-                        <ToggleButton
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="5dp"
+                            android:layout_marginBottom="12dp"
+                            android:orientation="horizontal">
+
+                            <CheckBox
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginRight="4dp"
+                                android:onClick="onClick"
+                                android:visibility="gone"
+                                android:text="1"
+                                android:id="@+id/radio_1"/>
+
+                            <CheckBox
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginRight="4dp"
+                                android:visibility="gone"
+                                android:onClick="onClick"
+                                android:text="2"
+                                android:id="@+id/radio_2"/>
+
+                            <CheckBox
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginRight="4dp"
+                                android:visibility="gone"
+                                android:onClick="onClick"
+                                android:text="3"
+                                android:id="@+id/radio_3"/>
+
+                            <CheckBox
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginRight="4dp"
+                                android:visibility="gone"
+                                android:onClick="onClick"
+                                android:text="4"
+                                android:id="@+id/radio_4"/>
+
+                            <CheckBox
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginRight="4dp"
+                                android:visibility="gone"
+                                android:onClick="onClick"
+                                android:text="5"
+                                android:id="@+id/radio_5"/>
+
+                            <CheckBox
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginRight="4dp"
+                                android:visibility="gone"
+                                android:onClick="onClick"
+                                android:text="6"
+                                android:id="@+id/radio_6"/>
+
+                        </LinearLayout>
+
+                        <View style="@style/DividerHorz" android:layout_marginBottom="5dp" />
+
+                    </LinearLayout>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+                        android:textStyle="italic"
+                        android:text="@string/title_adjust"/>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="12dp"
+                        android:orientation="horizontal">
+
+                        <TextView
                             android:layout_width="wrap_content"
-                            android:layout_height="40dp"
-                            android:layout_marginStart="10dp"
-                            android:textAlignment="center"
-                            android:checked="false"
-                            android:onClick="onClick"
-                            android:id="@+id/toggle_AutoProp"
-                            android:textOn="@string/name_manual"
-                            android:textOff="@string/name_auto"
-                            android:textColorLink="@color/UserChoice"/>
+                            android:layout_height="wrap_content"
+                            android:minWidth="50dp"
+                            android:gravity="left"
+                            android:text="Dim"
+                            tools:ignore="RtlHardcoded"/>
+
+                        <SeekBar
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:id="@+id/seek_Bright"/>
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textAlignment="viewStart"
+                            android:minWidth="50dp"
+                            android:gravity="right"
+                            android:text="Bright"
+                            tools:ignore="RtlHardcoded"/>
 
                     </LinearLayout>
 
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:orientation="vertical"
-                        android:id="@+id/auto_Controls">
+                        android:layout_marginTop="12dp"
+                        android:layout_marginBottom="12dp"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:minWidth="50dp"
+                            android:gravity="left"
+                            android:text="Slow"
+                            tools:ignore="RtlHardcoded"/>
+
+                        <SeekBar
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:id="@+id/seek_Delay"/>
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textAlignment="viewStart"
+                            android:minWidth="50dp"
+                            android:gravity="right"
+                            android:text="Fast"
+                            tools:ignore="RtlHardcoded"/>
+
+                    </LinearLayout>
+
+                    <View style="@style/DividerHorz" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical">
 
                         <LinearLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="5dp"
+                            android:layout_marginTop="10dp"
+                            android:layout_marginBottom="10dp"
                             android:orientation="horizontal">
 
                             <TextView
-                                android:layout_width="80dp"
+                                android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="ColorHue"/>
+                                android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+                                android:textStyle="italic"
+                                android:text="@string/title_modify"/>
 
-                            <SeekBar
-                                android:layout_width="0dp"
-                                android:layout_height="wrap_content"
-                                android:layout_weight="1"
-                                android:id="@+id/seek_PropColor"/>
+                            <ToggleButton
+                                android:layout_width="wrap_content"
+                                android:layout_height="40dp"
+                                android:layout_marginStart="10dp"
+                                android:textAlignment="center"
+                                android:checked="false"
+                                android:onClick="onClick"
+                                android:id="@+id/toggle_AutoProp"
+                                android:textOn="@string/name_manual"
+                                android:textOff="@string/name_auto"
+                                android:textColorLink="@color/UserChoice"/>
 
                         </LinearLayout>
 
                         <LinearLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="12dp"
-                            android:orientation="horizontal">
+                            android:orientation="vertical"
+                            android:id="@+id/auto_Controls">
 
-                            <TextView
-                                android:layout_width="80dp"
+                            <LinearLayout
+                                android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:text="Whiteness"/>
+                                android:layout_marginTop="5dp"
+                                android:orientation="horizontal">
 
-                            <SeekBar
-                                android:layout_width="0dp"
+                                <TextView
+                                    android:layout_width="80dp"
+                                    android:layout_height="wrap_content"
+                                    android:text="ColorHue"/>
+
+                                <SeekBar
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:id="@+id/seek_PropColor"/>
+
+                            </LinearLayout>
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:layout_weight="1"
-                                android:id="@+id/seek_PropWhite"/>
+                                android:layout_marginTop="12dp"
+                                android:orientation="horizontal">
 
-                        </LinearLayout>
+                                <TextView
+                                    android:layout_width="80dp"
+                                    android:layout_height="wrap_content"
+                                    android:text="Whiteness"/>
 
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="12dp"
-                            android:layout_marginBottom="12dp"
-                            android:orientation="horizontal">
+                                <SeekBar
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:id="@+id/seek_PropWhite"/>
 
-                            <TextView
-                                android:layout_width="80dp"
+                            </LinearLayout>
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:text="Length"/>
+                                android:layout_marginTop="12dp"
+                                android:layout_marginBottom="12dp"
+                                android:orientation="horizontal">
 
-                            <SeekBar
-                                android:layout_width="0dp"
-                                android:layout_height="wrap_content"
-                                android:layout_weight="1"
-                                android:id="@+id/seek_PropCount"/>
+                                <TextView
+                                    android:layout_width="80dp"
+                                    android:layout_height="wrap_content"
+                                    android:text="Count"/>
 
+                                <SeekBar
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:id="@+id/seek_PropCount"/>
+
+                            </LinearLayout>
                         </LinearLayout>
                     </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/trig_Controls"
+                        android:orientation="vertical">
+
+                        <View style="@style/DividerHorz" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="10dp"
+                            android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+                            android:textStyle="italic"
+                            android:text="@string/title_trigger"/>
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="12dp"
+                            android:orientation="horizontal">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:minWidth="50dp"
+                                android:gravity="left"
+                                android:text="Min"
+                                tools:ignore="RtlHardcoded"/>
+
+                            <SeekBar
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:id="@+id/seek_TrigForce"/>
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:minWidth="50dp"
+                                android:gravity="left"
+                                android:text="Max"
+                                tools:ignore="RtlHardcoded"/>
+
+                        </LinearLayout>
+
+                        <Button
+                            android:layout_width="match_parent"
+                            android:layout_height="40dp"
+                            android:layout_marginTop="10dp"
+                            android:textColorLink="@color/UserChoice"
+                            android:text="@string/name_trigger"
+                            android:onClick="onClick"
+                            android:id="@+id/button_TrigAction"/>
+
+                    </LinearLayout>
+
                 </LinearLayout>
-
-                <View style="@style/DividerHorz" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="10dp"
-                    android:textAppearance="@style/TextAppearance.AppCompat.Medium"
-                    android:textStyle="italic"
-                    android:text="@string/title_trigger"/>
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="12dp"
-                    android:orientation="horizontal">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:minWidth="50dp"
-                        android:gravity="left"
-                        android:text="Min"
-                        tools:ignore="RtlHardcoded"/>
-
-                    <SeekBar
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:id="@+id/seek_TrigForce"/>
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:minWidth="50dp"
-                        android:gravity="left"
-                        android:text="Max"
-                        tools:ignore="RtlHardcoded"/>
-
-                </LinearLayout>
-
-                <Button
-                    android:layout_width="match_parent"
-                    android:layout_height="40dp"
-                    android:layout_marginTop="10dp"
-                    android:textColorLink="@color/UserChoice"
-                    android:text="@string/name_trigger"
-                    android:onClick="onClick"
-                    android:id="@+id/button_TrigAction"/>
-
             </LinearLayout>
         </LinearLayout>
     </ScrollView>

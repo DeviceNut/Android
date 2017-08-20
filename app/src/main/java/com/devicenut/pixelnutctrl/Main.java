@@ -18,64 +18,159 @@ public class Main extends Application
     public static final String CMD_PAUSE        = "[";
     public static final String CMD_RESUME       = "]";
 
-    public static final int MAXVAL_PATTERN      = 13;
     public static final int MAXVAL_HUE          = 359;
     public static final int MAXVAL_PERCENT      = 100;
 
-    public static final String[] stdPatternNames =
+    public static final String[] basicPatternNames =
             {
-                "Rainbow Wipe     ",
-                "Rainbow Roll     ",
-                "Light Waves      ",
-                "Color Twinkles   ",
-                "Twinkle Comets   ",
-                "Dueling Comets   ",
-                "Dueling Scanners ",
-                "Ferris Wheel     ",
-                "Expanding Noise  ",
-                "Bright Blinks    ",
-                "Bright Swells    ",
-                "Color Smooth     ",
-                "All Together     ",
+                    "Solid",
+                    "Waves",
+                    "Blinks",
+                    "Twinkles",
+                    "Scanner",
+                    "Comet",
             };
 
-    public static final String[] stdPatternCmds =
+    public static final String[] basicPatternHelp =
+            {
+                    "Just a solid color which can be modified with the ColorHue and Whiteness properties.",
+
+                    "This creates the effect of \"waves\" (brightness that changes up and down) that move down the strip, in a single color.\n\n" +
+                    "The color and frequency of the wave can be modified with the ColorHue, Whiteness, and Count properties",
+
+                    "Random blinking in a single color, which can be modified with the ColorHue property.",
+
+                    "Creates the effect of \"twinkling\" (rising/falling brightness that disappear in a random fashion). " +
+                    "Both the ColorHue and Whiteness properties affect the color.",
+
+                    "Creates the effect of \"scanning\" (blocks of the same brightness that move back and forth from one end to the other).\n\n" +
+                    "The color and length of the block can be modified with the ColorHue and Count properties.\n",
+
+                    "Creates the effect of a \"comet\" (strip of light which is bright at the head, and gets progressively dimmer towards the end).\n\n" +
+                    "Both the color and length of the tail can be modified with the ColorHue, Whiteness, and Count properties.",
+            };
+
+    public static final String[] basicPatternCmds =
+            {
+                    "E0 H270 Q3 T G",
+                    "E10 D60 Q7 T G",
+                    "E51 H232 D10 Q3 T G",
+                    "E50 W80 D10 Q3 T G",
+                    "E40 H120 C20 D20 Q7 T G",
+                    "E20 H30 C25 D30 Q7 T G",
+            };
+
+    public static final int[] basicPatternBits =
+            {
+                    0x03,
+                    0x07,
+                    0x03,
+                    0x03,
+                    0x07,
+                    0x07,
+            };
+
+    public static final String[] advPatternNames =
+            {
+                    "Rainbow Ripple",
+                    "Rainbow Roll",
+                    "Color Twinkles",
+                    "Twinkle Comets",
+                    "Dueling Comets",
+                    "Dueling Scanners",
+                    "Ferris Wheel",
+                    "Expanding Noise",
+                    "Blink Surges",
+                    "Bright Swells",
+                    "Color Smooth",
+                    "MashUp",
+            };
+
+    public static final String[] advPatternHelp =
+            {
+                    "Color hue changes \"ripple\" down the strip. The colors move through the spectrum, and appear stationary until Triggered.\n\n" +
+                    "The Force applied changes the amount of color change per pixel. At maximum Force the entire spectrum is displayed again.",
+
+                    "Colors hue changes occur at the head and get pushed down the strip. When the end is reached they start getting cleared, creating a " +
+                    "\"rolling\" effect.\n\n" +
+                    "Triggering restarts the effect, with the amount of Force determining how fast the colors change. At the maximum Force the entire " +
+                    "spectrum is displayed again.",
+
+                    "This has bright white twinkling \"stars\" over a background color, which is determined by the ColorHue and Brightness properties.\n\n" +
+                    "Triggering causes the background brightness to swell up and down, with the amount of Force determining the speed of the swelling.",
+
+                    "This has bright twinkling without a background. The ColorHue property changes the twinkling color.\n\n" +
+                    "Occasional comets streak up and down and then disappear. One of the comets is red, and appears randomly every 3-6 seconds.\n\n" +
+                    "The other is orange and appears only when externally Triggered, with the Force determining its length.",
+
+                    "Comets pairs, one in either direction, both of which change color hue occasionaly. Trigging causes new comets to be added.\n\n" +
+                    "The comet color and tail lengths can be modified with the ColorHue, Whiteness, and Count properties.",
+
+                    "Two scanners (blocks of same brightness pixels that move back and forth), with only the first one visible initially until Triggered.\n\n" +
+                    "The first one changes colors on each change in direction, and the length can be modified with the Count property.\n\n" +
+                    "The second one (once Triggered) moves in the opposite direction, periodically surges in speed, and is modified with ColorHue property.",
+
+                    "Evenly spaced pixels (\"spokes\") move together round and round the strip, creating a \"Ferris Wheel\" effect.\n\n" +
+                    "The spokes periodically change colors, or can be modified with the ColorHue and Whiteness properties.\n\n" +
+                    "The Count property determines the number of spokes. Triggering toggles the direction of the motion." ,
+
+                    "The background is white-ish noise, with the color modified by the ColorHue property.\n\n" +
+                    "A Trigger causes the background to slowly and continuously expand and contract, with the Force determining the extent of the expansion.",
+
+                    "Random colored blinking that changes the periodically surge in the rate of blinking. The Count property determines the number of " +
+                    "blinking changes made at once.\n\nTriggering changes the frequency of the blinking, with larger Forces causing faster blinking surges.",
+
+                    "All pixels swell up and down in brightness, with random color hue and whiteness changes, or set with the ColorHue and " +
+                    "Whiteness properties.\n\nTriggering changes the pace of the swelling, with larger Forces causing faster swelling.",
+
+                    "All pixels move through color hue and whiteness transitions that are slow and smooth.\n\n" +
+                    "A new color is chosen every time the previous target color has been reached, or when Triggered, " +
+                    "with the Force determing how large the color changes are.\n\n" +
+                    "The time it takes to reach a new color is proportional to the size of the color change.",
+
+                    "Combination of a purple scanner over a green-ish twinkling background, with a red comet that is fired off every time the scanner " +
+                    "bounces off the end of the strip, or when Triggered.\n\n" +
+                    "The ColorHue property only affects the color of the twinkling."
+            };
+
+    public static final String[] advPatternCmds =
             {
                     "E2 D10 T E101 F1000 I T G",
-                    "E1 D10 I T E101 F1000 I T G",
-                    "E10 D60 Q7 T E101 I T E120 F250 I T G",
-                    "E0 B50 W20 H232 Q3 T E140 D10 F250 I E50 B80 W80 D10 T G",
-                    "E50 B65 W80 H50 Q3 T E20 B90 C20 D30 F0 O3 T6 E20 U0 B90 H30 C25 D30 F0 I T E120 I G",
-                    "E20 W25 C15 D30 Q7 I T E101 F100 I T E20 U0 W25 C15 D20 Q7 I T E101 F200 I T G",
-                    "E40 C10 D20 Q4 F300 T E111 A0 E40 U0 H270 C5 D30 Q1 I E131 F1000 O5 T5 G",
-                    "E30 C40 D80 Q7 T E160 I E120 I E111 F O3 T7 G",
-                    "E52 W65 D20 Q5 T E150 D80 T E120 F1000 I T G",
-                    "E0 B50 W10 Q3 E140 D10 F250 I E51 D10 T E112 T G",
-                    "E0 B80 T E140 F250 Q7 I T E111 F I O10 T10 G",
-                    "E0 H30 D30 Q7 T E110 F600 I T E111 A1 G",
-                    "E50 B65 W30 H50 Q1 T V1 E40 H270 C10 D50 T E20 V1 D15 C20 A1 F0 I T G"
+                    "E1 D10 F1 I T E101 F1000 I T G",
+                    "E0 B50 W20 H232 Q3 T E142 D10 F250 I E50 B80 W80 D10 T G",
+                    "E50 B65 W80 H50 Q3 T E20 B90 C25 D30 F0 O3 T6 E20 U0 B90 H30 C45 D30 F0 I T E120 F1 I G",
+                    "E20 W25 C15 D30 Q7 I T E101 F100 T E20 U0 W25 C15 D20 Q7 I T E101 F200 T G",
+                    "E40 C10 D20 Q4 T E111 A0 E40 U0 V1 H270 C5 D30 Q1 I E131 F1000 O5 T5 G",
+                    "E30 C20 D80 Q7 T E160 I E120 I E111 F O3 T7 G",
+                    "E52 C25 W65 D20 Q1 T E150 D80 I E120 F1000 I G",
+                    "E51 C10 D80 Q4 T E112 T E131 F1 I T G",
+                    "E0 B80 Q3 T E111 F O10 T10 E142 F250 I T G",
+                    "E0 H30 D30 T E110 F600 I T E111 A1 G",
+                    "E50 V1 B65 W30 H100 Q1 T E40 H270 C10 D50 T E20 D15 C20 A1 F0 I T G"
             };
 
-    public static final int[] stdPatternBits =
+    public static final int[] advPatternBits =
             {
-                    0,
-                    0,
-                    7,
-                    3,
-                    3,
-                    7,
-                    5,
-                    7,
-                    5,
-                    3,
-                    7,
-                    7,
-                    1,
+                    0x30,
+                    0x30,
+                    0x33,
+                    0x33,
+                    0x17,
+                    0x35,
+                    0x17,
+                    0x31,
+                    0x34,
+                    0x33,
+                    0x30,
+                    0x31,
             };
 
-    public static int stdPatternsCount  = stdPatternNames.length;
+    public static int basicPatternsCount = basicPatternNames.length;
+    public static int advPatternsCount = advPatternNames.length;
+    public static int stdPatternsCount;
 
     public static String[] devPatternNames;
+    public static String[] devPatternHelp;
     public static String[] devPatternCmds;
     public static int[] devPatternBits;
 

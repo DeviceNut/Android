@@ -39,17 +39,23 @@
         \n\nThis drop-down list allows the selection one of the built-in patterns.
         You can then modify various setting with the other controls described below.
 
+        \n\nThe "?" button toggles the display of a full description of the pattern.
+
         \n\nAdjust Brightness and Speed:
         \n\nThese slider controls determine the overall brightness of the pixels,
         and how fast the various animation effects change.
 
         \n\nModify Effect Properties:
-        \n\nWhen set to Auto, the color hue and whiteness, and the length properties
-        are all determined from the pattern itself, and usually change periodically.
-        When set to Manual you can directly change them yourself with the slider controls.
+        \n\nWhen set to Auto, the ColorHue, Whiteness, and Count properties are all determined
+        from the pattern itself. In Advanced designs these properties usually change periodically.
+
+x        \n\nWhen set to Manual you can directly change them yourself with the slider controls.
+        Note that some, or all, of these controls may not be active for any given pattern.
 
         \n\nSelect Force then Trigger:
         \n\nTriggering a pattern causes the pattern to change somehow, depending on the pattern.
         The amount of change is determined by the amount of force that is set with the slider.
+
+        \n\nNote that not all patterns allow setting the force, and some cannot be triggered at all.
     </string>
 </resources>

@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <color name="Background">#B0C0C0</color>
+    <color name="Background2">#99B0B0</color>
     <color name="DarkHeader">#669999</color>
     <color name="HorzDivider0">#111111</color>
     <color name="HorzDivider1">#447777</color>
