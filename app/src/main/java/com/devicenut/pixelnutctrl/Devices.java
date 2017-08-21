@@ -370,23 +370,6 @@ public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
         if (status == BLESTAT_SUCCESS)
         {
             Log.i(LOGNAME, "Connected to our device <<<<<<<<<<");
-            isConnecting = false;
-            isConnected = true;
-
-            // no longer able to Cancel now
-            buttonScan.post(new Runnable()
-            {
-                @Override public void run()
-                {
-                    progressBar.setVisibility(View.INVISIBLE);
-                    textConnecting.setText(getResources().getString(R.string.title_configuring));
-                    progressLine.setProgress(0);
-                    progressLine.setVisibility(View.VISIBLE);
-
-                    buttonScan.setText(getResources().getString(R.string.name_wait));
-                    buttonScan.setEnabled(false);
-                }
-            });
 
             new Thread()
             {
@@ -433,6 +416,27 @@ public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
     {
         reply = reply.trim();
         Log.v(LOGNAME, "Reply=" + reply);
+
+        if (isConnecting)
+        {
+            isConnecting = false;
+            isConnected = true;
+
+            // no longer able to Cancel now
+            buttonScan.post(new Runnable()
+            {
+                @Override public void run()
+                {
+                    progressBar.setVisibility(View.INVISIBLE);
+                    textConnecting.setText(getResources().getString(R.string.title_configuring));
+                    progressLine.setProgress(0);
+                    progressLine.setVisibility(View.VISIBLE);
+
+                    buttonScan.setText(getResources().getString(R.string.name_wait));
+                    buttonScan.setEnabled(false);
+                }
+            });
+        }
 
         switch (doReply.Next(reply))
         {

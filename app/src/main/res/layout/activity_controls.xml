@@ -140,8 +140,8 @@
                         <Button
                             android:layout_width="35dp"
                             android:layout_height="35dp"
-                            android:layout_marginTop="8dp"
-                            android:layout_marginRight="10dp"
+                            android:layout_marginTop="10dp"
+                            android:layout_marginRight="15dp"
                             android:textColor="@color/UserChoice"
                             android:background="@drawable/roundbutton"
                             android:text="\?"
@@ -155,7 +155,7 @@
                             android:layout_height="wrap_content"
                             android:dropDownWidth="wrap_content"
                             android:layout_marginTop="5dp"
-                            android:layout_marginBottom="12dp"
+                            android:layout_marginBottom="10dp"
                             android:focusable="true"
                             android:id="@+id/spinner_Pattern"/>
 
@@ -375,8 +375,8 @@
                                 android:checked="false"
                                 android:onClick="onClick"
                                 android:id="@+id/toggle_AutoProp"
-                                android:textOn="@string/name_manual"
-                                android:textOff="@string/name_auto"
+                                android:textOn="@string/name_auto"
+                                android:textOff="@string/name_manual"
                                 android:textColorLink="@color/UserChoice"/>
 
                         </LinearLayout>

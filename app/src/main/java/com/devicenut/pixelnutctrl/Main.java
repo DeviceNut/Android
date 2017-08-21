@@ -44,7 +44,7 @@ public class Main extends Application
                     "Both the ColorHue and Whiteness properties affect the color.",
 
                     "Creates the effect of \"scanning\" (blocks of the same brightness that move back and forth from one end to the other).\n\n" +
-                    "The color and length of the block can be modified with the ColorHue and Count properties.\n",
+                    "The color and length of the block can be modified with the ColorHue and Count properties.",
 
                     "Creates the effect of a \"comet\" (strip of light which is bright at the head, and gets progressively dimmer towards the end).\n\n" +
                     "Both the color and length of the tail can be modified with the ColorHue, Whiteness, and Count properties.",
@@ -168,6 +168,7 @@ public class Main extends Application
     public static int basicPatternsCount = basicPatternNames.length;
     public static int advPatternsCount = advPatternNames.length;
     public static int stdPatternsCount;
+    public static int patternRangeDelay = 80; // TODO: get from parsing pattern strings
 
     public static String[] devPatternNames;
     public static String[] devPatternHelp;

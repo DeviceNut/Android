@@ -24,6 +24,7 @@ import android.widget.ToggleButton;
 
 import static android.view.View.GONE;
 import static android.view.View.VISIBLE;
+import static com.devicenut.pixelnutctrl.Bluetooth.BLESTAT_DISCONNECTED;
 import static com.devicenut.pixelnutctrl.Main.CMD_BLUENAME;
 import static com.devicenut.pixelnutctrl.Main.CMD_BRIGHT;
 import static com.devicenut.pixelnutctrl.Main.CMD_DELAY;
@@ -319,7 +320,8 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
         Log.d(LOGNAME, ">>onPause");
         super.onPause();
 
-        if (!isEditing) ble.disconnect();
+        if (!isEditing && isConnected)
+            ble.disconnect();
     }
 
     @Override public void onBackPressed()
@@ -333,9 +335,9 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
     {
         @Override public void onItemSelected(AdapterView<?> parent, View view, int position, long id)
         {
-            //TextView v = (TextView)view;
-            //v.setTextColor(ContextCompat.getColor(context, R.color.UserChoice));
-            //v.setTextSize(18);
+            TextView v = (TextView)view;
+            v.setTextColor(ContextCompat.getColor(context, R.color.UserChoice));
+            v.setTextSize(18);
 
             if (changePattern)
             {
@@ -344,15 +346,17 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
                 curPattern = mapIndexToPattern[position];
                 int index = curPattern-1;
 
-                SetupControls();
-                if (helpMode > 0) SetHelpMode(false, curPattern);
-
                 if (curPattern > customPatterns)
                 {
                     if (numSegments == 1)
                     {
+                        if (xmodeEnabled)
+                        {
+                            xmodeEnabled = false;
+                            SendString(CMD_EXTMODE + "0");
+                            toggleAutoProp.setChecked(false);
+                        }
                         SendString(".");
-                        //SendString("P"); // clear stack - don't need to if no segments
                         SendString(devPatternCmds[index]);
                         SendString(".");
                         SendString("" + curPattern); // this clears by default
@@ -377,6 +381,9 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
                     }
                 }
                 else SendString("" + curPattern); // just send device specific custom pattern number
+
+                SetupControls();
+                if (helpMode > 0) SetHelpMode(false, curPattern);
             }
             else changePattern = true;
         }
@@ -413,7 +420,7 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
         {
             //innerControls.setVisibility(VISIBLE);
             helpButton2.setText("?");
-            helpButton2.setTextSize(22);
+            //helpButton2.setTextSize(22);
             patternHelp.setVisibility(GONE);
             helpMode = 0;
         }
@@ -422,7 +429,7 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
             //innerControls.setVisibility(GONE);
             patternHelp.setVisibility(VISIBLE);
             helpButton2.setText("x");
-            helpButton2.setTextSize(18);
+            //helpButton2.setTextSize(18);
             helpText2.setText( devPatternHelp[newmode-1]);
             helpMode = newmode;
         }
@@ -618,6 +625,7 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
 
     private void DeviceDisconnect(final String reason)
     {
+        Log.v(LOGNAME, "Device disconnect: reason=" + reason + " connected=" + isConnected);
         if (isConnected)
         {
             isConnected = false;
@@ -628,7 +636,9 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
                     Toast.makeText(context, "Disconnect: " + reason, Toast.LENGTH_SHORT).show();
                     helpMode = 0;
 
-                    if (!isFinishing()) onBackPressed();
+                    Log.v(LOGNAME, "Finishing controls activity...");
+                    finish();
+                    //if (!isFinishing()) onBackPressed();
                 }
             });
         }
@@ -652,7 +662,7 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
 
     @Override public void onWrite(final int status)
     {
-        if (status != 0)
+        if ((status != 0) && (status != BLESTAT_DISCONNECTED))
         {
             Log.e(LOGNAME, "Write status: " + status); //Integer.toHexString(status));
             DeviceDisconnect("Write");

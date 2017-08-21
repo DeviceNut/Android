@@ -1,6 +1,5 @@
 package com.devicenut.pixelnutctrl;
 
-import android.content.Intent;
 import android.util.Log;
 
 import static com.devicenut.pixelnutctrl.Main.MAXVAL_HUE;
@@ -32,6 +31,7 @@ import static com.devicenut.pixelnutctrl.Main.editPatterns;
 import static com.devicenut.pixelnutctrl.Main.maxlenCmdStrs;
 import static com.devicenut.pixelnutctrl.Main.numPatterns;
 import static com.devicenut.pixelnutctrl.Main.numSegments;
+import static com.devicenut.pixelnutctrl.Main.patternRangeDelay;
 import static com.devicenut.pixelnutctrl.Main.posSegCount;
 import static com.devicenut.pixelnutctrl.Main.posSegStart;
 import static com.devicenut.pixelnutctrl.Main.rangeDelay;
@@ -189,8 +189,8 @@ class ReplyStrs
                         Log.d(LOGNAME, "Constants: Pixels=" + countPixels + " Layers=" + countLayers + " Tracks=" + countTracks + " RangeDelay=" + rangeDelay);
 
                         if (!CheckValue(countPixels, 1, 0) ||
-                                !CheckValue(countLayers, 2, 0) ||
-                                !CheckValue(countTracks, 1, 0))
+                            !CheckValue(countLayers, 2, 0) ||
+                            !CheckValue(countTracks, 1, 0))
                             replyFail = true;
                     }
                     else replyFail = true;
@@ -215,8 +215,8 @@ class ReplyStrs
                         Log.d(LOGNAME, "Externs: Enable=" + xmodeEnabled + " Hue=" + xmodeHue + " White=" + xmodeWhite + " PixCnt=" + xmodePixCnt);
 
                         if (!CheckValue(xmodeHue, 0, MAXVAL_HUE) ||
-                                !CheckValue(xmodeWhite, 0, MAXVAL_PERCENT) ||
-                                !CheckValue(xmodePixCnt, 0, MAXVAL_PERCENT))
+                            !CheckValue(xmodeWhite, 0, MAXVAL_PERCENT) ||
+                            !CheckValue(xmodePixCnt, 0, MAXVAL_PERCENT))
                             replyFail = true;
                     }
                     else replyFail = true;
@@ -278,6 +278,12 @@ class ReplyStrs
                             //customPatterns = -customPatterns;
                             editPatterns = false;
                             stdPatternsCount = 0; // prevent using patterns defined here
+
+                            if (!CheckValue(rangeDelay,  1, 0))
+                            {
+                                Log.e(LOGNAME, "RangeDelay is invalid: " + rangeDelay);
+                                replyFail = true;
+                            }
                         }
                         else stdPatternsCount = basicPatternsCount + advPatternsCount;
 
@@ -299,6 +305,9 @@ class ReplyStrs
                                 devPatternHelp  = new String[numPatterns];
                                 devPatternCmds  = new String[numPatterns];
                                 devPatternBits  = new int[numPatterns];
+
+                                if (rangeDelay < patternRangeDelay)
+                                    rangeDelay = patternRangeDelay;
                             }
 
                             setPercentage = (getSegments || getPatterns || getPlugins);
