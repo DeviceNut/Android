@@ -63,9 +63,10 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
 
     private TextView nameText;
     private Button pauseButton, helpButton, helpButton2;
-    private TextView helpText, helpText2, helpTitle;
+    private TextView helpText, helpText2, helpTitle, textTrigger;
     private LinearLayout outerControls, innerControls, patternHelp;
-    private LinearLayout autoControls, trigControls;
+    private LinearLayout autoControls, llPropColor, llPropWhite, llPropCount;
+    private LinearLayout trigControls, llTrigForce;
     private Spinner selectPattern;
     private SeekBar seekBright, seekDelay;
     private SeekBar seekPropColor, seekPropWhite, seekPropCount;
@@ -249,11 +250,16 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
         seekPropCount.setOnSeekBarChangeListener(this);
         seekTrigForce.setOnSeekBarChangeListener(this);
 
-        outerControls  = (LinearLayout) findViewById(R.id.ll_OuterControls);
-        innerControls  = (LinearLayout) findViewById(R.id.ll_InnerControls);
-        patternHelp    = (LinearLayout) findViewById(R.id.ll_PatternHelp);
+        outerControls   = (LinearLayout) findViewById(R.id.ll_OuterControls);
+        innerControls   = (LinearLayout) findViewById(R.id.ll_InnerControls);
+        patternHelp     = (LinearLayout) findViewById(R.id.ll_PatternHelp);
         autoControls    = (LinearLayout) findViewById(R.id.auto_Controls);
+        llPropColor     = (LinearLayout) findViewById(R.id.ll_PropColor);
+        llPropWhite     = (LinearLayout) findViewById(R.id.ll_PropWhite);
+        llPropCount     = (LinearLayout) findViewById(R.id.ll_PropCount);
         trigControls    = (LinearLayout) findViewById(R.id.trig_Controls);
+        llTrigForce     = (LinearLayout) findViewById(R.id.ll_TrigForce);
+        textTrigger     = (TextView)     findViewById(R.id.text_Trigger);
         nameText        = (TextView)     findViewById(R.id.text_Devname);
         pauseButton     = (Button)       findViewById(R.id.button_Pause);
         helpButton      = (Button)       findViewById(R.id.button_ControlsHelp);
@@ -445,9 +451,12 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
             autoControls.setVisibility(VISIBLE);
             toggleAutoProp.setEnabled(true);
 
-            seekPropColor.setEnabled((bits & 1) != 0);
-            seekPropWhite.setEnabled((bits & 2) != 0);
-            seekPropCount.setEnabled((bits & 4) != 0);
+            //seekPropColor.setEnabled((bits & 1) != 0);
+            //seekPropWhite.setEnabled((bits & 2) != 0);
+            //seekPropCount.setEnabled((bits & 4) != 0);
+            llPropColor.setVisibility(((bits & 1) != 0) ? VISIBLE : GONE);
+            llPropWhite.setVisibility(((bits & 2) != 0) ? VISIBLE : GONE);
+            llPropCount.setVisibility(((bits & 4) != 0) ? VISIBLE : GONE);
         }
         else
         {
@@ -458,7 +467,18 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
         if ((bits & 0x10) != 0) // enable triggering
         {
             trigControls.setVisibility(VISIBLE);
-            seekTrigForce.setEnabled((bits & 0x20) != 0);
+            //seekTrigForce.setEnabled((bits & 0x20) != 0);
+
+            if ((bits & 0x20) != 0)
+            {
+                llTrigForce.setVisibility(VISIBLE);
+                textTrigger.setText(getResources().getString(R.string.title_trigforce));
+            }
+            else
+            {
+                llTrigForce.setVisibility(GONE);
+                textTrigger.setText(getResources().getString(R.string.title_dotrigger));
+            }
         }
         else trigControls.setVisibility(GONE);
     }
@@ -542,9 +562,17 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
             }
             case R.id.button_Pause:
             {
-                SendString(doUpdate ? CMD_PAUSE : CMD_RESUME);
+                if (doUpdate)
+                {
+                    SendString(CMD_PAUSE);
+                    pauseButton.setText(getResources().getString(R.string.name_pause));
+                }
+                else
+                {
+                    SendString(CMD_RESUME);
+                    pauseButton.setText(getResources().getString(R.string.name_resume));
+                }
                 doUpdate = !doUpdate;
-                pauseButton.setText(doUpdate ? "Pause" : "Resume");
                 break;
             }
             case R.id.button_PatternHelp:

@@ -36,7 +36,7 @@ public class Main extends Application
                     "Just a solid color which can be modified with the ColorHue and Whiteness properties.",
 
                     "This creates the effect of \"waves\" (brightness that changes up and down) that move down the strip, in a single color.\n\n" +
-                    "The color and frequency of the wave can be modified with the ColorHue, Whiteness, and Count properties",
+                    "The color and frequency of the wave can be modified with the ColorHue, Whiteness, and Count properties.",
 
                     "Random blinking in a single color, which can be modified with the ColorHue property.",
 
@@ -101,7 +101,7 @@ public class Main extends Application
 
                     "This has bright twinkling without a background. The ColorHue property changes the twinkling color.\n\n" +
                     "Occasional comets streak up and down and then disappear. One of the comets is red, and appears randomly every 3-6 seconds.\n\n" +
-                    "The other is orange and appears only when externally Triggered, with the Force determining its length.",
+                    "The other is orange and appears only when Triggered, with the Force determining its length.",
 
                     "Comets pairs, one in either direction, both of which change color hue occasionaly. Trigging causes new comets to be added.\n\n" +
                     "The comet color and tail lengths can be modified with the ColorHue, Whiteness, and Count properties.",
@@ -110,14 +110,14 @@ public class Main extends Application
                     "The first one changes colors on each change in direction, and the length can be modified with the Count property.\n\n" +
                     "The second one (once Triggered) moves in the opposite direction, periodically surges in speed, and is modified with ColorHue property.",
 
-                    "Evenly spaced pixels (\"spokes\") move together round and round the strip, creating a \"Ferris Wheel\" effect.\n\n" +
+                    "Evenly spaced pixels (\"spokes\") move together around and around the strip, creating a \"Ferris Wheel\" effect.\n\n" +
                     "The spokes periodically change colors, or can be modified with the ColorHue and Whiteness properties.\n\n" +
                     "The Count property determines the number of spokes. Triggering toggles the direction of the motion." ,
 
                     "The background is white-ish noise, with the color modified by the ColorHue property.\n\n" +
                     "A Trigger causes the background to slowly and continuously expand and contract, with the Force determining the extent of the expansion.",
 
-                    "Random colored blinking that changes the periodically surge in the rate of blinking. The Count property determines the number of " +
+                    "Random colored blinking that periodically surge in the rate of blinking. The Count property determines the number of " +
                     "blinking changes made at once.\n\nTriggering changes the frequency of the blinking, with larger Forces causing faster blinking surges.",
 
                     "All pixels swell up and down in brightness, with random color hue and whiteness changes, or set with the ColorHue and " +
