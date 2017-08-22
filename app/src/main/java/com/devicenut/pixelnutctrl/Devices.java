@@ -120,19 +120,18 @@ public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
         bleEnabled = ble.checkForBleEnabled();
         if (!bleEnabled)
         {
+            blePresentAndEnabled = false;
             Toast.makeText(this, "Bluetooth LE not enabled", Toast.LENGTH_LONG).show();
             DoFinish();
-            blePresentAndEnabled = false;
+            return;
         }
-        else
-        {
-            isConnecting = false;
-            isConnected = false;
-            ble.setCallbacks(this);
 
-            if (resumeScanning) StartScanning();
-            else resumeScanning = true;
-        }
+        isConnecting = false;
+        isConnected = false;
+        ble.setCallbacks(this);
+
+        if (resumeScanning) StartScanning();
+        else resumeScanning = true;
     }
 
     @Override protected void onPause()

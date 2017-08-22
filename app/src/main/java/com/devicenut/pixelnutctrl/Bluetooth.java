@@ -14,8 +14,10 @@ import android.bluetooth.le.ScanResult;
 import android.bluetooth.le.ScanSettings;
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.os.Build;
 import android.util.Log;
 
+import java.lang.reflect.Method;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
@@ -77,13 +79,43 @@ class Bluetooth
     }
     boolean checkForBleEnabled()
     {
-        return ((bleAdapter != null) && bleAdapter.isEnabled());
+        if (bleAdapter == null) return false;
+        /*
+        if (!bleAdapter.isEnabled())
+        {
+            Log.w(LOGNAME, "Enabling Bluetooth now...");
+            bleAdapter.enable(); // NOT supposed to do this without user permission
+
+            BluetoothManager manager = (BluetoothManager) context.getSystemService(Context.BLUETOOTH_SERVICE);
+            if (manager == null) return false;
+
+            bleAdapter = manager.getAdapter();
+            if (bleAdapter == null) return false;
+
+            Log.w(LOGNAME, "...Bluetooth is now enabled");
+        }
+        */
+        return bleAdapter.isEnabled();
     }
 
     void setCallbacks(BleCallbacks cb) { bleCB = cb; }
 
     void startScanning()
     {
+        /*
+        if (Build.VERSION.SDK_INT < 23)
+        {
+            Log.w(LOGNAME, "Reset Adapter to capture name changes");
+            if (bleAdapter.disable() && bleAdapter.enable()) // this doesn't work (asynchronous) as well as against rules
+            {
+                BluetoothManager manager = (BluetoothManager) context.getSystemService(Context.BLUETOOTH_SERVICE);
+                if (manager == null) bleAdapter = null;
+                else bleAdapter = manager.getAdapter();
+                if (bleAdapter == null) Log.e(LOGNAME, "Failed to get BLE adapter");
+            }
+            else Log.e(LOGNAME, "Failed to reset BLE adapter");
+        }
+        */
         bleDevList.clear();
         ScanSettings.Builder builder = new ScanSettings.Builder();
         bleAdapter.getBluetoothLeScanner().startScan(null, builder.build(), bleScanDevicesCB);
@@ -118,6 +150,23 @@ class Bluetooth
     {
         if (bleDevice == null) return null;
         return bleDevice.getName();
+    }
+
+    boolean refreshDeviceCache() // this doesn't work to clear cached name
+    {
+        if (bleGatt == null) return false;
+        try
+        {
+            Method localMethod = bleGatt.getClass().getMethod("refresh");
+            if (localMethod != null)
+            {
+                boolean result = (Boolean) localMethod.invoke(bleGatt);
+                if (result) Log.d(LOGNAME, "Bluetooth refresh cache");
+                return result;
+            }
+        }
+        catch (Exception localException) { Log.e(LOGNAME, "Failed refreshing device cache"); }
+        return false;
     }
 
     void disconnect()

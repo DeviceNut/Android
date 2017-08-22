@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -274,11 +275,18 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
         Log.d(LOGNAME, ">>onResume");
         super.onResume();
 
-        if (isEditing)
+        if (isEditing && (ble != null))
         {
+            isEditing = false;
             Log.d(LOGNAME, "Renaming device: " + devName);
             SendString(CMD_BLUENAME + devName);
-            isEditing = false;
+
+            if (Build.VERSION.SDK_INT < 23)
+            {
+                //ble.refreshDeviceCache(); // doesn't work
+
+                Toast.makeText(context, "Rescan from Settings to see name change", Toast.LENGTH_SHORT).show();
+            }
         }
         else
         {
