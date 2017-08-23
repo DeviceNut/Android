@@ -125,7 +125,7 @@ public class Main extends Application
 
                     "All pixels move through color hue and whiteness transitions that are slow and smooth.\n\n" +
                     "A new color is chosen every time the previous target color has been reached, or when Triggered, " +
-                    "with the Force determing how large the color changes are.\n\n" +
+                    "with the Force determining how large the color changes are.\n\n" +
                     "The time it takes to reach a new color is proportional to the size of the color change.",
 
                     "Combination of a purple scanner over a green-ish twinkling background, with a red comet that is fired off every time the scanner " +
