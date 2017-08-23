@@ -103,7 +103,7 @@ public class Main extends Application
                     "Occasional comets streak up and down and then disappear. One of the comets is red, and appears randomly every 3-6 seconds.\n\n" +
                     "The other is orange and appears only when Triggered, with the Force determining its length.",
 
-                    "Comets pairs, one in either direction, both of which change color hue occasionaly. Trigging causes new comets to be added.\n\n" +
+                    "Comets pairs, one in either direction, both of which change color hue occasionally. Trigging causes new comets to be added.\n\n" +
                     "The comet color and tail lengths can be modified with the ColorHue, Whiteness, and Count properties.",
 
                     "Two scanners (blocks of same brightness pixels that move back and forth), with only the first one visible initially until Triggered.\n\n" +
@@ -114,7 +114,7 @@ public class Main extends Application
                     "The spokes periodically change colors, or can be modified with the ColorHue and Whiteness properties.\n\n" +
                     "The Count property determines the number of spokes. Triggering toggles the direction of the motion." ,
 
-                    "The background is white-ish noise, with the color modified by the ColorHue property.\n\n" +
+                    "The background is whiteish noise, with the color modified by the ColorHue property.\n\n" +
                     "A Trigger causes the background to slowly and continuously expand and contract, with the Force determining the extent of the expansion.",
 
                     "Random colored blinking that periodically surge in the rate of blinking. The Count property determines the number of " +
@@ -128,7 +128,7 @@ public class Main extends Application
                     "with the Force determining how large the color changes are.\n\n" +
                     "The time it takes to reach a new color is proportional to the size of the color change.",
 
-                    "Combination of a purple scanner over a green-ish twinkling background, with a red comet that is fired off every time the scanner " +
+                    "Combination of a purple scanner over a greenish twinkling background, with a red comet that is fired off every time the scanner " +
                     "bounces off the end of the strip, or when Triggered.\n\n" +
                     "The ColorHue property only affects the color of the twinkling."
             };
