@@ -446,7 +446,6 @@ public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
             }
             case 1:
             {
-                //SleepMsecs(100); // slow it down for de
                 progressLine.post(new Runnable()
                 {
                     @Override public void run()

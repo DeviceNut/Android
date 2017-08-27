@@ -360,16 +360,17 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
                 curPattern = mapIndexToPattern[position];
                 int index = curPattern-1;
 
+                if (xmodeEnabled)
+                {
+                    xmodeEnabled = false;
+                    SendString(CMD_EXTMODE + "0");
+                    toggleAutoProp.setChecked(false);
+                }
+
                 if (curPattern > customPatterns)
                 {
                     if (numSegments == 1)
                     {
-                        if (xmodeEnabled)
-                        {
-                            xmodeEnabled = false;
-                            SendString(CMD_EXTMODE + "0");
-                            toggleAutoProp.setChecked(false);
-                        }
                         SendString(".");
                         SendString(devPatternCmds[index]);
                         SendString(".");
@@ -606,7 +607,7 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
             }
             case R.id.button_TrigAction:
             {
-                if ((devPatternBits[curPattern-1] & 0x30) != 0)
+                if ((devPatternBits[curPattern-1] & 0x20) != 0)
                      SendString(CMD_TRIGGER + trigForce);
                 else SendString(CMD_TRIGGER + 0);
                 break;

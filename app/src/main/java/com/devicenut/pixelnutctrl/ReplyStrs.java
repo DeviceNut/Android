@@ -88,10 +88,10 @@ class ReplyStrs
                 {
                     int val1 = Integer.parseInt(strs[i++]);
                     int val2 = Integer.parseInt(strs[i++]);
-                    Log.v(LOGNAME, "Segment " + i + ": " + val2 + "." + val2);
+                    Log.v(LOGNAME, "Segment " + j + ": " + val1 + "." + val2);
 
                     if ((val1 < 0) || (val1 >= countPixels-1) ||
-                            (val2 < 0) || (val2 >= (countPixels-val1)))
+                        (val2 < 0) || (val2 > (countPixels-val1)))
                     {
                         replyFail = true;
                         break;
@@ -116,8 +116,14 @@ class ReplyStrs
             {
                 int line = ((replyState-1) % 3);
 
-                     if (line == 0) devPatternNames[index] = new String(reply);
-                else if (line == 1) devPatternHelp[index] = new String(reply);
+                if (line == 0)
+                {
+                    devPatternNames[index] = new String(reply);
+                }
+                else if (line == 1)
+                {
+                    devPatternHelp[index] = (new String(reply)).replace('\t', '\n');
+                }
                 else
                 {
                     devPatternCmds[index] = new String(reply);
@@ -135,7 +141,9 @@ class ReplyStrs
                             int val = Integer.parseInt(strs[i].substring(1));
                             devPatternBits[index] |= val;
                         }
-                        else if (strs[i].charAt(0) == 'F') haveforce = true;
+                        else if ((strs[i].charAt(0) == 'F') && (strs[i].length() > 1) && (strs[i].charAt(1) != '0')) // ignore zero-force setting
+                            haveforce = true;
+
                         else if (strs[i].charAt(0) == 'I')
                         {
                             devPatternBits[index] |= 0x10;
@@ -340,7 +348,8 @@ class ReplyStrs
 
         if (setPercentage)
         {
-            progressPcentInc = 100.0 / ((numSegments-1) + (customPatterns*2) + (customPlugins*2));
+            // use 101 to insure the progress bar fills up entirely
+            progressPcentInc = 101.0 / ((numSegments-1) + (customPatterns*3) + (customPlugins*2));
             progressPercent = progressPcentInc;
             setPercentage = false;
 

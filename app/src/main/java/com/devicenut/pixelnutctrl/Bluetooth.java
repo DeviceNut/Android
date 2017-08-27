@@ -313,7 +313,7 @@ class Bluetooth
         // @param errorCode Error code (one of SCAN_FAILED_*)
         public void onScanFailed(int errorCode)
         {
-            Log.e(LOGNAME, "Scan error=" + errorCode);
+            Log.e(LOGNAME, "Scan error=" + errorCode); // TODO: do something here!
         }
     };
 

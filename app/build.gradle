@@ -2,13 +2,13 @@ apply plugin: 'com.android.application'
 
 android {
     compileSdkVersion 25
-    buildToolsVersion '25.0.2'
+    buildToolsVersion '26.0.1'
     defaultConfig {
         applicationId "com.devicenut.pixelnutctrl"
         minSdkVersion 21
         targetSdkVersion 25
-        versionCode 24
-        versionName "2.4"
+        versionCode 25
+        versionName "2.5"
     }
     buildTypes {
         release {

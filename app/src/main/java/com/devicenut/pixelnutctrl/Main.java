@@ -114,7 +114,7 @@ public class Main extends Application
                     "The spokes periodically change colors, or can be modified with the ColorHue and Whiteness properties.\n\n" +
                     "The Count property determines the number of spokes. Triggering toggles the direction of the motion." ,
 
-                    "The background is whiteish noise, with the color modified by the ColorHue property.\n\n" +
+                    "The background is whitish noise, with the color modified by the ColorHue property.\n\n" +
                     "A Trigger causes the background to slowly and continuously expand and contract, with the Force determining the extent of the expansion.",
 
                     "Random colored blinking that periodically surge in the rate of blinking. The Count property determines the number of " +
