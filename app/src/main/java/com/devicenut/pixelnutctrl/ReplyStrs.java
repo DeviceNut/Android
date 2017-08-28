@@ -116,14 +116,9 @@ class ReplyStrs
             {
                 int line = ((replyState-1) % 3);
 
-                if (line == 0)
-                {
-                    devPatternNames[index] = new String(reply);
-                }
-                else if (line == 1)
-                {
-                    devPatternHelp[index] = (new String(reply)).replace('\t', '\n');
-                }
+                     if (line == 0)     devPatternNames[index] = new String(reply);
+                else if (line == 1)     devPatternHelp[index] = (new String(reply)).replace('\t', '\n');
+                else if (!editPatterns) devPatternBits[index] = Integer.parseInt(reply, 16);
                 else
                 {
                     devPatternCmds[index] = new String(reply);
@@ -248,13 +243,9 @@ class ReplyStrs
                         Log.d(LOGNAME, "Current: Pattern=" + curPattern + " Delay=" + curDelay + " Bright=" + curBright);
 
                         if (curPattern == 0) curPattern = 1; // ok to reset to default
-                        if (CheckValue(curBright, 0, MAXVAL_PERCENT))
-                        {
-                            // allow for bad current delay value
-                            if (curDelay < -rangeDelay) curDelay = -rangeDelay;
-                            else if (curDelay > rangeDelay) curDelay = rangeDelay;
-                        }
-                        else replyFail = true;
+
+                        if (!CheckValue(curBright, 0, MAXVAL_PERCENT))
+                            replyFail = true;
                     }
                     else replyFail = true;
 
@@ -281,16 +272,14 @@ class ReplyStrs
                             (maxlenCmdStrs < 80))
                             replyFail = true;
 
-                        else if (customPatterns > 0) // indicates fixed internal device patterns
+                        else if (customPatterns != 0) // indicates fixed internal device patterns
                         {
-                            //customPatterns = -customPatterns;
-                            editPatterns = false;
                             stdPatternsCount = 0; // prevent using patterns defined here
 
-                            if (!CheckValue(rangeDelay,  1, 0))
+                            if (customPatterns < 0)
                             {
-                                Log.e(LOGNAME, "RangeDelay is invalid: " + rangeDelay);
-                                replyFail = true;
+                                customPatterns =  -customPatterns;
+                                editPatterns = false;
                             }
                         }
                         else stdPatternsCount = basicPatternsCount + advPatternsCount;
@@ -307,16 +296,18 @@ class ReplyStrs
                             numPatterns = customPatterns + stdPatternsCount;
                             Log.v(LOGNAME, "Total patterns=" + numPatterns);
 
-                            if (!getPatterns)
-                            {
-                                devPatternNames = new String[numPatterns];
-                                devPatternHelp  = new String[numPatterns];
-                                devPatternCmds  = new String[numPatterns];
-                                devPatternBits  = new int[numPatterns];
+                            devPatternNames = new String[numPatterns];
+                            devPatternHelp  = new String[numPatterns];
+                            devPatternBits  = new int[numPatterns];
 
-                                if (rangeDelay < patternRangeDelay)
-                                    rangeDelay = patternRangeDelay;
-                            }
+                            if (editPatterns) devPatternCmds  = new String[numPatterns];
+
+                            if (rangeDelay < patternRangeDelay)
+                                rangeDelay = patternRangeDelay;
+
+                            // allow for bad current delay value
+                                 if (curDelay < -rangeDelay) curDelay = -rangeDelay;
+                            else if (curDelay >  rangeDelay) curDelay =  rangeDelay;
 
                             setPercentage = (getSegments || getPatterns || getPlugins);
 
@@ -367,11 +358,6 @@ class ReplyStrs
             sendCmdStr = "?P";
             moreinfo = true;
             optionLines = customPatterns*3;
-
-            devPatternNames = new String[numPatterns];
-            devPatternHelp  = new String[numPatterns];
-            devPatternCmds  = new String[numPatterns];
-            devPatternBits  = new int[numPatterns];
         }
         else if (getPlugins)
         {
