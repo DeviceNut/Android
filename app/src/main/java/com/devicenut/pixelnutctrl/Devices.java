@@ -21,7 +21,7 @@ import android.widget.Toast;
 import java.util.ArrayList;
 
 import static com.devicenut.pixelnutctrl.Bluetooth.BLESTAT_SUCCESS;
-import static com.devicenut.pixelnutctrl.Main.CMD_GETINFO;
+import static com.devicenut.pixelnutctrl.Main.CMD_GET_INFO;
 import static com.devicenut.pixelnutctrl.Main.URL_PIXELNUT;
 import static com.devicenut.pixelnutctrl.Main.ble;
 import static com.devicenut.pixelnutctrl.Main.pixelDensity;
@@ -65,6 +65,7 @@ public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
     private boolean isConnected = false;
     private boolean resumeScanning = true;
     private boolean didFail = false;
+    private boolean isDone = false;
 
     @Override protected void onCreate(Bundle savedInstanceState)
     {
@@ -375,9 +376,10 @@ public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
                 @Override public void run()
                 {
 
+                    isDone = false;
                     SleepMsecs(250); // don't send too soon...hack!
-                    Log.d(LOGNAME, "Sending command: " + CMD_GETINFO);
-                    ble.WriteString(CMD_GETINFO);
+                    Log.d(LOGNAME, "Sending command: " + CMD_GET_INFO);
+                    ble.WriteString(CMD_GET_INFO);
                 }
 
             }.start();
@@ -411,10 +413,10 @@ public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
         }
     }
 
-    @Override public void onRead(String reply)
+    @Override public void onRead(String rstr)
     {
-        reply = reply.trim();
-        Log.v(LOGNAME, "Reply=" + reply);
+        rstr = rstr.trim();
+        Log.v(LOGNAME, "Reply=" + rstr);
 
         if (isConnecting)
         {
@@ -437,7 +439,15 @@ public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
             });
         }
 
-        switch (doReply.Next(reply))
+        int reply;
+        try { reply = doReply.Next(rstr); }
+        catch(Exception e)
+        {
+            e.printStackTrace();
+            DeviceFailed("Device Config Failed");
+            return;
+        }
+        switch (reply)
         {
             case -1:
             {
@@ -446,39 +456,53 @@ public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
             }
             case 1:
             {
-                progressLine.post(new Runnable()
-                {
-                    @Override public void run()
-                    {
-                        doReply.progressPercent += doReply.progressPcentInc;
-                        progressLine.setProgress((int)doReply.progressPercent);
-                        Log.v(LOGNAME, "Progress=" + (int)doReply.progressPercent);
-                    }
-                });
-
+                UpdateProgress();
                 break;
             }
             case 2:
             {
-                new Thread()
-                {
-                    @Override public void run()
-                    {
-                        SleepMsecs(250); // don't send too soon...hack!
-                        Log.d(LOGNAME, "Sending command: " + doReply.sendCmdStr);
-                        ble.WriteString(doReply.sendCmdStr);
-                    }
-
-                }.start();
-
+                SendCommand();
                 break;
             }
             case 3:
             {
-                Log.i(LOGNAME, ">>>>>>>>>> Device Setup Successful <<<<<<<<<<");
-                startActivity( new Intent(Devices.this, Controls.class) );
+                isDone = true;
+                UpdateProgress();
                 break;
             }
         }
+    }
+
+    private void SendCommand()
+    {
+        new Thread()
+        {
+            @Override public void run()
+            {
+                SleepMsecs(250); // don't send too soon...hack!
+                Log.d(LOGNAME, "Sending command: " + doReply.sendCmdStr);
+                ble.WriteString(doReply.sendCmdStr);
+            }
+
+        }.start();
+    }
+
+    private void UpdateProgress()
+    {
+        progressLine.post(new Runnable()
+        {
+            @Override public void run()
+            {
+                doReply.progressPercent += doReply.progressPcentInc;
+                progressLine.setProgress((int)doReply.progressPercent);
+                Log.v(LOGNAME, "Progress=" + (int)doReply.progressPercent);
+
+                if (isDone)
+                {
+                    Log.i(LOGNAME, ">>> Device Setup Successful <<<");
+                    startActivity( new Intent(Devices.this, Controls.class) );
+                }
+            }
+        });
     }
 }

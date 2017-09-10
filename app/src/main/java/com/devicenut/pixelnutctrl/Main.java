@@ -4,11 +4,13 @@ import android.app.Application;
 
 public class Main extends Application
 {
-    public static final String TITLE_PIXELNUT = "PixelNut!";
+    public static final String TITLE_PIXELNUT = "P!";
     public static final String URL_PIXELNUT = "http://www.pixelnutstore.com";
 
-    public static final String CMD_GETINFO2     = "??";
-    public static final String CMD_GETINFO      = "?";
+    public static final String CMD_GET_INFO     = "?";
+    public static final String CMD_GET_SEGMENTS = "?S";
+    public static final String CMD_GET_PATTERNS = "?P";
+    public static final String CMD_GET_PLUGINS  = "?X";
     public static final String CMD_BLUENAME     = "@";
     public static final String CMD_BRIGHT       = "%";
     public static final String CMD_DELAY        = ":";
@@ -17,9 +19,11 @@ public class Main extends Application
     public static final String CMD_TRIGGER      = "!";
     public static final String CMD_PAUSE        = "[";
     public static final String CMD_RESUME       = "]";
+    public static final String CMD_SEGS_ENABLE  = "#";
 
     public static final int MAXVAL_HUE          = 359;
     public static final int MAXVAL_PERCENT      = 100;
+    public static final int MAXVAL_FORCE        = 1000;
 
     public static final String[] basicPatternNames =
             {
@@ -139,8 +143,8 @@ public class Main extends Application
                     "E1 D10 F1 I T E101 F1000 I T G",
                     "E0 B50 W20 H232 Q3 T E142 D10 F250 I E50 B80 W80 D10 T G",
                     "E50 B65 W80 H50 Q3 T E20 B90 C25 D30 F0 O3 T6 E20 U0 B90 H30 C45 D30 F0 I T E120 F1 I G",
-                    "E20 W25 C15 D30 Q7 I T E101 F100 T E20 U0 W25 C15 D20 Q7 I T E101 F200 T G",
-                    "E40 C10 D20 Q4 T E111 A0 E40 U0 V1 H270 C5 D30 Q1 I E131 F1000 O5 T5 G",
+                    "E20 W25 C25 D30 Q7 I T E101 F100 T E20 U0 W25 C25 D20 Q7 I T E101 F200 T G",
+                    "E40 C25 D20 Q4 T E111 A0 E40 U0 V1 H270 C5 D30 Q1 I E131 F1000 O5 T5 G",
                     "E30 C20 D80 Q7 T E160 I E120 I E111 F O3 T7 G",
                     "E52 C25 W65 D20 Q1 T E150 D80 I E120 F1000 I G",
                     "E51 C10 D80 Q4 T E112 T E131 F1 I T G",
@@ -156,19 +160,18 @@ public class Main extends Application
                     0x33,
                     0x33,
                     0x17,
-                    0x35,
+                    0x15,
                     0x17,
                     0x31,
                     0x34,
                     0x33,
                     0x30,
-                    0x31,
+                    0x11,
             };
 
     public static int basicPatternsCount = basicPatternNames.length;
     public static int advPatternsCount = advPatternNames.length;
     public static int stdPatternsCount;
-    public static int patternRangeDelay = 80; // TODO: get from parsing pattern strings
 
     public static String[] devPatternNames;
     public static String[] devPatternHelp;
@@ -183,13 +186,9 @@ public class Main extends Application
     public static int countLayers       = 0;
     public static int countTracks       = 0;
     public static int rangeDelay        = 80;
-    public static int curPattern        = 0;
     public static int curDelay          = 0;
     public static int curBright         = 0;
-    public static boolean xmodeEnabled  = false;
-    public static int xmodeHue          = 0;
-    public static int xmodeWhite        = 0;
-    public static int xmodePixCnt       = 0;
+    public static int curSegment        = 0;    // index from 0
 
     public static int numSegments       = 0;    // total number of pixel segments
     public static int customPatterns    = 0;    // number of custom patterns defined by device
@@ -198,9 +197,18 @@ public class Main extends Application
 
     public static int numPatterns       = 0;    // total number of patterns that can be chosen by user
     public static boolean editPatterns = true;  // false if device has fixed patterns that cannot be changed
+    public static boolean doSendPattern = false;
+    public static boolean doSendSegments = false;
 
-    public static int posSegStart[] = { 0,0,0,0,0,0 }; // starting positions for each segment
-    public static int posSegCount[] = { 0,0,0,0,0,0 }; // number of pixels for each segment
+    public static int segPosStart[] = { 0,0,0,0,0,0 }; // starting positions for each segment
+    public static int segPosCount[] = { 0,0,0,0,0,0 }; // number of pixels for each segment
+
+    public static boolean segXmodeEnb[] = { false,false,false,false,false,false };
+    public static int segXmodeHue[]  = { 0,0,0,0,0,0 };
+    public static int segXmodeWht[]  = { 0,0,0,0,0,0 };
+    public static int segXmodeCnt[]  = { 0,0,0,0,0,0 };
+    public static int segTrigForce[] = { 0,0,0,0,0,0 };
+    public static int segPatterns[]  = { 0,0,0,0,0,0 }; // index from 0
 
     public static String devName;
     public static Bluetooth ble; // = new Bluetooth();

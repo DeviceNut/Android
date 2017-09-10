@@ -152,6 +152,7 @@ class Bluetooth
         return bleDevice.getName();
     }
 
+    /*
     boolean refreshDeviceCache() // this doesn't work to clear cached name
     {
         if (bleGatt == null) return false;
@@ -168,6 +169,7 @@ class Bluetooth
         catch (Exception localException) { Log.e(LOGNAME, "Failed refreshing device cache"); }
         return false;
     }
+    */
 
     void disconnect()
     {
@@ -193,12 +195,12 @@ class Bluetooth
 
     void SendNextChunk()
     {
-        String str = writeChunks[nextChunk++];
+        String str = writeChunks[nextChunk++] + " ";
 
         int len = str.length();
-        if (len >= MAXLEN_CHUNK) // cannot support chunks too large
+        if (len >= MAXLEN_CHUNK) // cannot support chunks that are too large
         {
-            Log.e(LOGNAME, "Chunk too large: str=" + str + "\"");
+            Log.e(LOGNAME, "Chunk too large: str=\"" + str + "\"");
             bleCB.onWrite(BLESTAT_CALL_FAILED);
             writeEnable = false;
             return;
@@ -208,15 +210,15 @@ class Bluetooth
         {
             len += writeChunks[nextChunk].length() + 1; // 1 for space separator
             if (len >= MAXLEN_CHUNK) break;
-            str += " " + writeChunks[nextChunk++];
+            str += writeChunks[nextChunk++] + " ";
         }
 
-        Log.v(LOGNAME, "Sending chunk: str=" + str + "\"");
+        Log.v(LOGNAME, "Sending chunk: \"" + str + "\"");
 
         bleTx.setValue(str + "\n"); // MUST add newline to end of each string
         if (!bleGatt.writeCharacteristic(bleTx))
         {
-            Log.e(LOGNAME, "Chunk write failed: str=" + str + "\"");
+            Log.e(LOGNAME, "Chunk write failed: \"" + str + "\"");
             bleCB.onWrite(BLESTAT_CALL_FAILED);
             writeEnable = false;
             return;
@@ -263,7 +265,7 @@ class Bluetooth
                                 }
                                 Log.v(LOGNAME, "Command=\"" + cmd1 + "\"");
 
-                                writeChunks = cmd1.split(" ");
+                                writeChunks = cmd1.split("\\s+"); // remove ALL spaces
                                 nextChunk = 0;
 
                                 doNextChunk = false; // wait for completion
