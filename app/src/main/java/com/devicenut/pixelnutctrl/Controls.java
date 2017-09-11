@@ -63,6 +63,7 @@ import static com.devicenut.pixelnutctrl.Main.segXmodeHue;
 import static com.devicenut.pixelnutctrl.Main.segXmodeWht;
 import static com.devicenut.pixelnutctrl.Main.stdPatternsCount;
 import static com.devicenut.pixelnutctrl.Main.devName;
+import static com.devicenut.pixelnutctrl.Main.useAdvPatterns;
 
 @SuppressWarnings("unchecked")
 public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChangeListener, Bluetooth.BleCallbacks
@@ -116,6 +117,11 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
         int j = 0;
         int extra = (customPatterns > 0) ? 1 : 0;
         if (stdPatternsCount > 0) extra += 2;
+        if ((customPatterns == 0) && !useAdvPatterns)
+        {
+            extra = 0;
+            numPatterns = basicPatternsCount;
+        }
         patternNames = new String[numPatterns + extra];
         listEnables = new boolean[numPatterns + extra];
         mapIndexToPattern = new int[numPatterns + extra];
@@ -128,7 +134,7 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
             mapIndexToPattern[j] = 0;
             ++j;
         }
-        else
+        else if (useAdvPatterns)
         {
             patternNames[j] = "Basic Patterns";
             listEnables[j] = false;
@@ -138,7 +144,7 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
 
         for (int i = 0; i < numPatterns; ++i)
         {
-            if ((i > 0) && (i == customPatterns))
+            if ((i > 0) && (i == customPatterns) && useAdvPatterns)
             {
                 patternNames[j] = "Basic Patterns";
                 listEnables[j] = false;
@@ -146,7 +152,7 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
                 ++j;
             }
 
-            if ((i > customPatterns) && (i == basicPatternsCount))
+            if ((i > customPatterns) && (i == basicPatternsCount) && useAdvPatterns)
             {
                 patternNames[j] = "Advanced Patterns";
                 listEnables[j] = false;
@@ -173,6 +179,7 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
         seekTrigForce = (SeekBar) findViewById(R.id.seek_TrigForce);
 
         toggleAutoProp = (ToggleButton) findViewById(R.id.toggle_AutoProp);
+        if (!useAdvPatterns) toggleAutoProp.setVisibility(GONE);
 
         seekBright.setOnSeekBarChangeListener(this);
         seekDelay.setOnSeekBarChangeListener(this);
@@ -254,6 +261,12 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
             Log.d(LOGNAME, "SendPattern=" + doSendPattern + " location=" + mapPatternToIndex[segPatterns[curSegment]]);
             selectPattern.setSelection(mapPatternToIndex[segPatterns[curSegment]], false);
 
+            // if disabling use of the mode button then must enable it for all segments
+            if (!useAdvPatterns) for (int i = 0; i < numSegments; ++i)
+            {
+                if (segXmodeEnb[i]) SendString(CMD_EXTMODE + "1");
+            }
+
             sendEnable = false; // prevent following from writing commands
 
             SetupControls(true);
@@ -331,31 +344,6 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
                     int curPattern = mapIndexToPattern[position];
                     segPatterns[curSegment] = curPattern;
 
-                    if ((numSegments > 1) && doSendSegments)
-                    {
-                        for (int i = 1; i <= numSegments; ++i)
-                        {
-                            if (i-1 == curSegment)
-                            {
-                                segXmodeEnb[curSegment] = false;
-
-                                SendString(CMD_SEGS_ENABLE + i);
-                                SendString(CMD_EXTMODE + "0");
-                            }
-                            else if (segXmodeEnb[i-1])
-                            {
-                                SendString(CMD_SEGS_ENABLE + i);
-                                SendString(CMD_EXTMODE + "0");
-                            }
-                        }
-                    }
-                    else if (segXmodeEnb[curSegment])
-                    {
-                        segXmodeEnb[curSegment] = false;
-                        SendString(CMD_EXTMODE + "0");
-                    }
-                    toggleAutoProp.setChecked(false);
-
                     if (curPattern >= customPatterns)
                     {
                         SendString("."); // start sequence
@@ -380,20 +368,6 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
                     int num = curPattern+1; // device pattern numbers start at 1
                     SendString("" + num);   // store current pattern number
                     // this also pops the stack if not multiple segments
-
-                    if ((numSegments > 1) && doSendSegments)
-                    {
-                        for (int i = 1; i <= numSegments; ++i)
-                        {
-                            if (segXmodeEnb[i])
-                            {
-                                SendString(CMD_SEGS_ENABLE + i);
-                                SendString(CMD_EXTMODE + "1");
-                            }
-                        }
-                        int i = curSegment+1;
-                        SendString(CMD_SEGS_ENABLE + i);
-                    }
 
                     SetupControls(false);
 
@@ -541,7 +515,8 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
         Log.d(LOGNAME, "Switching to segment=" + curSegment);
         curSegment = i;
 
-        changePattern = false; // don't need to resend the pattern
+        //changePattern = false; // don't need to resend the pattern
+        // this doesn't cause selection callback?
         selectPattern.setSelection(mapPatternToIndex[segPatterns[curSegment]], false);
 
         int num = curSegment+1; // device segment numbers start at 1

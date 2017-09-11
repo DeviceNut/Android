@@ -25,69 +25,76 @@ public class Main extends Application
     public static final int MAXVAL_PERCENT      = 100;
     public static final int MAXVAL_FORCE        = 1000;
 
-    public static final String[] basicPatternNames =
-            {
-                    "Solid",
-                    "Waves",
-                    "Blinks",
-                    "Twinkles",
-                    "Scanner",
-                    "Comet",
-            };
-
     public static final String[] basicPatternHelp =
             {
                     "Just a solid color which can be modified with the ColorHue and Whiteness properties.",
 
-                    "This creates the effect of \"waves\" (brightness that changes up and down) that move down the strip, in a single color.\n\n" +
+                    "A color that ripples down the strip, and can be modified with the ColorHue and Whiteness properties.",
+
+                    "A color that rolls down the strip, and can be modified with the ColorHue and Whiteness properties.",
+
+                    "This creates the effect of waves (brightness that changes up and down) that move down the strip, in a single color.\n\n" +
                     "The color and frequency of the wave can be modified with the ColorHue, Whiteness, and Count properties.",
 
-                    "Random blinking in a single color, which can be modified with the ColorHue property.",
+                    "Creates what seems like noise (randomly set pixels with a random brightness), using the color selected with the ColorHue and Whiteness properties.\n\n" +
+                    "The Count property determines how many pixels are set at once.",
 
-                    "Creates the effect of \"twinkling\" (rising/falling brightness that disappear in a random fashion). " +
-                    "Both the ColorHue and Whiteness properties affect the color.",
+                    "Randomly blinks pixels on/off with equal brightness, in the color selected with the ColorHue and Whiteness properties.\n\n" +
+                    "The Count property determines how many pixels blink at once.",
 
-                    "Creates the effect of \"scanning\" (blocks of the same brightness that move back and forth from one end to the other).\n\n" +
+                    "Creates the effect of twinkling (rising/falling brightness that disappear in a random fashion).\n\n" +
+                    "The color of the twinkling can be modified with the ColorHue and Whiteness properties.",
+
+                    "Creates the effect of scanning (blocks of the same brightness that move back and forth from one end to the other).\n\n" +
                     "The color and length of the block can be modified with the ColorHue and Count properties.",
 
-                    "Creates the effect of a \"comet\" (strip of light which is bright at the head, and gets progressively dimmer towards the end).\n\n" +
+                    "Evenly spaced pixels move in unison, like spokes in a wheel. The color can be modified with the ColorHue and Whiteness properties.\n\n" +
+                    "The number of spokes is determined by the Count property, with larger counts creating more spokes.",
+
+                    "Creates the effect of a comet (strip of light which is bright at the head, and gets progressively dimmer towards the end).\n\n" +
                     "Both the color and length of the tail can be modified with the ColorHue, Whiteness, and Count properties.",
             };
 
     public static final String[] basicPatternCmds =
             {
                     "E0 H270 Q3 T G",
+                    "E1 H135 D40 Q3 T G",
+                    "E2 H100 D40 Q3 T G",
                     "E10 D60 Q7 T G",
+                    "E52 W30 D10 Q3 T G",
                     "E51 H232 D10 Q3 T G",
                     "E50 W80 D10 Q3 T G",
-                    "E40 H120 C20 D20 Q7 T G",
+                    "E40 H120 C20 D40 Q7 T G",
+                    "E30 C20 D80 Q7 T G",
                     "E20 H30 C25 D30 Q7 T G",
+            };
+
+    public static final String[] basicPatternNames =
+            {
+                    "Solid",
+                    "Ripple",
+                    "Roller",
+                    "Waves",
+                    "Noisy",
+                    "Blinks",
+                    "Twinkles",
+                    "Scanner",
+                    "Spokes",
+                    "Comet",
             };
 
     public static final int[] basicPatternBits =
             {
                     0x03,
-                    0x07,
                     0x03,
                     0x03,
                     0x07,
                     0x07,
-            };
-
-    public static final String[] advPatternNames =
-            {
-                    "Rainbow Ripple",
-                    "Rainbow Roll",
-                    "Color Twinkles",
-                    "Twinkle Comets",
-                    "Dueling Comets",
-                    "Dueling Scanners",
-                    "Ferris Wheel",
-                    "Expanding Noise",
-                    "Blink Surges",
-                    "Bright Swells",
-                    "Color Smooth",
-                    "MashUp",
+                    0x07,
+                    0x03,
+                    0x07,
+                    0x07,
+                    0x07,
             };
 
     public static final String[] advPatternHelp =
@@ -95,10 +102,8 @@ public class Main extends Application
                     "Color hue changes \"ripple\" down the strip. The colors move through the spectrum, and appear stationary until Triggered.\n\n" +
                     "The Force applied changes the amount of color change per pixel. At maximum Force the entire spectrum is displayed again.",
 
-                    "Colors hue changes occur at the head and get pushed down the strip. When the end is reached they start getting cleared, creating a " +
-                    "\"rolling\" effect.\n\n" +
-                    "Triggering restarts the effect, with the amount of Force determining how fast the colors change. At the maximum Force the entire " +
-                    "spectrum is displayed again.",
+                    "Colors hue changes occur at the head and get pushed down the strip. When the end is reached they start getting cleared, creating a \"rolling\" effect.\n\n" +
+                    "Triggering restarts the effect, with the amount of Force determining how fast the colors change. At the maximum Force the entire spectrum is displayed again.",
 
                     "This has bright white twinkling \"stars\" over a background color, which is determined by the ColorHue and Brightness properties.\n\n" +
                     "Triggering causes the background brightness to swell up and down, with the amount of Force determining the speed of the swelling.",
@@ -114,18 +119,18 @@ public class Main extends Application
                     "The first one changes colors on each change in direction, and the length can be modified with the Count property.\n\n" +
                     "The second one (once Triggered) moves in the opposite direction, periodically surges in speed, and is modified with ColorHue property.",
 
-                    "Evenly spaced pixels (\"spokes\") move together around and around the strip, creating a \"Ferris Wheel\" effect.\n\n" +
+                    "Evenly spaced pixels move together around and around the strip, creating a \"Ferris Wheel\" effect.\n\n" +
                     "The spokes periodically change colors, or can be modified with the ColorHue and Whiteness properties.\n\n" +
                     "The Count property determines the number of spokes. Triggering toggles the direction of the motion." ,
 
                     "The background is whitish noise, with the color modified by the ColorHue property.\n\n" +
                     "A Trigger causes the background to slowly and continuously expand and contract, with the Force determining the extent of the expansion.",
 
-                    "Random colored blinking that periodically surge in the rate of blinking. The Count property determines the number of " +
-                    "blinking changes made at once.\n\nTriggering changes the frequency of the blinking, with larger Forces causing faster blinking surges.",
+                    "Random colored blinking that periodically surge in the rate of blinking. The Count property determines the number of blinking changes made at once.\n\n" +
+                    "Triggering changes the frequency of the blinking, with larger Forces causing faster blinking surges.",
 
-                    "All pixels swell up and down in brightness, with random color hue and whiteness changes, or set with the ColorHue and " +
-                    "Whiteness properties.\n\nTriggering changes the pace of the swelling, with larger Forces causing faster swelling.",
+                    "All pixels swell up and down in brightness, with random color hue and whiteness changes, or set with the ColorHue and Whiteness properties.\n\n" +
+                    "Triggering changes the pace of the swelling, with larger Forces causing faster swelling.",
 
                     "All pixels move through color hue and whiteness transitions that are slow and smooth.\n\n" +
                     "A new color is chosen every time the previous target color has been reached, or when Triggered, " +
@@ -151,6 +156,22 @@ public class Main extends Application
                     "E0 B80 Q3 T E111 F O10 T10 E142 F250 I T G",
                     "E0 H30 D30 T E110 F600 I T E111 A1 G",
                     "E50 V1 B65 W30 H100 Q1 T E40 H270 C10 D50 T E20 D15 C20 A1 F0 I T G"
+            };
+
+    public static final String[] advPatternNames =
+            {
+                    "Rainbow Ripple",
+                    "Rainbow Roll",
+                    "Color Twinkles",
+                    "Twinkle Comets",
+                    "Dueling Comets",
+                    "Dueling Scanners",
+                    "Ferris Wheel",
+                    "Expanding Noise",
+                    "Blink Surges",
+                    "Bright Swells",
+                    "Color Smooth",
+                    "MashUp",
             };
 
     public static final int[] advPatternBits =
@@ -190,25 +211,28 @@ public class Main extends Application
     public static int curBright         = 0;
     public static int curSegment        = 0;    // index from 0
 
+    public static int numPatterns       = 0;    // total number of patterns that can be chosen
     public static int numSegments       = 0;    // total number of pixel segments
     public static int customPatterns    = 0;    // number of custom patterns defined by device
     public static int customPlugins     = 0;    // number of custom plugins defined by device
     public static int maxlenCmdStrs     = 0;    // max length of command string that can be sent
 
-    public static int numPatterns       = 0;    // total number of patterns that can be chosen by user
-    public static boolean editPatterns = true;  // false if device has fixed patterns that cannot be changed
-    public static boolean doSendPattern = false;
-    public static boolean doSendSegments = false;
+    public static boolean useAdvPatterns = true;    // false for small segments and/or limited flash space
+    public static boolean editPatterns = true;      // false if device has fixed patterns that cannot be changed
+    public static boolean doSendPattern = false;    // triggers sending current pattern info at startup
+    public static boolean doSendSegments = false;   // true to send all segment info when changing a pattern
+                                                    // false implies that segments are physically different
 
-    public static int segPosStart[] = { 0,0,0,0,0,0 }; // starting positions for each segment
-    public static int segPosCount[] = { 0,0,0,0,0,0 }; // number of pixels for each segment
+    public static int segPosStart[] = { 0,0,0,0,0 }; // starting positions for each segment
+    public static int segPosCount[] = { 0,0,0,0,0 }; // number of pixels for each segment
 
-    public static boolean segXmodeEnb[] = { false,false,false,false,false,false };
-    public static int segXmodeHue[]  = { 0,0,0,0,0,0 };
-    public static int segXmodeWht[]  = { 0,0,0,0,0,0 };
-    public static int segXmodeCnt[]  = { 0,0,0,0,0,0 };
-    public static int segTrigForce[] = { 0,0,0,0,0,0 };
-    public static int segPatterns[]  = { 0,0,0,0,0,0 }; // index from 0
+    // limited to 5 segments
+    public static boolean segXmodeEnb[] = { false,false,false,false,false };
+    public static int segXmodeHue[]  = { 0,0,0,0,0 };
+    public static int segXmodeWht[]  = { 0,0,0,0,0 };
+    public static int segXmodeCnt[]  = { 0,0,0,0,0 };
+    public static int segTrigForce[] = { 0,0,0,0,0 };
+    public static int segPatterns[]  = { 0,0,0,0,0 }; // index from 0
 
     public static String devName;
     public static Bluetooth ble; // = new Bluetooth();

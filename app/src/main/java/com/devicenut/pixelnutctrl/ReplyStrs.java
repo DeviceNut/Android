@@ -19,6 +19,7 @@ import static com.devicenut.pixelnutctrl.Main.basicPatternCmds;
 import static com.devicenut.pixelnutctrl.Main.basicPatternHelp;
 import static com.devicenut.pixelnutctrl.Main.basicPatternNames;
 import static com.devicenut.pixelnutctrl.Main.basicPatternsCount;
+import static com.devicenut.pixelnutctrl.Main.stdPatternsCount;
 import static com.devicenut.pixelnutctrl.Main.countLayers;
 import static com.devicenut.pixelnutctrl.Main.countPixels;
 import static com.devicenut.pixelnutctrl.Main.countTracks;
@@ -33,6 +34,7 @@ import static com.devicenut.pixelnutctrl.Main.devPatternNames;
 import static com.devicenut.pixelnutctrl.Main.editPatterns;
 import static com.devicenut.pixelnutctrl.Main.doSendPattern;
 import static com.devicenut.pixelnutctrl.Main.doSendSegments;
+import static com.devicenut.pixelnutctrl.Main.useAdvPatterns;
 import static com.devicenut.pixelnutctrl.Main.maxlenCmdStrs;
 import static com.devicenut.pixelnutctrl.Main.numPatterns;
 import static com.devicenut.pixelnutctrl.Main.numSegments;
@@ -45,7 +47,6 @@ import static com.devicenut.pixelnutctrl.Main.segXmodeCnt;
 import static com.devicenut.pixelnutctrl.Main.segXmodeEnb;
 import static com.devicenut.pixelnutctrl.Main.segXmodeHue;
 import static com.devicenut.pixelnutctrl.Main.segXmodeWht;
-import static com.devicenut.pixelnutctrl.Main.stdPatternsCount;
 
 class ReplyStrs
 {
@@ -104,6 +105,8 @@ class ReplyStrs
                 String[] strs = reply.split("\\s+"); // remove ALL spaces
                 for (int i = 0, j = 0; (i+1) < strs.length; ++j)
                 {
+                    if (i >= (2 * segPosStart.length)) break; // prevent overrun
+
                     int val1 = Integer.parseInt(strs[i++]);
                     int val2 = Integer.parseInt(strs[i++]);
                     Log.v(LOGNAME, "Segment " + j + ": " + val1 + ":" + val2);
@@ -118,7 +121,7 @@ class ReplyStrs
                     segPosStart[j] = val1;
                     segPosCount[j] = val2;
 
-                    if (i >= 12) break; // only support for 6 segments, just ignore if more
+                    if (val2 < 20) useAdvPatterns = false;
                 }
             }
             else if (replyState <= numSegments+1)
@@ -295,6 +298,8 @@ class ReplyStrs
                             }
                         }
                         else stdPatternsCount = basicPatternsCount + advPatternsCount;
+
+                        if (maxlenCmdStrs < 300) useAdvPatterns = false;
 
                         getSegments = (numSegments > 1);
                         getPatterns = (customPatterns > 0);
