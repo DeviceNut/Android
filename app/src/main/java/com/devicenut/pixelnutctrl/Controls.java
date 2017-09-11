@@ -254,18 +254,23 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
             devName = devName.substring(2);
             Log.d(LOGNAME, "Device name: " + devName);
 
+            // if disabling use of the mode button then must enable it for all segments
+            if (!useAdvPatterns) for (int i = 1; i <= numSegments; ++i)
+            {
+                if (!segXmodeEnb[i-1])
+                {
+                    segXmodeEnb[i-1] = true;
+                    SendString(CMD_SEGS_ENABLE + i);
+                    SendString(CMD_EXTMODE + "1");
+                }
+            }
+
             curSegment = 0; // always start with first segment
             if (numSegments > 1) SendString(CMD_SEGS_ENABLE + "1"); // device segment numbers start at 1
 
             changePattern = doSendPattern;
             Log.d(LOGNAME, "SendPattern=" + doSendPattern + " location=" + mapPatternToIndex[segPatterns[curSegment]]);
             selectPattern.setSelection(mapPatternToIndex[segPatterns[curSegment]], false);
-
-            // if disabling use of the mode button then must enable it for all segments
-            if (!useAdvPatterns) for (int i = 0; i < numSegments; ++i)
-            {
-                if (segXmodeEnb[i]) SendString(CMD_EXTMODE + "1");
-            }
 
             sendEnable = false; // prevent following from writing commands
 
@@ -515,9 +520,9 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
         Log.d(LOGNAME, "Switching to segment=" + curSegment);
         curSegment = i;
 
-        //changePattern = false; // don't need to resend the pattern
-        // this doesn't cause selection callback?
+        changePattern = false; // don't need to resend the pattern
         selectPattern.setSelection(mapPatternToIndex[segPatterns[curSegment]], false);
+        changePattern = true; // didn't get reset if didn't change pattern
 
         int num = curSegment+1; // device segment numbers start at 1
         SendString(CMD_SEGS_ENABLE + num); // restricts subsequent controls to this segment
