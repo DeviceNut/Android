@@ -8,6 +8,8 @@ import static com.devicenut.pixelnutctrl.Main.CMD_GET_SEGMENTS;
 import static com.devicenut.pixelnutctrl.Main.MAXVAL_FORCE;
 import static com.devicenut.pixelnutctrl.Main.MAXVAL_HUE;
 import static com.devicenut.pixelnutctrl.Main.MAXVAL_PERCENT;
+import static com.devicenut.pixelnutctrl.Main.MINLEN_SEGLEN_FORADV;
+import static com.devicenut.pixelnutctrl.Main.MINLEN_CMDSTR_PERSEG;
 import static com.devicenut.pixelnutctrl.Main.TITLE_PIXELNUT;
 import static com.devicenut.pixelnutctrl.Main.advPatternBits;
 import static com.devicenut.pixelnutctrl.Main.advPatternCmds;
@@ -121,7 +123,8 @@ class ReplyStrs
                     segPosStart[j] = val1;
                     segPosCount[j] = val2;
 
-                    if (val2 < 20) useAdvPatterns = false;
+                    // if any segment is very short then just use basic patterns
+                    if (val2 < MINLEN_SEGLEN_FORADV) useAdvPatterns = false;
                 }
             }
             else if (replyState <= numSegments+1)
@@ -281,7 +284,10 @@ class ReplyStrs
                         if (!CheckValue(curDelay, -rangeDelay, rangeDelay)) curDelay = 0;
                         if (!CheckValue(curBright, 0, MAXVAL_PERCENT)) curBright = 100;
 
-                        if (!CheckValue(maxlenCmdStrs, 80, 0)) replyFail = true; // FIXME?
+                        segPatterns[0] -= 1; // device patterns start at 1
+                        if (!CheckValue(segPatterns[0], 0, numPatterns-1)) replyFail = true;
+
+                        if (!CheckValue(maxlenCmdStrs, MINLEN_CMDSTR_PERSEG, 0)) replyFail = true;
 
                         if (segPatterns[0] > 0)
                              doSendPattern = false;
@@ -299,7 +305,10 @@ class ReplyStrs
                         }
                         else stdPatternsCount = basicPatternsCount + advPatternsCount;
 
-                        if (maxlenCmdStrs < 300) useAdvPatterns = false;
+                        // if the command/pattern string is not long enough,
+                        // then must only use the basic patterns
+                        if (maxlenCmdStrs < (MINLEN_CMDSTR_PERSEG * numSegments))
+                            useAdvPatterns = false;
 
                         getSegments = (numSegments > 1);
                         getPatterns = (customPatterns > 0);

@@ -25,6 +25,10 @@ public class Main extends Application
     public static final int MAXVAL_PERCENT      = 100;
     public static final int MAXVAL_FORCE        = 1000;
 
+    public static final int MINLEN_SEGLEN_FORADV = 20;      // minimum length of each segment to be able to use the advanced patterns
+    public static final int MINLEN_CMDSTR_PERSEG = 80;      // minimum length of command/pattern string, and if less than this per segment
+                                                            // then will not be able to use the advanced patterns
+
     public static final String[] basicPatternHelp =
             {
                     "Just a solid color which can be modified with the ColorHue and Whiteness properties.",
