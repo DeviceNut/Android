@@ -284,13 +284,13 @@ class ReplyStrs
                         if (!CheckValue(curDelay, -rangeDelay, rangeDelay)) curDelay = 0;
                         if (!CheckValue(curBright, 0, MAXVAL_PERCENT)) curBright = 100;
 
-                        segPatterns[0] -= 1; // device patterns start at 1
-                        if (!CheckValue(segPatterns[0], 0, numPatterns-1)) replyFail = true;
-
                         if (!CheckValue(maxlenCmdStrs, MINLEN_CMDSTR_PERSEG, 0)) replyFail = true;
 
                         if (segPatterns[0] > 0)
-                             doSendPattern = false;
+                        {
+                            segPatterns[0] -= 1; // device patterns start at 1
+                            doSendPattern = false;
+                        }
                         else doSendPattern = true; // trigger sending initial pattern to device
 
                         if (customPatterns != 0) // indicates fixed internal device patterns
