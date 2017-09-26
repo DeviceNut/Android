@@ -10,6 +10,7 @@ import static com.devicenut.pixelnutctrl.Main.MAXVAL_HUE;
 import static com.devicenut.pixelnutctrl.Main.MAXVAL_PERCENT;
 import static com.devicenut.pixelnutctrl.Main.MINLEN_SEGLEN_FORADV;
 import static com.devicenut.pixelnutctrl.Main.MINLEN_CMDSTR_PERSEG;
+import static com.devicenut.pixelnutctrl.Main.MINVAL_DELAYRANGE;
 import static com.devicenut.pixelnutctrl.Main.TITLE_PIXELNUT;
 import static com.devicenut.pixelnutctrl.Main.advPatternBits;
 import static com.devicenut.pixelnutctrl.Main.advPatternCmds;
@@ -281,6 +282,7 @@ class ReplyStrs
                         Log.d(LOGNAME, "Bright=" + curBright + " Delay=" + curDelay + " CurPattern=" + segPatterns[0]);
                         Log.d(LOGNAME, "CustomPatterns=" + customPatterns + " MaxCmdStr=" + maxlenCmdStrs);
 
+                        if (rangeDelay < MINVAL_DELAYRANGE) rangeDelay = MINVAL_DELAYRANGE;
                         if (!CheckValue(curDelay, -rangeDelay, rangeDelay)) curDelay = 0;
                         if (!CheckValue(curBright, 0, MAXVAL_PERCENT)) curBright = 100;
 
