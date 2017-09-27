@@ -207,172 +207,176 @@ class ReplyStrs
             throw new NullPointerException("Custom Plugins Not Supported Yet");
         }
         else switch(replyState)
+        {
+            case 0: // first line: the title string (to sync with sequence)
             {
-                case 0: // first line: the title string (to sync with sequence)
+                if (reply.contains(TITLE_PIXELNUT))
                 {
-                    if (reply.contains(TITLE_PIXELNUT))
-                    {
-                        ++replyState;
-                        progressPercent = 0;
-                        progressPcentInc = 25;
-                    }
-                    else
-                    {
-                        Log.w(LOGNAME, "Unexpected title: " + reply);
-                        replyFail = true;
-                    }
-                    break;
+                    ++replyState;
+                    progressPercent = 0;
+                    progressPcentInc = 25;
                 }
-                case 1: // second line: number of lines + 7 device constants
+                else
                 {
-                    String[] strs = reply.split("\\s+"); // remove ALL spaces
-                    if (strs.length >= 7)
+                    Log.w(LOGNAME, "Unexpected title: " + reply);
+                    replyFail = true;
+                }
+                break;
+            }
+            case 1: // second line: number of additional lines + 7 device constants
+            {
+                String[] strs = reply.split("\\s+"); // remove ALL spaces
+                if (strs.length >= 7)
+                {
+                    optionLines   = Integer.parseInt(strs[0]);
+                    countPixels   = Integer.parseInt(strs[1]);
+                    numSegments   = Integer.parseInt(strs[2]);
+                    countLayers   = Integer.parseInt(strs[3]);
+                    countTracks   = Integer.parseInt(strs[4]);
+                    rangeDelay    = Integer.parseInt(strs[5]);
+                    customPlugins = Integer.parseInt(strs[6]);
+
+                    Log.d(LOGNAME, "Number of option lines = " + optionLines);
+                    Log.d(LOGNAME, "Pixels=" + countPixels + " Layers=" + countLayers + " Tracks=" + countTracks + " RangeDelay=" + rangeDelay);
+                    Log.d(LOGNAME, "Segments=" + numSegments + " XPlugins=" + customPlugins);
+
+                    if (numSegments < 0)
                     {
-                        optionLines   = Integer.parseInt(strs[0]);
-                        countPixels   = Integer.parseInt(strs[1]);
-                        numSegments   = Integer.parseInt(strs[2]);
-                        countLayers   = Integer.parseInt(strs[3]);
-                        countTracks   = Integer.parseInt(strs[4]);
-                        rangeDelay    = Integer.parseInt(strs[5]);
-                        customPlugins = Integer.parseInt(strs[6]);
-
-                        Log.d(LOGNAME, "Number of option lines = " + optionLines);
-                        Log.d(LOGNAME, "Pixels=" + countPixels + " Layers=" + countLayers + " Tracks=" + countTracks + " RangeDelay=" + rangeDelay);
-                        Log.d(LOGNAME, "Segments=" + numSegments + " XPlugins=" + customPlugins);
-
-                        if (numSegments < 0)
-                        {
-                            doSendSegments = false;
-                            numSegments = -numSegments;
-                        }
-                        else doSendSegments = true;
-
-                        if (numSegments < 1) numSegments = 1;
-                        if (customPlugins < 0) customPlugins = 0;
-
-                        if (!CheckValue(optionLines, 3, 0) ||
-                            !CheckValue(countPixels, 1, 0) ||
-                            !CheckValue(countLayers, 2, 0) ||
-                            !CheckValue(countTracks, 1, 0))
-                            replyFail = true;
+                        doSendSegments = false;
+                        numSegments = -numSegments;
                     }
-                    else replyFail = true;
+                    else doSendSegments = true;
 
-                    if (!replyFail)
+                    if (numSegments < 1) numSegments = 1;
+                    if (customPlugins < 0) customPlugins = 0;
+
+                    if (!CheckValue(optionLines, 3, 0) ||
+                        !CheckValue(countPixels, 1, 0) ||
+                        !CheckValue(countLayers, 2, 0) ||
+                        !CheckValue(countTracks, 1, 0))
+                        replyFail = true;
+                }
+                else replyFail = true;
+
+                if (!replyFail)
+                {
+                    progressPcentInc = 101/(optionLines+1);
+                    Log.v(LOGNAME, "ProgressPercentageInc=" + (int)progressPcentInc);
+
+                    ++replyState;
+                    --optionLines;
+                }
+                break;
+            }
+            case 2: // third line: 3 current settings
+            {
+                String[] strs = reply.split("\\s+"); // remove ALL spaces
+                if (strs.length >= 5)
+                {
+                    curBright = Integer.parseInt(strs[0]);
+                    curDelay = Integer.parseInt(strs[1]);
+                    segPatterns[0] = Integer.parseInt(strs[2]);
+                    customPatterns = Integer.parseInt(strs[3]);
+                    maxlenCmdStrs = Integer.parseInt(strs[4]);
+
+                    Log.d(LOGNAME, "Bright=" + curBright + " Delay=" + curDelay + " CurPattern=" + segPatterns[0]);
+                    Log.d(LOGNAME, "CustomPatterns=" + customPatterns + " MaxCmdStr=" + maxlenCmdStrs);
+
+                    if (rangeDelay < MINVAL_DELAYRANGE) rangeDelay = MINVAL_DELAYRANGE;
+                    if (!CheckValue(curDelay, -rangeDelay, rangeDelay)) curDelay = 0;
+                    if (!CheckValue(curBright, 0, MAXVAL_PERCENT)) curBright = 100;
+
+                    if (!CheckValue(maxlenCmdStrs, MINLEN_CMDSTR_PERSEG, 0)) replyFail = true;
+
+                    if (segPatterns[0] > 0)
                     {
-                        progressPcentInc = 101/(optionLines+1);
-                        Log.v(LOGNAME, "ProgressPercentageInc=" + (int)progressPcentInc);
+                        segPatterns[0] -= 1; // device patterns start at 1
+                        doSendPattern = false;
+                    }
+                    else doSendPattern = true; // trigger sending initial pattern to device
 
+                    if (customPatterns != 0) // indicates fixed internal device patterns
+                    {
+                        stdPatternsCount = 0; // prevent using patterns defined here
+
+                        if (customPatterns < 0)
+                        {
+                            customPatterns =  -customPatterns;
+                            editPatterns = false;
+                        }
+                    }
+                    else stdPatternsCount = basicPatternsCount + advPatternsCount;
+
+                    // if the command/pattern string is not long enough,
+                    // then must only use the basic patterns
+                    if (maxlenCmdStrs < (MINLEN_CMDSTR_PERSEG * numSegments))
+                        useAdvPatterns = false;
+
+                    numPatterns = customPatterns + stdPatternsCount;
+                    Log.v(LOGNAME, "Total patterns=" + numPatterns);
+
+                    devPatternNames = new String[numPatterns];
+                    devPatternHelp  = new String[numPatterns];
+                    devPatternBits  = new int[numPatterns];
+
+                    if (editPatterns) devPatternCmds = new String[numPatterns];
+
+                    setPercentage = (getSegments || getPatterns || getPlugins);
+                }
+                else replyFail = true;
+
+                if (!replyFail)
+                {
+                    ++replyState;
+                    --optionLines;
+
+                    if (numSegments > 1) // skip over case 4 below
+                    {
                         ++replyState;
                         --optionLines;
-                    }
-                    break;
-                }
-                case 2: // third line: 3 current settings
-                {
-                    String[] strs = reply.split("\\s+"); // remove ALL spaces
-                    if (strs.length >= 5)
-                    {
-                        curBright = Integer.parseInt(strs[0]);
-                        curDelay = Integer.parseInt(strs[1]);
-                        segPatterns[0] = Integer.parseInt(strs[2]);
-                        customPatterns = Integer.parseInt(strs[3]);
-                        maxlenCmdStrs = Integer.parseInt(strs[4]);
-
-                        Log.d(LOGNAME, "Bright=" + curBright + " Delay=" + curDelay + " CurPattern=" + segPatterns[0]);
-                        Log.d(LOGNAME, "CustomPatterns=" + customPatterns + " MaxCmdStr=" + maxlenCmdStrs);
-
-                        if (rangeDelay < MINVAL_DELAYRANGE) rangeDelay = MINVAL_DELAYRANGE;
-                        if (!CheckValue(curDelay, -rangeDelay, rangeDelay)) curDelay = 0;
-                        if (!CheckValue(curBright, 0, MAXVAL_PERCENT)) curBright = 100;
-
-                        if (!CheckValue(maxlenCmdStrs, MINLEN_CMDSTR_PERSEG, 0)) replyFail = true;
-
-                        if (segPatterns[0] > 0)
-                        {
-                            segPatterns[0] -= 1; // device patterns start at 1
-                            doSendPattern = false;
-                        }
-                        else doSendPattern = true; // trigger sending initial pattern to device
-
-                        if (customPatterns != 0) // indicates fixed internal device patterns
-                        {
-                            stdPatternsCount = 0; // prevent using patterns defined here
-
-                            if (customPatterns < 0)
-                            {
-                                customPatterns =  -customPatterns;
-                                editPatterns = false;
-                            }
-                        }
-                        else stdPatternsCount = basicPatternsCount + advPatternsCount;
-
-                        // if the command/pattern string is not long enough,
-                        // then must only use the basic patterns
-                        if (maxlenCmdStrs < (MINLEN_CMDSTR_PERSEG * numSegments))
-                            useAdvPatterns = false;
 
                         getSegments = (numSegments > 1);
                         getPatterns = (customPatterns > 0);
                         getPlugins = (customPlugins > 0);
-
-                        numPatterns = customPatterns + stdPatternsCount;
-                        Log.v(LOGNAME, "Total patterns=" + numPatterns);
-
-                        devPatternNames = new String[numPatterns];
-                        devPatternHelp  = new String[numPatterns];
-                        devPatternBits  = new int[numPatterns];
-
-                        if (editPatterns) devPatternCmds = new String[numPatterns];
-
-                        setPercentage = (getSegments || getPatterns || getPlugins);
                     }
-                    else replyFail = true;
-
-                    if (!replyFail)
-                    {
-                        ++replyState;
-                        --optionLines;
-
-                        if (numSegments > 1) // skip over case 4 below
-                        {
-                            ++replyState;
-                            --optionLines;
-                        }
-                    }
-                    break;
                 }
-                case 3: // fourth line: 5 extern mode values (only if numSegments <= 1)
-                {
-                    String[] strs = reply.split("\\s+"); // remove ALL spaces
-                    if (strs.length >= 5)
-                    {
-                        segXmodeEnb[0] = (Integer.parseInt(strs[0]) != 0);
-                        segXmodeHue[0] = Integer.parseInt(strs[1]);
-                        segXmodeWht[0] = Integer.parseInt(strs[2]);
-                        segXmodeCnt[0] = Integer.parseInt(strs[3]);
-                        segTrigForce[0] = Integer.parseInt(strs[4]);
-
-                        Log.d(LOGNAME, "Enable=" + segXmodeEnb[0] + " Hue=" + segXmodeHue[0] + " White=" + segXmodeWht[0] + " Cnt=" + segXmodeCnt[0] + " Force=" + segTrigForce[0]);
-
-                        CheckSegVals(0);
-                    }
-                    else replyFail = true;
-
-                    if (!replyFail)
-                    {
-                        ++replyState;
-                        --optionLines;
-                    }
-                    break;
-                }
-                default: // ignore for forward compatibility
-                {
-                    Log.w(LOGNAME, "Line=" + replyState + " Reply=" + reply);
-                    --optionLines;
-                    break;
-                }
+                break;
             }
+            case 3: // fourth line: 5 extern mode values (only if numSegments <= 1)
+            {
+                String[] strs = reply.split("\\s+"); // remove ALL spaces
+                if (strs.length >= 5)
+                {
+                    segXmodeEnb[0] = (Integer.parseInt(strs[0]) != 0);
+                    segXmodeHue[0] = Integer.parseInt(strs[1]);
+                    segXmodeWht[0] = Integer.parseInt(strs[2]);
+                    segXmodeCnt[0] = Integer.parseInt(strs[3]);
+                    segTrigForce[0] = Integer.parseInt(strs[4]);
+
+                    Log.d(LOGNAME, "Enable=" + segXmodeEnb[0] + " Hue=" + segXmodeHue[0] + " White=" + segXmodeWht[0] + " Cnt=" + segXmodeCnt[0] + " Force=" + segTrigForce[0]);
+
+                    CheckSegVals(0);
+
+                    getSegments = (numSegments > 1);
+                    getPatterns = (customPatterns > 0);
+                    getPlugins = (customPlugins > 0);
+                }
+                else replyFail = true;
+
+                if (!replyFail)
+                {
+                    ++replyState;
+                    --optionLines;
+                }
+                break;
+            }
+            default: // ignore for forward compatibility
+            {
+                Log.w(LOGNAME, "Line=" + replyState + " Reply=" + reply);
+                --optionLines;
+                break;
+            }
+        }
 
         if (replyFail)
         {
