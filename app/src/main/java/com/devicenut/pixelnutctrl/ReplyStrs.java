@@ -320,8 +320,6 @@ class ReplyStrs
                     devPatternBits  = new int[numPatterns];
 
                     if (editPatterns) devPatternCmds = new String[numPatterns];
-
-                    setPercentage = (getSegments || getPatterns || getPlugins);
                 }
                 else replyFail = true;
 
@@ -338,6 +336,8 @@ class ReplyStrs
                         getSegments = (numSegments > 1);
                         getPatterns = (customPatterns > 0);
                         getPlugins = (customPlugins > 0);
+
+                        setPercentage = (getSegments || getPatterns || getPlugins);
                     }
                 }
                 break;
@@ -360,6 +360,8 @@ class ReplyStrs
                     getSegments = (numSegments > 1);
                     getPatterns = (customPatterns > 0);
                     getPlugins = (customPlugins > 0);
+
+                    setPercentage = (getSegments || getPatterns || getPlugins);
                 }
                 else replyFail = true;
 
