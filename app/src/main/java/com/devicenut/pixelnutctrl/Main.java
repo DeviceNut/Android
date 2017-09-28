@@ -4,6 +4,8 @@ import android.app.Application;
 
 public class Main extends Application
 {
+    // Release 29:
+    
     public static final String TITLE_PIXELNUT = "P!";
     public static final String URL_PIXELNUT = "http://www.pixelnutstore.com";
 
