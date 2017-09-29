@@ -23,9 +23,6 @@ import static com.devicenut.pixelnutctrl.Main.basicPatternHelp;
 import static com.devicenut.pixelnutctrl.Main.basicPatternNames;
 import static com.devicenut.pixelnutctrl.Main.basicPatternsCount;
 import static com.devicenut.pixelnutctrl.Main.stdPatternsCount;
-import static com.devicenut.pixelnutctrl.Main.countLayers;
-import static com.devicenut.pixelnutctrl.Main.countPixels;
-import static com.devicenut.pixelnutctrl.Main.countTracks;
 import static com.devicenut.pixelnutctrl.Main.curBright;
 import static com.devicenut.pixelnutctrl.Main.curDelay;
 import static com.devicenut.pixelnutctrl.Main.customPatterns;
@@ -50,6 +47,9 @@ import static com.devicenut.pixelnutctrl.Main.segXmodeCnt;
 import static com.devicenut.pixelnutctrl.Main.segXmodeEnb;
 import static com.devicenut.pixelnutctrl.Main.segXmodeHue;
 import static com.devicenut.pixelnutctrl.Main.segXmodeWht;
+import static com.devicenut.pixelnutctrl.Main.segLayers;
+import static com.devicenut.pixelnutctrl.Main.segPixels;
+import static com.devicenut.pixelnutctrl.Main.segTracks;
 
 class ReplyStrs
 {
@@ -112,14 +112,7 @@ class ReplyStrs
 
                     int val1 = Integer.parseInt(strs[i++]);
                     int val2 = Integer.parseInt(strs[i++]);
-                    Log.v(LOGNAME, "Segment " + j + ": " + val1 + ":" + val2);
-
-                    if ((val1 < 0) || (val1 >= countPixels-1) ||
-                        (val2 < 0) || (val2 > (countPixels-val1)))
-                    {
-                        replyFail = true;
-                        break;
-                    }
+                    Log.v(LOGNAME, "Segment Sizes " + j + ": " + val1 + ":" + val2);
 
                     segPosStart[j] = val1;
                     segPosCount[j] = val2;
@@ -128,7 +121,29 @@ class ReplyStrs
                     if (val2 < MINLEN_SEGLEN_FORADV) useAdvPatterns = false;
                 }
             }
-            else if (replyState <= numSegments+1)
+            else if (replyState == 2)
+            {
+                String[] strs = reply.split("\\s+"); // remove ALL spaces
+                for (int i = 0, j = 0; (i+1) < strs.length; ++j)
+                {
+                    if (i >= (2 * segPosStart.length)) break; // prevent overrun
+
+                    int val1 = Integer.parseInt(strs[i++]);
+                    int val2 = Integer.parseInt(strs[i++]);
+                    int val3 = Integer.parseInt(strs[i++]);
+                    Log.v(LOGNAME, "Segment Info " + j + ": " + val1 + ":" + val2 + ":" + val3);
+
+                    segPixels[j] = val1;
+                    segLayers[j] = val2;
+                    segTracks[j] = val3;
+
+                    if (!CheckValue(segPixels[j], 1, 0) ||
+                        !CheckValue(segLayers[j], 2, 0) ||
+                        !CheckValue(segTracks[j], 1, 0))
+                        replyFail = true;
+                }
+            }
+            else if (replyState <= numSegments+2)
             {
                 int segindex = replyState-2;
                 Log.v(LOGNAME, "SegValues[" + segindex + "]: " + reply);
@@ -223,22 +238,18 @@ class ReplyStrs
                 }
                 break;
             }
-            case 1: // second line: number of additional lines + 7 device constants
+            case 1: // second line: number of additional lines + 3 device constants
             {
                 String[] strs = reply.split("\\s+"); // remove ALL spaces
-                if (strs.length >= 7)
+                if (strs.length >= 4)
                 {
                     optionLines   = Integer.parseInt(strs[0]);
-                    countPixels   = Integer.parseInt(strs[1]);
-                    numSegments   = Integer.parseInt(strs[2]);
-                    countLayers   = Integer.parseInt(strs[3]);
-                    countTracks   = Integer.parseInt(strs[4]);
-                    rangeDelay    = Integer.parseInt(strs[5]);
-                    customPlugins = Integer.parseInt(strs[6]);
+                    numSegments   = Integer.parseInt(strs[1]);
+                    rangeDelay    = Integer.parseInt(strs[2]);
+                    customPlugins = Integer.parseInt(strs[3]);
 
                     Log.d(LOGNAME, "Number of option lines = " + optionLines);
-                    Log.d(LOGNAME, "Pixels=" + countPixels + " Layers=" + countLayers + " Tracks=" + countTracks + " RangeDelay=" + rangeDelay);
-                    Log.d(LOGNAME, "Segments=" + numSegments + " XPlugins=" + customPlugins);
+                    Log.d(LOGNAME, "Segments=" + numSegments + " RangeDelay=" + rangeDelay + " XPlugins=" + customPlugins);
 
                     if (numSegments < 0)
                     {
@@ -250,10 +261,7 @@ class ReplyStrs
                     if (numSegments < 1) numSegments = 1;
                     if (customPlugins < 0) customPlugins = 0;
 
-                    if (!CheckValue(optionLines, 3, 0) ||
-                        !CheckValue(countPixels, 1, 0) ||
-                        !CheckValue(countLayers, 2, 0) ||
-                        !CheckValue(countTracks, 1, 0))
+                    if (!CheckValue(optionLines, 2, 0))
                         replyFail = true;
                 }
                 else replyFail = true;
@@ -268,7 +276,7 @@ class ReplyStrs
                 }
                 break;
             }
-            case 2: // third line: 3 current settings
+            case 2: // third line: 5 current settings
             {
                 String[] strs = reply.split("\\s+"); // remove ALL spaces
                 if (strs.length >= 5)
@@ -328,11 +336,8 @@ class ReplyStrs
                     ++replyState;
                     --optionLines;
 
-                    if (numSegments > 1) // skip over case 4 below
+                    if (numSegments > 1) // not getting lines 3 and 4 below
                     {
-                        ++replyState;
-                        --optionLines;
-
                         getSegments = (numSegments > 1);
                         getPatterns = (customPatterns > 0);
                         getPlugins = (customPlugins > 0);
@@ -342,7 +347,32 @@ class ReplyStrs
                 }
                 break;
             }
-            case 3: // fourth line: 5 extern mode values (only if numSegments <= 1)
+            case 3: // fourth line: 3 more constants (only if numSegments <= 1)
+            {
+                String[] strs = reply.split("\\s+"); // remove ALL spaces
+                if (strs.length >= 5)
+                {
+                    segPixels[0] = Integer.parseInt(strs[0]);
+                    segLayers[0] = Integer.parseInt(strs[1]);
+                    segTracks[0] = Integer.parseInt(strs[2]);
+
+                    Log.d(LOGNAME, "Pixels=" + segPixels[0] + " Layers=" + segLayers[0] + " Tracks=" + segTracks[0]);
+
+                    if (!CheckValue(segPixels[0], 1, 0) ||
+                        !CheckValue(segLayers[0], 2, 0) ||
+                        !CheckValue(segTracks[0], 1, 0))
+                        replyFail = true;
+                }
+                else replyFail = true;
+
+                if (!replyFail)
+                {
+                    ++replyState;
+                    --optionLines;
+                }
+                break;
+            }
+            case 4: // fifth line: 5 extern mode values (only if numSegments <= 1)
             {
                 String[] strs = reply.split("\\s+"); // remove ALL spaces
                 if (strs.length >= 5)

@@ -5,7 +5,7 @@ import android.app.Application;
 public class Main extends Application
 {
     // Release 29:
-    
+
     public static final String TITLE_PIXELNUT = "P!";
     public static final String URL_PIXELNUT = "http://www.pixelnutstore.com";
 
@@ -210,9 +210,6 @@ public class Main extends Application
     public static int pixelLength = 0;
     public static int pixelDensity = 0;
 
-    public static int countPixels       = 0;
-    public static int countLayers       = 0;
-    public static int countTracks       = 0;
     public static int rangeDelay        = 80;
     public static int curDelay          = 0;
     public static int curBright         = 0;
@@ -235,11 +232,14 @@ public class Main extends Application
 
     // limited to 5 segments
     public static boolean segXmodeEnb[] = { false,false,false,false,false };
-    public static int segXmodeHue[]  = { 0,0,0,0,0 };
-    public static int segXmodeWht[]  = { 0,0,0,0,0 };
-    public static int segXmodeCnt[]  = { 0,0,0,0,0 };
-    public static int segTrigForce[] = { 0,0,0,0,0 };
-    public static int segPatterns[]  = { 0,0,0,0,0 }; // index from 0
+    public static int segXmodeHue[]     = { 0,0,0,0,0 };
+    public static int segXmodeWht[]     = { 0,0,0,0,0 };
+    public static int segXmodeCnt[]     = { 0,0,0,0,0 };
+    public static int segTrigForce[]    = { 0,0,0,0,0 };
+    public static int segPatterns[]     = { 0,0,0,0,0 }; // index from 0
+    public static int segPixels[]       = { 0,0,0,0,0 }; // number of pixels
+    public static int segLayers[]       = { 0,0,0,0,0 }; // number of layers
+    public static int segTracks[]       = { 0,0,0,0,0 }; // number of tracks
 
     public static String devName;
     public static Bluetooth ble; // = new Bluetooth();
