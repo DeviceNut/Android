@@ -355,7 +355,7 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
 
                         if (numSegments == 1) SendString(devPatternCmds[curPattern]);
 
-                        else if (doSendSegments)
+                        else if (doSendSegments) // must send all segment patterns at once
                         {
                             for (int i = 0; i < numSegments; ++i)
                             {
@@ -365,6 +365,7 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
                                 SendString(devPatternCmds[ segPatterns[i] ]);
                             }
                         }
+                        // else physically separate segments, so can treat them as such
                         else SendString(devPatternCmds[ segPatterns[ curSegment ] ]);
 
                         SendString("."); // end sequence

@@ -86,6 +86,14 @@ class ReplyStrs
         if (!CheckValue(segTrigForce[i], 0, MAXVAL_FORCE))   segTrigForce[i] = MAXVAL_FORCE >> 1;
     }
 
+    private void CheckForExtendedCommands()
+    {
+        getSegments = (numSegments > 1);
+        getPatterns = (customPatterns > 0);
+        getPlugins = (customPlugins > 0);
+        setPercentage = (getSegments || getPatterns || getPlugins);
+    }
+
     int Next(String reply)
     {
         Log.v(LOGNAME, "ReplyState=" + replyState + " OptionLines=" + optionLines);
@@ -105,47 +113,61 @@ class ReplyStrs
         {
             if (replyState == 1)
             {
-                String[] strs = reply.split("\\s+"); // remove ALL spaces
-                for (int i = 0, j = 0; (i+1) < strs.length; ++j)
+                if (doSendSegments)
                 {
-                    if (i >= (2 * segPosStart.length)) break; // prevent overrun
+                    String[] strs = reply.split("\\s+"); // remove ALL spaces
+                    for (int i = 0, j = 0; (i + 1) < strs.length; ++j)
+                    {
+                        if (i >= (2 * segPosStart.length)) break; // prevent overrun
 
-                    int val1 = Integer.parseInt(strs[i++]);
-                    int val2 = Integer.parseInt(strs[i++]);
-                    Log.v(LOGNAME, "Segment Sizes " + j + ": " + val1 + ":" + val2);
+                        int val1 = Integer.parseInt(strs[i++]);
+                        int val2 = Integer.parseInt(strs[i++]);
+                        Log.v(LOGNAME, "Segment Sizes " + j + ": " + val1 + ":" + val2);
 
-                    segPosStart[j] = val1;
-                    segPosCount[j] = val2;
+                        segPosStart[j] = val1;
+                        segPosCount[j] = val2;
 
-                    // if any segment is very short then just use basic patterns
-                    if (val2 < MINLEN_SEGLEN_FORADV) useAdvPatterns = false;
+                        // if any segment is very short then just use basic patterns
+                        if (val2 < MINLEN_SEGLEN_FORADV) useAdvPatterns = false;
+                    }
+                }
+                else
+                {
+                    String[] strs = reply.split("\\s+"); // remove ALL spaces
+                    for (int i = 0, j = 0; (i + 1) < strs.length; ++j)
+                    {
+                        if (i >= (3 * segPixels.length)) break; // prevent overrun
+
+                        int val1 = Integer.parseInt(strs[i++]);
+                        int val2 = Integer.parseInt(strs[i++]);
+                        int val3 = Integer.parseInt(strs[i++]);
+                        Log.v(LOGNAME, "Segment Info " + j + ": " + val1 + ":" + val2 + ":" + val3);
+
+                        segPixels[j] = val1;
+                        segLayers[j] = val2;
+                        segTracks[j] = val3;
+
+                        if (!CheckValue(segPixels[j], 1, 0) ||
+                            !CheckValue(segLayers[j], 2, 0) ||
+                            !CheckValue(segTracks[j], 1, 0))
+                            replyFail = true;
+
+                        if (strs.length == 3) // only first set of values has been sent
+                        {
+                            while (++j < numSegments)
+                            {
+                                segPixels[j] = val1;
+                                segLayers[j] = val2;
+                                segTracks[j] = val3;
+                            }
+                            break;
+                        }
+                    }
                 }
             }
-            else if (replyState == 2)
+            else if (replyState <= numSegments+1)
             {
-                String[] strs = reply.split("\\s+"); // remove ALL spaces
-                for (int i = 0, j = 0; (i+1) < strs.length; ++j)
-                {
-                    if (i >= (2 * segPosStart.length)) break; // prevent overrun
-
-                    int val1 = Integer.parseInt(strs[i++]);
-                    int val2 = Integer.parseInt(strs[i++]);
-                    int val3 = Integer.parseInt(strs[i++]);
-                    Log.v(LOGNAME, "Segment Info " + j + ": " + val1 + ":" + val2 + ":" + val3);
-
-                    segPixels[j] = val1;
-                    segLayers[j] = val2;
-                    segTracks[j] = val3;
-
-                    if (!CheckValue(segPixels[j], 1, 0) ||
-                        !CheckValue(segLayers[j], 2, 0) ||
-                        !CheckValue(segTracks[j], 1, 0))
-                        replyFail = true;
-                }
-            }
-            else if (replyState <= numSegments+2)
-            {
-                int segindex = replyState-2;
+                int segindex = replyState-1;
                 Log.v(LOGNAME, "SegValues[" + segindex + "]: " + reply);
 
                 String[] strs = reply.split("\\s+"); // remove ALL spaces
@@ -335,19 +357,11 @@ class ReplyStrs
                 {
                     ++replyState;
                     --optionLines;
-
-                    if (numSegments > 1) // not getting lines 3 and 4 below
-                    {
-                        getSegments = (numSegments > 1);
-                        getPatterns = (customPatterns > 0);
-                        getPlugins = (customPlugins > 0);
-
-                        setPercentage = (getSegments || getPatterns || getPlugins);
-                    }
+                    if (optionLines == 0) CheckForExtendedCommands();
                 }
                 break;
             }
-            case 3: // fourth line: 3 more constants (only if numSegments <= 1)
+            case 3: // fourth line: 3 more constants (if not multiple physical segments)
             {
                 String[] strs = reply.split("\\s+"); // remove ALL spaces
                 if (strs.length >= 5)
@@ -369,10 +383,11 @@ class ReplyStrs
                 {
                     ++replyState;
                     --optionLines;
+                    if (optionLines == 0) CheckForExtendedCommands();
                 }
                 break;
             }
-            case 4: // fifth line: 5 extern mode values (only if numSegments <= 1)
+            case 4: // fifth line: 5 extern mode values (if not multiple segments)
             {
                 String[] strs = reply.split("\\s+"); // remove ALL spaces
                 if (strs.length >= 5)
@@ -386,12 +401,6 @@ class ReplyStrs
                     Log.d(LOGNAME, "Enable=" + segXmodeEnb[0] + " Hue=" + segXmodeHue[0] + " White=" + segXmodeWht[0] + " Cnt=" + segXmodeCnt[0] + " Force=" + segTrigForce[0]);
 
                     CheckSegVals(0);
-
-                    getSegments = (numSegments > 1);
-                    getPatterns = (customPatterns > 0);
-                    getPlugins = (customPlugins > 0);
-
-                    setPercentage = (getSegments || getPatterns || getPlugins);
                 }
                 else replyFail = true;
 
@@ -399,13 +408,16 @@ class ReplyStrs
                 {
                     ++replyState;
                     --optionLines;
+                    if (optionLines == 0) CheckForExtendedCommands();
                 }
                 break;
             }
             default: // ignore for forward compatibility
             {
                 Log.w(LOGNAME, "Line=" + replyState + " Reply=" + reply);
+
                 --optionLines;
+                if (optionLines == 0) CheckForExtendedCommands();
                 break;
             }
         }

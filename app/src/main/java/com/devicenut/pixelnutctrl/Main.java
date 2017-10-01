@@ -4,8 +4,6 @@ import android.app.Application;
 
 public class Main extends Application
 {
-    // Release 29:
-
     public static final String TITLE_PIXELNUT = "P!";
     public static final String URL_PIXELNUT = "http://www.pixelnutstore.com";
 
@@ -227,9 +225,6 @@ public class Main extends Application
     public static boolean doSendSegments = false;   // true to send all segment info when changing a pattern
                                                     // false implies that segments are physically different
 
-    public static int segPosStart[] = { 0,0,0,0,0 }; // starting positions for each segment
-    public static int segPosCount[] = { 0,0,0,0,0 }; // number of pixels for each segment
-
     // limited to 5 segments
     public static boolean segXmodeEnb[] = { false,false,false,false,false };
     public static int segXmodeHue[]     = { 0,0,0,0,0 };
@@ -240,6 +235,9 @@ public class Main extends Application
     public static int segPixels[]       = { 0,0,0,0,0 }; // number of pixels
     public static int segLayers[]       = { 0,0,0,0,0 }; // number of layers
     public static int segTracks[]       = { 0,0,0,0,0 }; // number of tracks
+    // only used for multiple segments on the same physical strand:
+    public static int segPosStart[]     = { 0,0,0,0,0 }; // starting positions for each segment
+    public static int segPosCount[]     = { 0,0,0,0,0 }; // number of pixels for each segment
 
     public static String devName;
     public static Bluetooth ble; // = new Bluetooth();
