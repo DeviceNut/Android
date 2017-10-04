@@ -364,7 +364,7 @@ class ReplyStrs
             case 3: // fourth line: 3 more constants (if not multiple physical segments)
             {
                 String[] strs = reply.split("\\s+"); // remove ALL spaces
-                if (strs.length >= 5)
+                if (strs.length >= 3)
                 {
                     segPixels[0] = Integer.parseInt(strs[0]);
                     segLayers[0] = Integer.parseInt(strs[1]);

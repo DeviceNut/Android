@@ -577,6 +577,9 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
                 if (segXmodeEnb[curSegment])
                      SendString(CMD_EXTMODE + "1");
                 else SendString(CMD_EXTMODE + "0");
+
+                // shoudn't need to do this...
+                //SendString(CMD_PROPVALS + segXmodeHue[curSegment] + " " + segXmodeWht[curSegment] + " " + segXmodeCnt[curSegment]);
                 break;
             }
             case R.id.button_TrigAction:
