@@ -292,13 +292,8 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
             curSegment = 0; // always start with first segment
             if (numSegments > 1) SendString(CMD_SEGS_ENABLE + "1"); // segment numbers start at 1 on device
 
-            SelectPattern(); // select the pattern to be displayed
-
-            sendEnable = false; // prevent following from writing commands
-            SetupControls(true);
-            seekBright.setProgress(curBright[curSegment]);
-            seekDelay.setProgress(((rangeDelay - curDelay[curSegment]) * MAXVAL_PERCENT) / (rangeDelay + rangeDelay));
-            sendEnable = true; // allow controls to work now
+            SelectPattern();      // select the pattern to be displayed
+            SetupControls(true);  // set control positions without sending commands
         }
         nameText.setText(devName);
     }
@@ -395,7 +390,7 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
                     SendString("" + num);   // store current pattern number
                     // this also pops the stack if not multiple segments
 
-                    SetupControls(false);
+                    SetupControls(false); // set controls display and send commands
 
                     if (helpMode > 0) SetHelpMode(false, curPattern);
                 }
@@ -456,6 +451,11 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
 
     private void SetupControls(boolean setvals)
     {
+        if (setvals) sendEnable = false; // prevent following from writing commands
+
+        seekBright.setProgress(curBright[curSegment]);
+        seekDelay.setProgress(((rangeDelay - curDelay[curSegment]) * MAXVAL_PERCENT) / (rangeDelay + rangeDelay));
+
         int bits = devPatternBits[segPatterns[curSegment]];
         boolean domode = ((bits & 7) != 0);
 
@@ -503,6 +503,8 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
             }
         }
         else trigControls.setVisibility(GONE);
+
+        if (setvals) sendEnable = true; // allow controls to work now
     }
 
     private void SetupSegments()
@@ -545,11 +547,8 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
         SendString(CMD_SEGS_ENABLE + num); // restricts subsequent controls to this segment
 
         changePattern = false; // don't need to resend the pattern
-        SelectPattern();
-
-        sendEnable = false; // prevent following from writing commands
-        SetupControls(true); // MUST be after segs enable command
-        sendEnable = true; // allow controls to work now
+        SelectPattern();       // select the pattern to be displayed
+        SetupControls(true);  // set controls display without sending commands
     }
 
     public void SelectPattern()
@@ -604,7 +603,7 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
             {
                 segXmodeEnb[curSegment] = toggleAutoProp.isChecked();
                 Log.d(LOGNAME, "AutoProp: manual=" + segXmodeEnb[curSegment]);
-                SetupControls(false);
+                SetupControls(false); // set controls display and send commands
 
                 if (segXmodeEnb[curSegment])
                      SendString(CMD_EXTMODE + "1");
