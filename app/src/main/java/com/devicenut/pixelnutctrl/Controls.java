@@ -266,18 +266,30 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
             }
 
             curSegment = 0; // always start with first segment
-            if (numSegments > 1) SendString(CMD_SEGS_ENABLE + "1"); // device segment numbers start at 1
+            if (numSegments > 1) SendString(CMD_SEGS_ENABLE + "1"); // segment numbers start at 1 on device
 
-            changePattern = doSendPattern;
-            Log.d(LOGNAME, "SendPattern=" + doSendPattern + " location=" + mapPatternToIndex[segPatterns[curSegment]]);
+            if (doSendPattern && doSendSegments) // initialize all of physical strands
+            {
+                Log.d(LOGNAME, "Initializing:");
+                for (int i = 0; i < numSegments; ++i)
+                {
+                    Log.d(LOGNAME, "  segment=" + i + " pattern==" + segPatterns[curSegment]);
+                    SendString(devPatternCmds[ segPatterns[i] ]);
+                }
+                changePattern = false;
+            }
+            else
+            {
+                changePattern = doSendPattern;
+                if (changePattern) Log.d(LOGNAME, "Initializing: pattern=" + segPatterns[curSegment]);
+            }
+
             selectPattern.setSelection(mapPatternToIndex[segPatterns[curSegment]], false);
 
             sendEnable = false; // prevent following from writing commands
-
             SetupControls(true);
             seekBright.setProgress(curBright);
             seekDelay.setProgress(((rangeDelay - curDelay) * MAXVAL_PERCENT) / (rangeDelay + rangeDelay));
-
             sendEnable = true; // allow controls to work now
         }
         nameText.setText(devName);
@@ -379,7 +391,7 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
 
                     if (helpMode > 0) SetHelpMode(false, curPattern);
                 }
-                else changePattern = true;
+                else changePattern = true; // reset for next time
             }
             @Override public void onNothingSelected(AdapterView<?> parent) {}
         };
@@ -518,15 +530,22 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
 
         if (curSegment == i) return; // no change
 
-        Log.d(LOGNAME, "Switching to segment=" + curSegment);
         curSegment = i;
-
-        changePattern = false; // don't need to resend the pattern
-        selectPattern.setSelection(mapPatternToIndex[segPatterns[curSegment]], false);
-        changePattern = true; // didn't get reset if didn't change pattern
+        Log.d(LOGNAME, "Switching to segment=" + curSegment + " pattern=" + segPatterns[curSegment]);
 
         int num = curSegment+1; // device segment numbers start at 1
         SendString(CMD_SEGS_ENABLE + num); // restricts subsequent controls to this segment
+
+        changePattern = false; // don't need to resend the pattern
+        selectPattern.setSelection(mapPatternToIndex[segPatterns[curSegment]], false);
+        // changePattern doesn't get reset if the pattern didn't change (same for both segments)
+        // and since the selection is asynchronous, we cannot just set it after this call, and
+        // if we don't reset it you cannot ever change the pattern again, so post a call to do it
+        selectPattern.post(new Runnable() { @Override public void run()
+        {
+            //Log.v(LOGNAME, "Resetting 'changePattern' here, value=" + changePattern);
+            changePattern = true;
+        }});
 
         sendEnable = false; // prevent following from writing commands
         SetupControls(true); // MUST be after segs enable command
@@ -727,4 +746,3 @@ mainLayout.getViewTreeObserver().addOnGlobalLayoutListener(
 );
 setContentView(mainLayout);
 */
-
