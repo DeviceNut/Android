@@ -208,24 +208,23 @@ public class Main extends Application
     public static int pixelLength = 0;
     public static int pixelDensity = 0;
 
-    public static int rangeDelay        = 80;
-    public static int curDelay          = 0;
-    public static int curBright         = 0;
     public static int curSegment        = 0;    // index from 0
-
     public static int numPatterns       = 0;    // total number of patterns that can be chosen
     public static int numSegments       = 0;    // total number of pixel segments
     public static int customPatterns    = 0;    // number of custom patterns defined by device
     public static int customPlugins     = 0;    // number of custom plugins defined by device
     public static int maxlenCmdStrs     = 0;    // max length of command string that can be sent
+    public static int rangeDelay        = MINVAL_DELAYRANGE; // default range of delay offsets
 
     public static boolean useAdvPatterns = true;    // false for small segments and/or limited flash space
     public static boolean editPatterns = true;      // false if device has fixed patterns that cannot be changed
-    public static boolean doSendPattern = false;    // triggers sending current pattern info at startup
-    public static boolean doSendSegments = false;   // true to send all segment info when changing a pattern
-                                                    // false implies that segments are physically different
+    public static boolean initPatterns = false;     // true if must initialize device with patterns at startup
+    public static boolean multiStrands = false;     // true if device has multiple physical pixel strands
+                                                    // false means all segment info must be sent when changing patterns
 
     // limited to 5 segments
+    public static int curDelay[]        = { 0,0,0,0,0 }; // delay in msecs
+    public static int curBright[]       = { 0,0,0,0,0 }; // maximum brightness
     public static boolean segXmodeEnb[] = { false,false,false,false,false };
     public static int segXmodeHue[]     = { 0,0,0,0,0 };
     public static int segXmodeWht[]     = { 0,0,0,0,0 };

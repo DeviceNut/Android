@@ -46,8 +46,8 @@ import static com.devicenut.pixelnutctrl.Main.devPatternHelp;
 import static com.devicenut.pixelnutctrl.Main.devPatternNames;
 import static com.devicenut.pixelnutctrl.Main.devPatternCmds;
 import static com.devicenut.pixelnutctrl.Main.devPatternBits;
-import static com.devicenut.pixelnutctrl.Main.doSendPattern;
-import static com.devicenut.pixelnutctrl.Main.doSendSegments;
+import static com.devicenut.pixelnutctrl.Main.initPatterns;
+import static com.devicenut.pixelnutctrl.Main.multiStrands;
 import static com.devicenut.pixelnutctrl.Main.numSegments;
 import static com.devicenut.pixelnutctrl.Main.numPatterns;
 import static com.devicenut.pixelnutctrl.Main.curBright;
@@ -254,42 +254,50 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
             devName = devName.substring(2);
             Log.d(LOGNAME, "Device name: " + devName);
 
-            // if disabling use of the mode button then must enable it for all segments
-            if (!useAdvPatterns) for (int i = 1; i <= numSegments; ++i)
+            // if only using basic patterns, then the properties will always be displayed
+            // so enable the properties for any segment which is currently disabled
+            if (!useAdvPatterns)
             {
-                if (!segXmodeEnb[i-1])
+                Log.d(LOGNAME, "Enabling Properties:");
+                for (int i = 0; i < numSegments; ++i)
                 {
-                    segXmodeEnb[i-1] = true;
-                    SendString(CMD_SEGS_ENABLE + i);
-                    SendString(CMD_EXTMODE + "1");
+                    if (!segXmodeEnb[i])
+                    {
+                        int seg = i + 1;
+                        segXmodeEnb[i] = true;
+                        SendString(CMD_SEGS_ENABLE + seg);
+                        SendString(CMD_EXTMODE + "1");
+                    }
                 }
             }
 
-            curSegment = 0; // always start with first segment
-            if (numSegments > 1) SendString(CMD_SEGS_ENABLE + "1"); // segment numbers start at 1 on device
-
-            if (doSendPattern && doSendSegments) // initialize all of physical strands
+            if (initPatterns && multiStrands) // initialize all of physical strands
             {
-                Log.d(LOGNAME, "Initializing:");
+                Log.d(LOGNAME, "Initializing Patterns:");
                 for (int i = 0; i < numSegments; ++i)
                 {
-                    Log.d(LOGNAME, "  segment=" + i + " pattern==" + segPatterns[curSegment]);
+                    int seg = i + 1;
+                    Log.d(LOGNAME, "  segment=" + i + " pattern==" + segPatterns[i]);
+                    SendString(CMD_SEGS_ENABLE + seg);
                     SendString(devPatternCmds[ segPatterns[i] ]);
                 }
                 changePattern = false;
             }
             else
             {
-                changePattern = doSendPattern;
+                changePattern = initPatterns;
                 if (changePattern) Log.d(LOGNAME, "Initializing: pattern=" + segPatterns[curSegment]);
             }
 
-            selectPattern.setSelection(mapPatternToIndex[segPatterns[curSegment]], false);
+            curSegment = 0; // always start with first segment
+            if (numSegments > 1) SendString(CMD_SEGS_ENABLE + "1"); // segment numbers start at 1 on device
+
+            SelectPattern(); // select the pattern to be displayed
 
             sendEnable = false; // prevent following from writing commands
             SetupControls(true);
-            seekBright.setProgress(curBright);
-            seekDelay.setProgress(((rangeDelay - curDelay) * MAXVAL_PERCENT) / (rangeDelay + rangeDelay));
+            seekBright.setProgress(curBright[curSegment]);
+            seekDelay.setProgress(((rangeDelay - curDelay[curSegment]) * MAXVAL_PERCENT) / (rangeDelay + rangeDelay));
             sendEnable = true; // allow controls to work now
         }
         nameText.setText(devName);
@@ -367,7 +375,7 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
 
                         if (numSegments == 1) SendString(devPatternCmds[curPattern]);
 
-                        else if (doSendSegments) // must send all segment patterns at once
+                        else if (!multiStrands) // must send all segment patterns at once
                         {
                             for (int i = 0; i < numSegments; ++i)
                             {
@@ -537,6 +545,15 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
         SendString(CMD_SEGS_ENABLE + num); // restricts subsequent controls to this segment
 
         changePattern = false; // don't need to resend the pattern
+        SelectPattern();
+
+        sendEnable = false; // prevent following from writing commands
+        SetupControls(true); // MUST be after segs enable command
+        sendEnable = true; // allow controls to work now
+    }
+
+    public void SelectPattern()
+    {
         selectPattern.setSelection(mapPatternToIndex[segPatterns[curSegment]], false);
         // changePattern doesn't get reset if the pattern didn't change (same for both segments)
         // and since the selection is asynchronous, we cannot just set it after this call, and
@@ -546,10 +563,6 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
             //Log.v(LOGNAME, "Resetting 'changePattern' here, value=" + changePattern);
             changePattern = true;
         }});
-
-        sendEnable = false; // prevent following from writing commands
-        SetupControls(true); // MUST be after segs enable command
-        sendEnable = true; // allow controls to work now
     }
 
     public void onClick(View v)
@@ -617,14 +630,14 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
         {
             case R.id.seek_Bright:
             {
-                curBright = progress;
-                SendString(CMD_BRIGHT + curBright);
+                curBright[curSegment] = progress;
+                SendString(CMD_BRIGHT + curBright[curSegment]);
                 break;
             }
             case R.id.seek_Delay:
             {
-                curDelay = rangeDelay - (progress * 2 * rangeDelay)/100;
-                SendString(CMD_DELAY + curDelay);
+                curDelay[curSegment] = rangeDelay - (progress * 2 * rangeDelay)/100;
+                SendString(CMD_DELAY + curDelay[curSegment]);
                 break;
             }
             case R.id.seek_PropColor:

@@ -31,9 +31,9 @@ import static com.devicenut.pixelnutctrl.Main.devPatternBits;
 import static com.devicenut.pixelnutctrl.Main.devPatternCmds;
 import static com.devicenut.pixelnutctrl.Main.devPatternHelp;
 import static com.devicenut.pixelnutctrl.Main.devPatternNames;
+import static com.devicenut.pixelnutctrl.Main.initPatterns;
+import static com.devicenut.pixelnutctrl.Main.multiStrands;
 import static com.devicenut.pixelnutctrl.Main.editPatterns;
-import static com.devicenut.pixelnutctrl.Main.doSendPattern;
-import static com.devicenut.pixelnutctrl.Main.doSendSegments;
 import static com.devicenut.pixelnutctrl.Main.useAdvPatterns;
 import static com.devicenut.pixelnutctrl.Main.maxlenCmdStrs;
 import static com.devicenut.pixelnutctrl.Main.numPatterns;
@@ -113,7 +113,40 @@ class ReplyStrs
         {
             if (replyState == 1)
             {
-                if (doSendSegments)
+                if (multiStrands)
+                {
+                    String[] strs = reply.split("\\s+"); // remove ALL spaces
+                    for (int i = 0, j = 0; (i + 1) < strs.length; ++j)
+                    {
+                        if (i >= (3 * segPixels.length)) break; // prevent overrun
+
+                        int val1 = Integer.parseInt(strs[i++]);
+                        int val2 = Integer.parseInt(strs[i++]);
+                        int val3 = Integer.parseInt(strs[i++]);
+                        Log.v(LOGNAME, ">> Segment Info " + j + ": " + val1 + ":" + val2 + ":" + val3);
+
+                        segPixels[j] = val1;
+                        segLayers[j] = val2;
+                        segTracks[j] = val3;
+
+                        if (!CheckValue(segPixels[j], 1, 0) ||
+                                !CheckValue(segLayers[j], 2, 0) ||
+                                !CheckValue(segTracks[j], 1, 0))
+                            replyFail = true;
+
+                        if (strs.length == 3) // only first set of values has been sent
+                        {
+                            while (++j < numSegments)
+                            {
+                                segPixels[j] = val1;
+                                segLayers[j] = val2;
+                                segTracks[j] = val3;
+                            }
+                            break;
+                        }
+                    }
+                }
+                else
                 {
                     String[] strs = reply.split("\\s+"); // remove ALL spaces
                     for (int i = 0, j = 0; (i + 1) < strs.length; ++j)
@@ -131,39 +164,6 @@ class ReplyStrs
                         if (val2 < MINLEN_SEGLEN_FORADV) useAdvPatterns = false;
                     }
                 }
-                else
-                {
-                    String[] strs = reply.split("\\s+"); // remove ALL spaces
-                    for (int i = 0, j = 0; (i + 1) < strs.length; ++j)
-                    {
-                        if (i >= (3 * segPixels.length)) break; // prevent overrun
-
-                        int val1 = Integer.parseInt(strs[i++]);
-                        int val2 = Integer.parseInt(strs[i++]);
-                        int val3 = Integer.parseInt(strs[i++]);
-                        Log.v(LOGNAME, ">> Segment Info " + j + ": " + val1 + ":" + val2 + ":" + val3);
-
-                        segPixels[j] = val1;
-                        segLayers[j] = val2;
-                        segTracks[j] = val3;
-
-                        if (!CheckValue(segPixels[j], 1, 0) ||
-                            !CheckValue(segLayers[j], 2, 0) ||
-                            !CheckValue(segTracks[j], 1, 0))
-                            replyFail = true;
-
-                        if (strs.length == 3) // only first set of values has been sent
-                        {
-                            while (++j < numSegments)
-                            {
-                                segPixels[j] = val1;
-                                segLayers[j] = val2;
-                                segTracks[j] = val3;
-                            }
-                            break;
-                        }
-                    }
-                }
             }
             else if (replyState <= numSegments+1)
             {
@@ -173,15 +173,18 @@ class ReplyStrs
                 String[] strs = reply.split("\\s+"); // remove ALL spaces
                 if (strs.length >= 8)
                 {
-                    segPatterns[  segindex] = Integer.parseInt(strs[0]);
-                    segXmodeEnb[  segindex] = strs[1].charAt(0) != '0';
-                    segXmodeHue[  segindex] = Integer.parseInt(strs[2]) + (Integer.parseInt(strs[3]) << 8);
-                    segXmodeWht[  segindex] = Integer.parseInt(strs[4]);
-                    segXmodeCnt[  segindex] = Integer.parseInt(strs[5]);
-                    segTrigForce[ segindex] = Integer.parseInt(strs[6]) + (Integer.parseInt(strs[7]) << 8);
+                    curBright[    segindex] = Integer.parseInt(strs[0]);
+                    curDelay[     segindex] = Integer.parseInt(strs[1]);
+                    segPatterns[  segindex] = Integer.parseInt(strs[2]);
+                    segXmodeEnb[  segindex] = strs[3].charAt(0) != '0';
+                    segXmodeHue[  segindex] = Integer.parseInt(strs[4]) + (Integer.parseInt(strs[5]) << 8);
+                    segXmodeWht[  segindex] = Integer.parseInt(strs[6]);
+                    segXmodeCnt[  segindex] = Integer.parseInt(strs[7]);
+                    segTrigForce[ segindex] = Integer.parseInt(strs[8]) + (Integer.parseInt(strs[9]) << 8);
 
-                    segPatterns[segindex] -= 1; // device patterns start at 1
+                    if (segPatterns[segindex] > 0) segPatterns[segindex] -= 1; // device patterns start at 1
 
+                    Log.v(LOGNAME, ">> Bright=" + curBright[segindex] + " Delay=" + curDelay[segindex]);
                     Log.v(LOGNAME, ">> Pattern=" + segPatterns[segindex] + " Mode=" + segXmodeEnb[segindex] + " Force=" + segTrigForce[segindex]);
                     Log.v(LOGNAME, ">> Hue=" + segXmodeHue[segindex] + " White=" + segXmodeWht[segindex] + " Count=" + segXmodeCnt[segindex]);
 
@@ -266,57 +269,27 @@ class ReplyStrs
                 String[] strs = reply.split("\\s+"); // remove ALL spaces
                 if (strs.length >= 4)
                 {
-                    optionLines   = Integer.parseInt(strs[0]);
-                    numSegments   = Integer.parseInt(strs[1]);
-                    rangeDelay    = Integer.parseInt(strs[2]);
-                    customPlugins = Integer.parseInt(strs[3]);
+                    optionLines     = Integer.parseInt(strs[0]);
+                    numSegments     = Integer.parseInt(strs[1]);
+                    segPatterns[0]  = Integer.parseInt(strs[2]);
+                    customPatterns  = Integer.parseInt(strs[3]);
+                    maxlenCmdStrs   = Integer.parseInt(strs[4]);
+                    rangeDelay      = Integer.parseInt(strs[5]);
+                    customPlugins   = Integer.parseInt(strs[6]);
 
                     if (numSegments < 0)
                     {
-                        doSendSegments = false;
+                        multiStrands = true;
                         numSegments = -numSegments;
                     }
-                    else doSendSegments = true;
-
-                    Log.d(LOGNAME, ">> Number of option lines = " + optionLines);
-                    Log.d(LOGNAME, ">> Segments=" + numSegments + (doSendSegments ? " (logical)" : " (physical)"));
-                    Log.d(LOGNAME, ">> RangeDelay=" + rangeDelay + " XPlugins=" + customPlugins);
-
-                    if (numSegments < 1) numSegments = 1;
-                    if (customPlugins < 0) customPlugins = 0;
-
-                    if (!CheckValue(optionLines, 2, 0))
-                        replyFail = true;
-                }
-                else replyFail = true;
-
-                if (!replyFail)
-                {
-                    progressPcentInc = 101/(optionLines+1);
-                    Log.v(LOGNAME, "ProgressPercentageInc=" + (int)progressPcentInc);
-
-                    ++replyState;
-                    --optionLines;
-                }
-                break;
-            }
-            case 2: // third line: 5 current settings
-            {
-                String[] strs = reply.split("\\s+"); // remove ALL spaces
-                if (strs.length >= 5)
-                {
-                    curBright = Integer.parseInt(strs[0]);
-                    curDelay = Integer.parseInt(strs[1]);
-                    segPatterns[0] = Integer.parseInt(strs[2]);
-                    customPatterns = Integer.parseInt(strs[3]);
-                    maxlenCmdStrs = Integer.parseInt(strs[4]);
+                    else multiStrands = false;
 
                     if (segPatterns[0] > 0)
                     {
                         segPatterns[0] -= 1; // device patterns start at 1
-                        doSendPattern = false;
+                        initPatterns = false;
                     }
-                    else doSendPattern = true; // trigger sending initial pattern to device
+                    else initPatterns = true; // trigger sending initial pattern to device
 
                     if (customPatterns != 0) // indicates fixed internal device patterns
                     {
@@ -330,51 +303,67 @@ class ReplyStrs
                     }
                     else stdPatternsCount = basicPatternsCount + advPatternsCount;
 
-                    Log.d(LOGNAME, ">> Bright=" + curBright + " Delay=" + curDelay);
-                    Log.d(LOGNAME, ">> CurPattern=" + segPatterns[0] + " DoInit=" + doSendPattern);
-                    Log.d(LOGNAME, ">> CustomPatterns=" + customPatterns + " CanEdit=" + editPatterns);
-                    Log.d(LOGNAME, ">> MaxCmdStr=" + maxlenCmdStrs);
-
-                    if (rangeDelay < MINVAL_DELAYRANGE) rangeDelay = MINVAL_DELAYRANGE;
-                    if (!CheckValue(curDelay, -rangeDelay, rangeDelay)) curDelay = 0;
-                    if (!CheckValue(curBright, 0, MAXVAL_PERCENT)) curBright = 100;
-
-                    if (!CheckValue(maxlenCmdStrs, MINLEN_CMDSTR_PERSEG, 0)) replyFail = true;
+                    numPatterns = customPatterns + stdPatternsCount;
 
                     // if the command/pattern string is not long enough,
                     // then must only use the basic patterns
                     if (maxlenCmdStrs < (MINLEN_CMDSTR_PERSEG * numSegments))
                         useAdvPatterns = false;
 
-                    numPatterns = customPatterns + stdPatternsCount;
+                    Log.v(LOGNAME, ">> Number of option lines = " + optionLines);
+                    Log.v(LOGNAME, ">> Segments=" + numSegments + (multiStrands ? " (physical)" : " (logical)"));
+                    Log.v(LOGNAME, ">> CurPattern=" + segPatterns[0] + " DoInit=" + initPatterns);
+                    Log.v(LOGNAME, ">> CustomPatterns=" + customPatterns + " CanEdit=" + editPatterns);
+                    Log.v(LOGNAME, ">> MaxCmdStr=" + maxlenCmdStrs + " AdvPatterns=" + useAdvPatterns);
+                    Log.v(LOGNAME, ">> RangeDelay=" + rangeDelay + " XPlugins=" + customPlugins);
                     Log.v(LOGNAME, ">> Total patterns=" + numPatterns);
 
-                    devPatternNames = new String[numPatterns];
-                    devPatternHelp  = new String[numPatterns];
-                    devPatternBits  = new int[numPatterns];
+                    if (numSegments < 1) numSegments = 1;
+                    if (customPlugins < 0) customPlugins = 0;
 
-                    if (editPatterns) devPatternCmds = new String[numPatterns];
+                    if (rangeDelay < MINVAL_DELAYRANGE) rangeDelay = MINVAL_DELAYRANGE;
+
+                    if (!CheckValue(optionLines, 1, 0) ||
+                        !CheckValue(maxlenCmdStrs, MINLEN_CMDSTR_PERSEG, 0))
+                        replyFail = true;
+                    else
+                    {
+                        devPatternNames = new String[numPatterns];
+                        devPatternHelp  = new String[numPatterns];
+                        devPatternBits  = new int[numPatterns];
+
+                        if (editPatterns) devPatternCmds = new String[numPatterns];
+                    }
                 }
                 else replyFail = true;
 
                 if (!replyFail)
                 {
+                    progressPcentInc = 101/(optionLines+1);
+                    Log.v(LOGNAME, "ProgressPercentageInc=" + (int)progressPcentInc);
+
                     ++replyState;
                     --optionLines;
                     if (optionLines == 0) CheckForExtendedCommands();
                 }
                 break;
             }
-            case 3: // fourth line: 3 more constants (if not multiple physical segments)
+            case 2: // third line: 5 more constants (if not multiple physical segments)
             {
                 String[] strs = reply.split("\\s+"); // remove ALL spaces
-                if (strs.length >= 3)
+                if (strs.length >= 5)
                 {
-                    segPixels[0] = Integer.parseInt(strs[0]);
-                    segLayers[0] = Integer.parseInt(strs[1]);
-                    segTracks[0] = Integer.parseInt(strs[2]);
+                    curBright[0] = Integer.parseInt(strs[0]);
+                    curDelay[0]  = Integer.parseInt(strs[1]);
+                    segPixels[0] = Integer.parseInt(strs[2]);
+                    segLayers[0] = Integer.parseInt(strs[3]);
+                    segTracks[0] = Integer.parseInt(strs[4]);
 
-                    Log.d(LOGNAME, ">> Pixels=" + segPixels[0] + " Layers=" + segLayers[0] + " Tracks=" + segTracks[0]);
+                    Log.v(LOGNAME, ">> Bright=" + curBright[0] + " Delay=" + curDelay[0]);
+                    Log.v(LOGNAME, ">> Pixels=" + segPixels[0] + " Layers=" + segLayers[0] + " Tracks=" + segTracks[0]);
+
+                    if (!CheckValue(curDelay[0], -rangeDelay, rangeDelay)) curDelay[0] = 0;
+                    if (!CheckValue(curBright[0], 0, MAXVAL_PERCENT)) curBright[0] = MAXVAL_PERCENT;
 
                     if (!CheckValue(segPixels[0], 1, 0) ||
                         !CheckValue(segLayers[0], 2, 0) ||
@@ -402,7 +391,8 @@ class ReplyStrs
                     segXmodeCnt[0] = Integer.parseInt(strs[3]);
                     segTrigForce[0] = Integer.parseInt(strs[4]);
 
-                    Log.d(LOGNAME, ">> Enable=" + segXmodeEnb[0] + " Hue=" + segXmodeHue[0] + " White=" + segXmodeWht[0] + " Cnt=" + segXmodeCnt[0] + " Force=" + segTrigForce[0]);
+                    Log.v(LOGNAME, ">> Enable=" + segXmodeEnb[0] + " Hue=" + segXmodeHue[0] + " White=" + segXmodeWht[0]);
+                    Log.v(LOGNAME, ">> Count=" + segXmodeCnt[0] + " Force=" + segTrigForce[0]);
 
                     CheckSegVals(0);
                 }
