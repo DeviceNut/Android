@@ -359,16 +359,14 @@
                                 android:textStyle="italic"
                                 android:text="@string/title_modify"/>
 
-                            <ToggleButton
+                            <Button
                                 android:layout_width="wrap_content"
                                 android:layout_height="40dp"
                                 android:layout_marginStart="10dp"
                                 android:textAlignment="center"
-                                android:checked="false"
                                 android:onClick="onClick"
-                                android:id="@+id/toggle_AutoProp"
-                                android:textOn="@string/name_auto"
-                                android:textOff="@string/name_manual"
+                                android:id="@+id/button_AutoProp"
+                                android:text="@string/name_disable"
                                 android:textColorLink="@color/UserChoice"/>
 
                         </LinearLayout>

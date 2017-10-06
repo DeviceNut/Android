@@ -276,10 +276,10 @@ class ReplyStrs
                 }
                 break;
             }
-            case 1: // second line: number of additional lines + 3 device constants
+            case 1: // second line: number of additional lines + 6 device settings
             {
                 String[] strs = reply.split("\\s+"); // remove ALL spaces
-                if (strs.length >= 4)
+                if (strs.length >= 7)
                 {
                     optionLines     = Integer.parseInt(strs[0]);
                     numSegments     = Integer.parseInt(strs[1]);
@@ -322,8 +322,8 @@ class ReplyStrs
                     if (maxlenCmdStrs < (MINLEN_CMDSTR_PERSEG * numSegments))
                         useAdvPatterns = false;
 
-                    Log.v(LOGNAME, ">> Number of option lines = " + optionLines);
-                    Log.v(LOGNAME, ">> Segments=" + numSegments + (multiStrands ? " (physical)" : " (logical)"));
+                    Log.v(LOGNAME, ">> Option lines = " + optionLines);
+                    Log.v(LOGNAME, ">> Segments=" + numSegments + ((numSegments > 1) ? (multiStrands ? " (physical)" : " (logical)") : ""));
                     Log.v(LOGNAME, ">> CurPattern=" + segPatterns[0] + " DoInit=" + initPatterns);
                     Log.v(LOGNAME, ">> CustomPatterns=" + customPatterns + " CanEdit=" + editPatterns);
                     Log.v(LOGNAME, ">> MaxCmdStr=" + maxlenCmdStrs + " AdvPatterns=" + useAdvPatterns);
@@ -339,10 +339,7 @@ class ReplyStrs
                         Log.v(LOGNAME, "Adjusting range=" + rangeDelay);
                     }
 
-                    if (!CheckValue(optionLines, 1, 0) ||
-                        !CheckValue(maxlenCmdStrs, MINLEN_CMDSTR_PERSEG, 0))
-                        replyFail = true;
-                    else
+                    if (optionLines >= 1)
                     {
                         devPatternNames = new String[numPatterns];
                         devPatternHelp  = new String[numPatterns];
@@ -350,6 +347,7 @@ class ReplyStrs
 
                         if (editPatterns) devPatternCmds = new String[numPatterns];
                     }
+                    else replyFail = true;
                 }
                 else replyFail = true;
 
@@ -364,16 +362,16 @@ class ReplyStrs
                 }
                 break;
             }
-            case 2: // third line: 5 more constants (if not multiple physical segments)
+            case 2: // third line: 5 more settings (if not multiple physical segments)
             {
                 String[] strs = reply.split("\\s+"); // remove ALL spaces
                 if (strs.length >= 5)
                 {
-                    segPixels[0] = Integer.parseInt(strs[2]);
-                    segLayers[0] = Integer.parseInt(strs[3]);
-                    segTracks[0] = Integer.parseInt(strs[4]);
-                    curBright[0] = Integer.parseInt(strs[0]);
-                    curDelay[0]  = Integer.parseInt(strs[1]);
+                    segPixels[0] = Integer.parseInt(strs[0]);
+                    segLayers[0] = Integer.parseInt(strs[1]);
+                    segTracks[0] = Integer.parseInt(strs[2]);
+                    curBright[0] = Integer.parseInt(strs[3]);
+                    curDelay[0]  = Integer.parseInt(strs[4]);
 
                     Log.v(LOGNAME, ">> Pixels=" + segPixels[0] + " Layers=" + segLayers[0] + " Tracks=" + segTracks[0]);
                     Log.v(LOGNAME, ">> Bright=" + curBright[0] + " Delay=" + curDelay[0]);
@@ -405,7 +403,7 @@ class ReplyStrs
                 }
                 break;
             }
-            case 4: // fifth line: 5 extern mode values (if not multiple segments)
+            case 3: // fourth line: 5 extern mode values (if not multiple segments)
             {
                 String[] strs = reply.split("\\s+"); // remove ALL spaces
                 if (strs.length >= 5)

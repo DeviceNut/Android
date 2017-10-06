@@ -72,7 +72,7 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
     private final Activity context = this;
 
     private TextView nameText;
-    private Button pauseButton, helpButton, helpButton2;
+    private Button pauseButton, helpButton, helpButton2, manualButton;
     private TextView helpText, helpText2, helpTitle, textTrigger;
     private LinearLayout outerControls, innerControls, patternHelp;
     private LinearLayout autoControls, llPropColor, llPropWhite, llPropCount;
@@ -82,7 +82,6 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
     private SeekBar seekBright, seekDelay;
     private SeekBar seekPropColor, seekPropWhite, seekPropCount;
     private SeekBar seekTrigForce;
-    private ToggleButton toggleAutoProp;
 
     private int helpMode = 0;
     private boolean doUpdate = true;
@@ -178,8 +177,8 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
         seekPropCount = (SeekBar) findViewById(R.id.seek_PropCount);
         seekTrigForce = (SeekBar) findViewById(R.id.seek_TrigForce);
 
-        toggleAutoProp = (ToggleButton) findViewById(R.id.toggle_AutoProp);
-        if (!useAdvPatterns) toggleAutoProp.setVisibility(GONE);
+        manualButton = (Button) findViewById(R.id.button_AutoProp);
+        if (!useAdvPatterns) manualButton.setVisibility(GONE);
 
         seekBright.setOnSeekBarChangeListener(this);
         seekDelay.setOnSeekBarChangeListener(this);
@@ -291,6 +290,12 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
 
             curSegment = 0; // always start with first segment
             if (numSegments > 1) SendString(CMD_SEGS_ENABLE + "1"); // segment numbers start at 1 on device
+
+            if ((devPatternBits[segPatterns[curSegment]] & 7) == 0)
+            {
+                autoControls.setVisibility(GONE);
+                manualButton.setVisibility(GONE);
+            }
 
             SelectPattern();      // select the pattern to be displayed
             SetupControls(true);  // set control positions without sending commands
@@ -457,21 +462,20 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
         seekDelay.setProgress(((rangeDelay - curDelay[curSegment]) * MAXVAL_PERCENT) / (rangeDelay + rangeDelay));
 
         int bits = devPatternBits[segPatterns[curSegment]];
-        boolean domode = ((bits & 7) != 0);
 
         if (setvals)
         {
-            toggleAutoProp.setChecked(segXmodeEnb[  curSegment]);
             seekPropColor.setProgress(((segXmodeHue[curSegment] * MAXVAL_PERCENT) / (MAXVAL_HUE+1)));
             seekPropWhite.setProgress(segXmodeWht[  curSegment]);
             seekPropCount.setProgress(segXmodeCnt[  curSegment]);
             seekTrigForce.setProgress(segTrigForce[ curSegment] / 10);
         }
 
-        if (segXmodeEnb[curSegment] && domode)
+        if (segXmodeEnb[curSegment])
         {
             autoControls.setVisibility(VISIBLE);
-            toggleAutoProp.setEnabled(true);
+            manualButton.setText(getResources().getString(R.string.name_disable));
+            //manualButton.setTextColor(ContextCompat.getColor(context, R.color.UserChoice));
 
             //seekPropColor.setEnabled((bits & 1) != 0);
             //seekPropWhite.setEnabled((bits & 2) != 0);
@@ -482,8 +486,9 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
         }
         else
         {
+            //manualButton.setTextColor(Color.GRAY);
+            manualButton.setText(getResources().getString(R.string.name_enable));
             autoControls.setVisibility(GONE);
-            toggleAutoProp.setEnabled(domode);
         }
 
         if ((bits & 0x10) != 0) // enable triggering
@@ -579,12 +584,12 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
                 if (doUpdate)
                 {
                     SendString(CMD_PAUSE);
-                    pauseButton.setText(getResources().getString(R.string.name_pause));
+                    pauseButton.setText(getResources().getString(R.string.name_resume));
                 }
                 else
                 {
                     SendString(CMD_RESUME);
-                    pauseButton.setText(getResources().getString(R.string.name_resume));
+                    pauseButton.setText(getResources().getString(R.string.name_pause));
                 }
                 doUpdate = !doUpdate;
                 break;
@@ -599,9 +604,9 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
                 SetHelpMode(true, -1);
                 break;
             }
-            case R.id.toggle_AutoProp:
+            case R.id.button_AutoProp:
             {
-                segXmodeEnb[curSegment] = toggleAutoProp.isChecked();
+                segXmodeEnb[curSegment] = !segXmodeEnb[curSegment];
                 Log.d(LOGNAME, "AutoProp: manual=" + segXmodeEnb[curSegment]);
                 SetupControls(false); // set controls display and send commands
 

@@ -4,6 +4,7 @@ import android.Manifest;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
@@ -273,6 +274,8 @@ public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
             progressBar.setVisibility(View.GONE);
             buttonScan.setText(getResources().getString(R.string.name_scan));
         }
+
+        buttonScan.setTextColor(ContextCompat.getColor(context, R.color.UserChoice));
         buttonScan.setEnabled(true);
 
         didFail = false;
@@ -433,8 +436,9 @@ public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
                     progressLine.setProgress(0);
                     progressLine.setVisibility(View.VISIBLE);
 
-                    buttonScan.setText(getResources().getString(R.string.name_wait));
                     buttonScan.setEnabled(false);
+                    buttonScan.setText(getResources().getString(R.string.name_wait));
+                    buttonScan.setTextColor(Color.GRAY);
                 }
             });
         }

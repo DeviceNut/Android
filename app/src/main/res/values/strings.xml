@@ -10,10 +10,10 @@
     <string name="name_cancel">Cancel</string>
     <string name="name_help">Help</string>
     <string name="name_pause">Pause</string>
-    <string name="name_resume">Pause</string>
+    <string name="name_resume">Resume</string>
     <string name="name_controls">Controls</string>
-    <string name="name_auto">Auto</string>
-    <string name="name_manual">Manual</string>
+    <string name="name_disable">Disable</string>
+    <string name="name_enable">Enable</string>
     <string name="name_trigger">Trigger</string>
     <string name="title_copyright">Copyright 2017</string>
     <string name="title_allrights">All rights reserved</string>
