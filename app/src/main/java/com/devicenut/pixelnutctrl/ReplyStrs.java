@@ -369,14 +369,14 @@ class ReplyStrs
                 String[] strs = reply.split("\\s+"); // remove ALL spaces
                 if (strs.length >= 5)
                 {
-                    curBright[0] = Integer.parseInt(strs[0]);
-                    curDelay[0]  = Integer.parseInt(strs[1]);
                     segPixels[0] = Integer.parseInt(strs[2]);
                     segLayers[0] = Integer.parseInt(strs[3]);
                     segTracks[0] = Integer.parseInt(strs[4]);
+                    curBright[0] = Integer.parseInt(strs[0]);
+                    curDelay[0]  = Integer.parseInt(strs[1]);
 
-                    Log.v(LOGNAME, ">> Bright=" + curBright[0] + " Delay=" + curDelay[0]);
                     Log.v(LOGNAME, ">> Pixels=" + segPixels[0] + " Layers=" + segLayers[0] + " Tracks=" + segTracks[0]);
+                    Log.v(LOGNAME, ">> Bright=" + curBright[0] + " Delay=" + curDelay[0]);
 
                     if (!CheckValue(curDelay[0], -rangeDelay, rangeDelay))
                     {

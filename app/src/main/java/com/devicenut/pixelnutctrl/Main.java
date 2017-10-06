@@ -24,7 +24,7 @@ public class Main extends Application
     public static final int MAXVAL_HUE          = 359;
     public static final int MAXVAL_PERCENT      = 100;
     public static final int MAXVAL_FORCE        = 1000;
-    public static final int MINVAL_DELAYRANGE   = 50;       // TODO: should be calculated from pattern strings
+    public static final int MINVAL_DELAYRANGE   = 60;       // TODO: should be calculated from pattern strings
 
     public static final int MINLEN_SEGLEN_FORADV = 20;      // minimum length of each segment to be able to use the advanced patterns
     public static final int MINLEN_CMDSTR_PERSEG = 80;      // minimum length of command/pattern string, and if less than this per segment
