@@ -130,8 +130,8 @@ class ReplyStrs
                         segTracks[j] = val3;
 
                         if (!CheckValue(segPixels[j], 1, 0) ||
-                                !CheckValue(segLayers[j], 2, 0) ||
-                                !CheckValue(segTracks[j], 1, 0))
+                            !CheckValue(segLayers[j], 2, 0) ||
+                            !CheckValue(segTracks[j], 1, 0))
                             replyFail = true;
 
                         if (strs.length == 3) // only first set of values has been sent
@@ -174,7 +174,7 @@ class ReplyStrs
                 if (strs.length >= 8)
                 {
                     curBright[    segindex] = Integer.parseInt(strs[0]);
-                    curDelay[     segindex] = Integer.parseInt(strs[1]);
+                    curDelay[     segindex] = (byte)Integer.parseInt(strs[1]);
                     segPatterns[  segindex] = Integer.parseInt(strs[2]);
                     segXmodeEnb[  segindex] = strs[3].charAt(0) != '0';
                     segXmodeHue[  segindex] = Integer.parseInt(strs[4]) + (Integer.parseInt(strs[5]) << 8);
@@ -187,6 +187,18 @@ class ReplyStrs
                     Log.v(LOGNAME, ">> Bright=" + curBright[segindex] + " Delay=" + curDelay[segindex]);
                     Log.v(LOGNAME, ">> Pattern=" + segPatterns[segindex] + " Mode=" + segXmodeEnb[segindex] + " Force=" + segTrigForce[segindex]);
                     Log.v(LOGNAME, ">> Hue=" + segXmodeHue[segindex] + " White=" + segXmodeWht[segindex] + " Count=" + segXmodeCnt[segindex]);
+
+                    if (!CheckValue(curDelay[segindex], -rangeDelay, rangeDelay))
+                    {
+                        curDelay[segindex] = 0;
+                        Log.v(LOGNAME, "Adjusting delay=" + curDelay[segindex]);
+                    }
+
+                    if (!CheckValue(curBright[segindex], 0, MAXVAL_PERCENT))
+                    {
+                        curBright[segindex] = MAXVAL_PERCENT;
+                        Log.v(LOGNAME, "Adjusting bright=" + curBright[segindex]);
+                    }
 
                     CheckSegVals(segindex);
                 }
@@ -321,7 +333,11 @@ class ReplyStrs
                     if (numSegments < 1) numSegments = 1;
                     if (customPlugins < 0) customPlugins = 0;
 
-                    if (rangeDelay < MINVAL_DELAYRANGE) rangeDelay = MINVAL_DELAYRANGE;
+                    if (rangeDelay < MINVAL_DELAYRANGE)
+                    {
+                        rangeDelay = MINVAL_DELAYRANGE;
+                        Log.v(LOGNAME, "Adjusting range=" + rangeDelay);
+                    }
 
                     if (!CheckValue(optionLines, 1, 0) ||
                         !CheckValue(maxlenCmdStrs, MINLEN_CMDSTR_PERSEG, 0))
@@ -362,8 +378,17 @@ class ReplyStrs
                     Log.v(LOGNAME, ">> Bright=" + curBright[0] + " Delay=" + curDelay[0]);
                     Log.v(LOGNAME, ">> Pixels=" + segPixels[0] + " Layers=" + segLayers[0] + " Tracks=" + segTracks[0]);
 
-                    if (!CheckValue(curDelay[0], -rangeDelay, rangeDelay)) curDelay[0] = 0;
-                    if (!CheckValue(curBright[0], 0, MAXVAL_PERCENT)) curBright[0] = MAXVAL_PERCENT;
+                    if (!CheckValue(curDelay[0], -rangeDelay, rangeDelay))
+                    {
+                        curDelay[0] = 0;
+                        Log.v(LOGNAME, "Adjusting delay=" + curDelay[0]);
+                    }
+
+                    if (!CheckValue(curBright[0], 0, MAXVAL_PERCENT))
+                    {
+                        curBright[0] = MAXVAL_PERCENT;
+                        Log.v(LOGNAME, "Adjusting bright=" + curBright[0]);
+                    }
 
                     if (!CheckValue(segPixels[0], 1, 0) ||
                         !CheckValue(segLayers[0], 2, 0) ||
