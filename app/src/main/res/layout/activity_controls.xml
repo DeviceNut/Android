@@ -132,53 +132,63 @@
                     android:layout_marginBottom="12dp"
                     android:orientation="horizontal">
 
-                    <RadioGroup
+                    <RadioButton
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:id="@+id/radioGroup">
+                        android:layout_marginRight="8dp"
+                        android:visibility="gone"
+                        android:onClick="onClick"
+                        android:id="@+id/radio_1"
+                        android:text="1"/>
 
-                        <RadioButton
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginRight="8dp"
-                            android:visibility="gone"
-                            android:id="@+id/radio_1"
-                            android:text="1"/>
+                    <RadioButton
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginRight="8dp"
+                        android:visibility="gone"
+                        android:onClick="onClick"
+                        android:id="@+id/radio_2"
+                        android:text="2"/>
 
-                        <RadioButton
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginRight="8dp"
-                            android:visibility="gone"
-                            android:id="@+id/radio_2"
-                            android:text="2"/>
+                    <RadioButton
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginRight="8dp"
+                        android:visibility="gone"
+                        android:onClick="onClick"
+                        android:id="@+id/radio_3"
+                        android:text="3"/>
 
-                        <RadioButton
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginRight="8dp"
-                            android:visibility="gone"
-                            android:id="@+id/radio_3"
-                            android:text="3"/>
+                    <RadioButton
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginRight="8dp"
+                        android:visibility="gone"
+                        android:onClick="onClick"
+                        android:id="@+id/radio_4"
+                        android:text="4"/>
 
-                        <RadioButton
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginRight="8dp"
-                            android:visibility="gone"
-                            android:id="@+id/radio_4"
-                            android:text="4"/>
+                    <RadioButton
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginRight="8dp"
+                        android:visibility="gone"
+                        android:onClick="onClick"
+                        android:id="@+id/radio_5"
+                        android:text="5"/>
 
-                        <RadioButton
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginRight="8dp"
-                            android:visibility="gone"
-                            android:id="@+id/radio_5"
-                            android:text="5"/>
+                    <ToggleButton
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentEnd="true"
+                        android:textOn="+"
+                        android:textOff="-"
+                        android:textStyle="bold"
+                        android:textSize="22dp"
+                        android:onClick="onClick"
+                        android:visibility="gone"
+                        android:id="@+id/button_SegAdd"/>
 
-                    </RadioGroup>
                 </LinearLayout>
 
                 <View style="@style/DividerHorz" android:layout_marginBottom="5dp" />

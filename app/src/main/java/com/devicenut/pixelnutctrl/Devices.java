@@ -465,6 +465,7 @@ public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
             }
             case 2:
             {
+                UpdateProgress();
                 SendCommand();
                 break;
             }

@@ -15,6 +15,7 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.LinearLayout;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
@@ -72,6 +73,7 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
     private final Activity context = this;
 
     private TextView nameText;
+    private ToggleButton segAddButton;
     private Button pauseButton, helpButton, helpButton2, manualButton;
     private TextView helpText, helpText2, helpTitle, textTrigger;
     private LinearLayout outerControls, innerControls, patternHelp;
@@ -90,6 +92,9 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
     private boolean sendEnable = false;
     private boolean isEditing = false;
     private boolean changePattern = true;
+
+    private boolean useSegEnables = false;
+    private final boolean segEnables[] = { false, false, false, false, false };
 
     private final int segRadioIds[] =
             {
@@ -177,6 +182,8 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
         seekPropCount = (SeekBar) findViewById(R.id.seek_PropCount);
         seekTrigForce = (SeekBar) findViewById(R.id.seek_TrigForce);
 
+        ToggleButton segAddButton = (ToggleButton)findViewById(R.id.button_SegAdd);
+
         manualButton = (Button) findViewById(R.id.button_AutoProp);
         if (!useAdvPatterns) manualButton.setVisibility(GONE);
 
@@ -190,11 +197,13 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
         curSegment = 0; // always start with first segment
         SetupSegments();
 
+        /*
         segmentGroup = (RadioGroup) findViewById(R.id.radioGroup);
         segmentGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener()
         {
             @Override public void onCheckedChanged(RadioGroup group, int checkedId) { SetSegment(checkedId); }
         });
+        */
 
         outerControls   = (LinearLayout) findViewById(R.id.ll_OuterControls);
         innerControls   = (LinearLayout) findViewById(R.id.ll_InnerControls);
@@ -458,8 +467,9 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
     {
         if (setvals) sendEnable = false; // prevent following from writing commands
 
-        seekBright.setProgress(curBright[curSegment]);
-        seekDelay.setProgress(((rangeDelay - curDelay[curSegment]) * MAXVAL_PERCENT) / (rangeDelay + rangeDelay));
+        int index = multiStrands ? curSegment : 0;
+        seekBright.setProgress(curBright[index]);
+        seekDelay.setProgress(((rangeDelay - curDelay[index]) * MAXVAL_PERCENT) / (rangeDelay + rangeDelay));
 
         int bits = devPatternBits[segPatterns[curSegment]];
 
@@ -518,35 +528,51 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
         if (numSegments > 1)
         {
             ll.setVisibility(VISIBLE);
+            if (multiStrands) segAddButton.setVisibility(VISIBLE);
 
-            for (int i = 0; i < segRadioIds.length; ++i)
+            for (int i = 0; i < numSegments; ++i)
             {
-                boolean doshow = (i < numSegments);
-                RadioButton b = (RadioButton) findViewById(segRadioIds[i]);
-                b.setVisibility(doshow ? VISIBLE : GONE);
+                RadioButton b = (RadioButton)findViewById(segRadioIds[i]);
+                b.setVisibility(VISIBLE);
+                b.setEnabled(true);
+                b.setFocusable(true);
+                b.setClickable(true);
 
-                //b.setEnabled(doshow);
-                //b.setFocusable(doshow);
-                //b.setClickable(doshow);
-
-                if (doshow && (i == curSegment))
+                if (i == curSegment)
+                {
                     b.setChecked(true);
+                    segEnables[i] = true;
+                }
+                else
+                {
+                    b.setChecked(false);
+                    segEnables[i] = false;
+                }
             }
+
+            useSegEnables = false;
         }
         else ll.setVisibility(GONE);
     }
 
-    private void SetSegment(int id)
+    private void SetSegment(int index)
     {
-        int i;
-        for (i = 0; i < segRadioIds.length; ++i)
-            if (id == segRadioIds[i])
-                break;
+        curSegment = index;
+        segEnables[curSegment] = ((RadioButton)findViewById(segRadioIds[curSegment])).isChecked();
 
-        if (curSegment == i) return; // no change
-
-        curSegment = i;
-        Log.d(LOGNAME, "Switching to segment=" + curSegment + " pattern=" + segPatterns[curSegment]);
+        if (!useSegEnables)
+        {
+            Log.d(LOGNAME, "Switching to segment=" + curSegment + " pattern=" + segPatterns[curSegment]);
+            for (int i = 0; i < numSegments; ++i)
+            {
+                if (i != curSegment)
+                {
+                    segEnables[i] = false;
+                    ((RadioButton)findViewById(segRadioIds[i])).setChecked(false);
+                }
+            }
+        }
+        else Log.d(LOGNAME, "Segment=" + curSegment + " Enabled=" + segEnables[curSegment]);
 
         int num = curSegment+1; // device segment numbers start at 1
         SendString(CMD_SEGS_ENABLE + num); // restricts subsequent controls to this segment
@@ -625,6 +651,36 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
                 else SendString(CMD_TRIGGER + 0);
                 break;
             }
+            case R.id.button_SegAdd:
+            {
+                useSegEnables = segAddButton.isChecked();
+                break;
+            }
+            case R.id.radio_1:
+            {
+                SetSegment(0);
+                break;
+            }
+            case R.id.radio_2:
+            {
+                SetSegment(1);
+                break;
+            }
+            case R.id.radio_3:
+            {
+                SetSegment(2);
+                break;
+            }
+            case R.id.radio_4:
+            {
+                SetSegment(3);
+                break;
+            }
+            case R.id.radio_5:
+            {
+                SetSegment(4);
+                break;
+            }
         }
     }
 
@@ -634,14 +690,16 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
         {
             case R.id.seek_Bright:
             {
-                curBright[curSegment] = progress;
-                SendString(CMD_BRIGHT + curBright[curSegment]);
+                int index = multiStrands ? curSegment : 0;
+                curBright[index] = progress;
+                SendString(CMD_BRIGHT + curBright[index]);
                 break;
             }
             case R.id.seek_Delay:
             {
-                curDelay[curSegment] = rangeDelay - (progress * 2 * rangeDelay)/100;
-                SendString(CMD_DELAY + curDelay[curSegment]);
+                int index = multiStrands ? curSegment : 0;
+                curDelay[index] = rangeDelay - (progress * 2 * rangeDelay)/100;
+                SendString(CMD_DELAY + curDelay[index]);
                 break;
             }
             case R.id.seek_PropColor:

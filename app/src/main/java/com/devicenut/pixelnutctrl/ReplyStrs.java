@@ -259,35 +259,59 @@ class ReplyStrs
         {
             throw new NullPointerException("Custom Plugins Not Supported Yet");
         }
-        else switch(replyState)
+        else switch(replyState+1)
         {
-            case 0: // first line: the title string (to sync with sequence)
+            case 1: // first line: title string and line count
             {
-                if (reply.contains(TITLE_PIXELNUT))
+                String[] strs = reply.split("\\s+"); // remove ALL spaces
+                if (strs.length >= 2)
                 {
-                    ++replyState;
-                    progressPercent = 0;
-                    progressPcentInc = 25;
+                    if (strs[0].contains(TITLE_PIXELNUT))
+                    {
+                        optionLines = Integer.parseInt(strs[1]);
+                        Log.v(LOGNAME, ">> Option lines = " + optionLines);
+
+                        if (optionLines < 2)
+                        {
+                            Log.e(LOGNAME, "Expected at least 2 option lines");
+                            replyFail = true;
+                        }
+                    }
+                    else
+                    {
+                        Log.e(LOGNAME, "Unexpected title: " + reply);
+                        replyFail = true;
+                    }
+
                 }
                 else
                 {
-                    Log.w(LOGNAME, "Unexpected title: " + reply);
+                    Log.e(LOGNAME, "Expected 2 parameters on line 1");
                     replyFail = true;
+                }
+
+                if (!replyFail)
+                {
+                    progressPercent = 0;
+                    progressPcentInc = 101/optionLines;
+                    Log.v(LOGNAME, "ProgressPercentageInc=" + (int)progressPcentInc);
+
+                    ++replyState;
+                    --optionLines;
                 }
                 break;
             }
-            case 1: // second line: number of additional lines + 6 device settings
+            case 2: // second line: 6 device settings for all configurations
             {
                 String[] strs = reply.split("\\s+"); // remove ALL spaces
-                if (strs.length >= 7)
+                if (strs.length >= 6)
                 {
-                    optionLines     = Integer.parseInt(strs[0]);
-                    numSegments     = Integer.parseInt(strs[1]);
-                    segPatterns[0]  = Integer.parseInt(strs[2]);
-                    customPatterns  = Integer.parseInt(strs[3]);
-                    maxlenCmdStrs   = Integer.parseInt(strs[4]);
-                    rangeDelay      = Integer.parseInt(strs[5]);
-                    customPlugins   = Integer.parseInt(strs[6]);
+                    numSegments     = Integer.parseInt(strs[0]);
+                    segPatterns[0]  = Integer.parseInt(strs[1]);
+                    customPatterns  = Integer.parseInt(strs[2]);
+                    maxlenCmdStrs   = Integer.parseInt(strs[3]);
+                    rangeDelay      = Integer.parseInt(strs[4]);
+                    customPlugins   = Integer.parseInt(strs[5]);
 
                     if (numSegments < 0)
                     {
@@ -322,7 +346,6 @@ class ReplyStrs
                     if (maxlenCmdStrs < (MINLEN_CMDSTR_PERSEG * numSegments))
                         useAdvPatterns = false;
 
-                    Log.v(LOGNAME, ">> Option lines = " + optionLines);
                     Log.v(LOGNAME, ">> Segments=" + numSegments + ((numSegments > 1) ? (multiStrands ? " (physical)" : " (logical)") : ""));
                     Log.v(LOGNAME, ">> CurPattern=" + segPatterns[0] + " DoInit=" + initPatterns);
                     Log.v(LOGNAME, ">> CustomPatterns=" + customPatterns + " CanEdit=" + editPatterns);
@@ -339,17 +362,17 @@ class ReplyStrs
                         Log.v(LOGNAME, "Adjusting range=" + rangeDelay);
                     }
 
-                    if (optionLines >= 1)
-                    {
-                        devPatternNames = new String[numPatterns];
-                        devPatternHelp  = new String[numPatterns];
-                        devPatternBits  = new int[numPatterns];
+                    devPatternNames = new String[numPatterns];
+                    devPatternHelp  = new String[numPatterns];
+                    devPatternBits  = new int[numPatterns];
 
-                        if (editPatterns) devPatternCmds = new String[numPatterns];
-                    }
-                    else replyFail = true;
+                    if (editPatterns) devPatternCmds = new String[numPatterns];
                 }
-                else replyFail = true;
+                else
+                {
+                    Log.e(LOGNAME, "Expected 6 parameters on line 2");
+                    replyFail = true;
+                }
 
                 if (!replyFail)
                 {
@@ -362,7 +385,7 @@ class ReplyStrs
                 }
                 break;
             }
-            case 2: // third line: 5 more settings (if not multiple physical segments)
+            case 3: // third line: 5 more settings (if not multiple physical segments)
             {
                 String[] strs = reply.split("\\s+"); // remove ALL spaces
                 if (strs.length >= 5)
@@ -391,9 +414,16 @@ class ReplyStrs
                     if (!CheckValue(segPixels[0], 1, 0) ||
                         !CheckValue(segLayers[0], 2, 0) ||
                         !CheckValue(segTracks[0], 1, 0))
+                    {
+                        Log.e(LOGNAME, "Unexpected values on line 3");
                         replyFail = true;
+                    }
                 }
-                else replyFail = true;
+                else
+                {
+                    Log.e(LOGNAME, "Expected 5 parameters on line 3");
+                    replyFail = true;
+                }
 
                 if (!replyFail)
                 {
@@ -403,7 +433,7 @@ class ReplyStrs
                 }
                 break;
             }
-            case 3: // fourth line: 5 extern mode values (if not multiple segments)
+            case 4: // fourth line: 5 extern mode values (if not multiple segments)
             {
                 String[] strs = reply.split("\\s+"); // remove ALL spaces
                 if (strs.length >= 5)
@@ -419,7 +449,11 @@ class ReplyStrs
 
                     CheckSegVals(0);
                 }
-                else replyFail = true;
+                else
+                {
+                    Log.e(LOGNAME, "Expected 5 parameters on line 4");
+                    replyFail = true;
+                }
 
                 if (!replyFail)
                 {
@@ -431,7 +465,8 @@ class ReplyStrs
             }
             default: // ignore for forward compatibility
             {
-                Log.w(LOGNAME, "Line=" + replyState + " Reply=" + reply);
+                int line = replyState + 1;
+                Log.w(LOGNAME, "Line=" + line + " Reply=" + reply);
 
                 --optionLines;
                 if (optionLines == 0) CheckForExtendedCommands();
