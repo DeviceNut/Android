@@ -125,16 +125,17 @@
                     android:textStyle="italic"
                     android:text="@string/title_segment"/>
 
-                <LinearLayout
+                <RelativeLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="5dp"
-                    android:layout_marginBottom="12dp"
+                    android:layout_marginBottom="10dp"
                     android:orientation="horizontal">
 
                     <RadioButton
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:layout_alignParentStart="true"
                         android:layout_marginRight="8dp"
                         android:visibility="gone"
                         android:onClick="onClick"
@@ -144,6 +145,7 @@
                     <RadioButton
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:layout_toRightOf="@id/radio_1"
                         android:layout_marginRight="8dp"
                         android:visibility="gone"
                         android:onClick="onClick"
@@ -153,6 +155,7 @@
                     <RadioButton
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:layout_toRightOf="@id/radio_2"
                         android:layout_marginRight="8dp"
                         android:visibility="gone"
                         android:onClick="onClick"
@@ -162,6 +165,7 @@
                     <RadioButton
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:layout_toRightOf="@id/radio_3"
                         android:layout_marginRight="8dp"
                         android:visibility="gone"
                         android:onClick="onClick"
@@ -171,27 +175,30 @@
                     <RadioButton
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:layout_toRightOf="@id/radio_4"
                         android:layout_marginRight="8dp"
                         android:visibility="gone"
                         android:onClick="onClick"
                         android:id="@+id/radio_5"
                         android:text="5"/>
 
-                    <ToggleButton
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
+                    <Button
+                        android:layout_width="30dp"
+                        android:layout_height="30dp"
+                        android:layout_marginTop="3dp"
                         android:layout_alignParentEnd="true"
-                        android:textOn="+"
-                        android:textOff="-"
+                        android:textColor="@color/UserChoice"
+                        android:background="@drawable/roundbutton"
+                        android:text="+"
                         android:textStyle="bold"
                         android:textSize="22dp"
                         android:onClick="onClick"
                         android:visibility="gone"
                         android:id="@+id/button_SegAdd"/>
 
-                </LinearLayout>
+                </RelativeLayout>
 
-                <View style="@style/DividerHorz" android:layout_marginBottom="5dp" />
+                <View style="@style/DividerHorz" android:layout_marginBottom="8dp" />
 
             </LinearLayout>
 
@@ -225,6 +232,7 @@
                             android:layout_width="35dp"
                             android:layout_height="35dp"
                             android:layout_marginTop="10dp"
+                            android:layout_marginBottom="8dp"
                             android:layout_marginRight="15dp"
                             android:textColor="@color/UserChoice"
                             android:background="@drawable/roundbutton"
@@ -238,8 +246,7 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:dropDownWidth="wrap_content"
-                            android:layout_marginTop="5dp"
-                            android:layout_marginBottom="10dp"
+                            android:layout_marginTop="10dp"
                             android:focusable="true"
                             android:id="@+id/spinner_Pattern"/>
 
@@ -251,6 +258,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
+                    android:layout_marginBottom="3dp"
                     android:visibility="gone"
                     android:background="@color/Background2"
                     android:id="@+id/ll_PatternHelp">

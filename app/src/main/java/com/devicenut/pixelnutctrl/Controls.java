@@ -15,15 +15,12 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.CheckBox;
 import android.widget.LinearLayout;
 import android.widget.RadioButton;
-import android.widget.RadioGroup;
 import android.widget.SeekBar;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
-import android.widget.ToggleButton;
 
 import static android.view.View.GONE;
 import static android.view.View.VISIBLE;
@@ -73,13 +70,12 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
     private final Activity context = this;
 
     private TextView nameText;
-    private ToggleButton segAddButton;
+    private Button segAddButton;
     private Button pauseButton, helpButton, helpButton2, manualButton;
     private TextView helpText, helpText2, helpTitle, textTrigger;
     private LinearLayout outerControls, innerControls, patternHelp;
     private LinearLayout autoControls, llPropColor, llPropWhite, llPropCount;
     private LinearLayout trigControls, llTrigForce;
-    private RadioGroup segmentGroup;
     private Spinner selectPattern;
     private SeekBar seekBright, seekDelay;
     private SeekBar seekPropColor, seekPropWhite, seekPropCount;
@@ -182,7 +178,7 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
         seekPropCount = (SeekBar) findViewById(R.id.seek_PropCount);
         seekTrigForce = (SeekBar) findViewById(R.id.seek_TrigForce);
 
-        ToggleButton segAddButton = (ToggleButton)findViewById(R.id.button_SegAdd);
+        segAddButton = (Button)findViewById(R.id.button_SegAdd);
 
         manualButton = (Button) findViewById(R.id.button_AutoProp);
         if (!useAdvPatterns) manualButton.setVisibility(GONE);
@@ -284,10 +280,15 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
                 Log.d(LOGNAME, "Initializing Patterns:");
                 for (int i = 0; i < numSegments; ++i)
                 {
-                    int seg = i + 1;
-                    Log.d(LOGNAME, "  segment=" + i + " pattern==" + segPatterns[i]);
+                    int seg = i+1;
+                    int pnum = segPatterns[i]+1;
+                    Log.d(LOGNAME, "  segment=" + seg + " pattern==" + pnum);
+
                     SendString(CMD_SEGS_ENABLE + seg);
-                    SendString(devPatternCmds[ segPatterns[i] ]);
+                    SendString("."); // start sequence
+                    SendString(devPatternCmds[pnum-1]);
+                    SendString("."); // end sequence
+                    SendString("" + pnum); // store pattern number
                 }
                 changePattern = false;
             }
@@ -306,8 +307,8 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
                 manualButton.setVisibility(GONE);
             }
 
-            SelectPattern();      // select the pattern to be displayed
-            SetupControls(true);  // set control positions without sending commands
+            SelectPattern();    // select the pattern to be displayed
+            SetupControls();    // set control positions without sending commands
         }
         nameText.setText(devName);
     }
@@ -317,7 +318,7 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
         Log.d(LOGNAME, ">>onPause");
         super.onPause();
 
-        if (!isEditing && isConnected)
+        if (!isEditing && isConnected) // TODO: don't disconnect if switching origentation
             ble.disconnect();
     }
 
@@ -380,12 +381,20 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
 
                     if (curPattern >= customPatterns)
                     {
-                        SendString("."); // start sequence
+                        if (numSegments == 1)
+                        {
+                            SendString("."); // start sequence
+                            SendString(devPatternCmds[curPattern]);
+                            SendString("."); // end sequence
 
-                        if (numSegments == 1) SendString(devPatternCmds[curPattern]);
-
+                            int num = curPattern+1; // device pattern numbers start at 1
+                            SendString("" + num);   // store current pattern number
+                            // this also pops the stack if not multiple segments
+                        }
                         else if (!multiStrands) // must send all segment patterns at once
                         {
+                            SendString("."); // start sequence
+
                             for (int i = 0; i < numSegments; ++i)
                             {
                                 if (i == curSegment) segPatterns[i] = curPattern;
@@ -393,18 +402,48 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
                                 SendString("X" + segPosStart[i] + " Y" + segPosCount[i]);
                                 SendString(devPatternCmds[ segPatterns[i] ]);
                             }
+
+                            SendString("."); // end sequence
+
+                            int num = curPattern+1; // device pattern numbers start at 1
+                            SendString("" + num);   // store current pattern number
+                            // this also pops the stack if not multiple segments
                         }
                         // else physically separate segments, so can treat them as such
-                        else SendString(devPatternCmds[ segPatterns[ curSegment ] ]);
+                        else if (useSegEnables)
+                        {
+                            for (int i = 0; i < numSegments; ++i)
+                            {
+                                if (segEnables[i])
+                                {
+                                    int seg = i+1;
+                                    SendString(CMD_SEGS_ENABLE + seg);
+                                    SendString("."); // start sequence
+                                    SendString(devPatternCmds[ segPatterns[i] ]);
+                                    SendString("."); // end sequence
 
-                        SendString("."); // end sequence
+                                    int num = curPattern+1; // device pattern numbers start at 1
+                                    SendString("" + num);   // store current pattern number
+                                    // this also pops the stack if not multiple segments
+                                }
+                            }
+
+                            int seg = curSegment+1;
+                            SendString(CMD_SEGS_ENABLE + seg);
+                        }
+                        else
+                        {
+                            SendString("."); // start sequence
+                            SendString(devPatternCmds[ segPatterns[ curSegment ] ]);
+                            SendString("."); // end sequence
+
+                            int num = curPattern+1; // device pattern numbers start at 1
+                            SendString("" + num);   // store current pattern number
+                            // this also pops the stack if not multiple segments
+                        }
                     }
 
-                    int num = curPattern+1; // device pattern numbers start at 1
-                    SendString("" + num);   // store current pattern number
-                    // this also pops the stack if not multiple segments
-
-                    SetupControls(false); // set controls display and send commands
+                    SetupControls();    // set control positions without sending commands
 
                     if (helpMode > 0) SetHelpMode(false, curPattern);
                 }
@@ -463,9 +502,9 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
         }
     }
 
-    private void SetupControls(boolean setvals)
+    private void SetupControls()
     {
-        if (setvals) sendEnable = false; // prevent following from writing commands
+        sendEnable = false; // prevent following from writing commands
 
         int index = multiStrands ? curSegment : 0;
         seekBright.setProgress(curBright[index]);
@@ -473,30 +512,22 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
 
         int bits = devPatternBits[segPatterns[curSegment]];
 
-        if (setvals)
+        if (segXmodeEnb[curSegment])
         {
+            autoControls.setVisibility(VISIBLE);
+            manualButton.setText(getResources().getString(R.string.name_disable));
+
+            llPropColor.setVisibility(((bits & 1) != 0) ? VISIBLE : GONE);
+            llPropWhite.setVisibility(((bits & 2) != 0) ? VISIBLE : GONE);
+            llPropCount.setVisibility(((bits & 4) != 0) ? VISIBLE : GONE);
+
             seekPropColor.setProgress(((segXmodeHue[curSegment] * MAXVAL_PERCENT) / (MAXVAL_HUE+1)));
             seekPropWhite.setProgress(segXmodeWht[  curSegment]);
             seekPropCount.setProgress(segXmodeCnt[  curSegment]);
             seekTrigForce.setProgress(segTrigForce[ curSegment] / 10);
         }
-
-        if (segXmodeEnb[curSegment])
-        {
-            autoControls.setVisibility(VISIBLE);
-            manualButton.setText(getResources().getString(R.string.name_disable));
-            //manualButton.setTextColor(ContextCompat.getColor(context, R.color.UserChoice));
-
-            //seekPropColor.setEnabled((bits & 1) != 0);
-            //seekPropWhite.setEnabled((bits & 2) != 0);
-            //seekPropCount.setEnabled((bits & 4) != 0);
-            llPropColor.setVisibility(((bits & 1) != 0) ? VISIBLE : GONE);
-            llPropWhite.setVisibility(((bits & 2) != 0) ? VISIBLE : GONE);
-            llPropCount.setVisibility(((bits & 4) != 0) ? VISIBLE : GONE);
-        }
         else
         {
-            //manualButton.setTextColor(Color.GRAY);
             manualButton.setText(getResources().getString(R.string.name_enable));
             autoControls.setVisibility(GONE);
         }
@@ -504,9 +535,8 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
         if ((bits & 0x10) != 0) // enable triggering
         {
             trigControls.setVisibility(VISIBLE);
-            //seekTrigForce.setEnabled((bits & 0x20) != 0);
 
-            if ((bits & 0x20) != 0)
+            if ((bits & 0x20) != 0) // enable force control
             {
                 llTrigForce.setVisibility(VISIBLE);
                 textTrigger.setText(getResources().getString(R.string.title_trigforce));
@@ -519,7 +549,7 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
         }
         else trigControls.setVisibility(GONE);
 
-        if (setvals) sendEnable = true; // allow controls to work now
+        sendEnable = true; // allow controls to work now
     }
 
     private void SetupSegments()
@@ -553,33 +583,85 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
             useSegEnables = false;
         }
         else ll.setVisibility(GONE);
+
+        /* debug: show all segment buttons
+        for (int i = 0; i < segRadioIds.length; ++i)
+        {
+            RadioButton b = (RadioButton) findViewById(segRadioIds[i]);
+            b.setVisibility(VISIBLE);
+        }
+        */
     }
 
     private void SetSegment(int index)
     {
-        curSegment = index;
-        segEnables[curSegment] = ((RadioButton)findViewById(segRadioIds[curSegment])).isChecked();
-
-        if (!useSegEnables)
+        if (index == curSegment)
         {
-            Log.d(LOGNAME, "Switching to segment=" + curSegment + " pattern=" + segPatterns[curSegment]);
-            for (int i = 0; i < numSegments; ++i)
+            Log.w(LOGNAME, "Segment not changed");
+            return;
+        }
+
+        boolean enable = ((RadioButton)findViewById(segRadioIds[index])).isChecked();
+
+        if (useSegEnables) // allow multiple segment selections
+        {
+            if (enable && !segEnables[index]) // set segments controls to current values
             {
-                if (i != curSegment)
-                {
-                    segEnables[i] = false;
-                    ((RadioButton)findViewById(segRadioIds[i])).setChecked(false);
-                }
+                Log.d(LOGNAME, "Copying all values to segment=" + index);
+                segEnables[index] = true;
+
+                curDelay[    index] = curDelay[    curSegment];
+                curBright[   index] = curBright[   curSegment];
+                segXmodeEnb[ index] = segXmodeEnb[ curSegment];
+                segXmodeHue[ index] = segXmodeHue[ curSegment];
+                segXmodeWht[ index] = segXmodeWht[ curSegment];
+                segXmodeCnt[ index] = segXmodeCnt[ curSegment];
+                segTrigForce[index] = segTrigForce[curSegment];
+                segPatterns[ index] = segPatterns[ curSegment];
+
+                int seg = index+1;
+                int pnum = segPatterns[index]+1;
+                Log.d(LOGNAME, "  segment=" + seg + " pattern==" + pnum);
+
+                // change pattern on that segment:
+                SendString(CMD_SEGS_ENABLE + seg);
+                SendString("."); // start sequence
+                SendString(devPatternCmds[ segPatterns[index] ]);
+                SendString("."); // end sequence
+                SendString("" + pnum); // store pattern number
+
+                // switch back to current segment
+                seg = curSegment+1;
+                SendString(CMD_SEGS_ENABLE + seg);
+            }
+            else segEnables[index] = enable;
+        }
+        else
+        {
+            curSegment = index;
+            segEnables[curSegment] = enable;
+            Log.d(LOGNAME, "Switching to segment=" + curSegment + " pattern=" + segPatterns[curSegment]);
+            ClearSegEnables();
+
+            int num = curSegment+1; // device segment numbers start at 1
+            SendString(CMD_SEGS_ENABLE + num); // restricts subsequent controls to this segment
+
+            changePattern = false;  // don't need to resend the pattern
+            SelectPattern();        // select the pattern to be displayed
+            SetupControls();        // set controls display without sending commands
+        }
+    }
+
+    private void ClearSegEnables()
+    {
+        for (int i = 0; i < numSegments; ++i)
+        {
+            if ((i != curSegment) && segEnables[i])
+            {
+                segEnables[i] = false;
+                ((RadioButton)findViewById(segRadioIds[i])).setChecked(false);
             }
         }
-        else Log.d(LOGNAME, "Segment=" + curSegment + " Enabled=" + segEnables[curSegment]);
-
-        int num = curSegment+1; // device segment numbers start at 1
-        SendString(CMD_SEGS_ENABLE + num); // restricts subsequent controls to this segment
-
-        changePattern = false; // don't need to resend the pattern
-        SelectPattern();       // select the pattern to be displayed
-        SetupControls(true);  // set controls display without sending commands
     }
 
     public void SelectPattern()
@@ -632,28 +714,69 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
             }
             case R.id.button_AutoProp:
             {
-                segXmodeEnb[curSegment] = !segXmodeEnb[curSegment];
-                Log.d(LOGNAME, "AutoProp: manual=" + segXmodeEnb[curSegment]);
-                SetupControls(false); // set controls display and send commands
+                boolean enable = !segXmodeEnb[curSegment];
+                Log.d(LOGNAME, "AutoProps: enable=" + enable);
 
-                if (segXmodeEnb[curSegment])
-                     SendString(CMD_EXTMODE + "1");
-                else SendString(CMD_EXTMODE + "0");
+                if (useSegEnables)
+                {
+                    for (int i = 0; i < numSegments; ++i)
+                    {
+                        if (segEnables[i])
+                        {
+                            int seg = i+1;
+                            SendString(CMD_SEGS_ENABLE + seg);
 
-                // shoudn't need to do this...
-                //SendString(CMD_PROPVALS + segXmodeHue[curSegment] + " " + segXmodeWht[curSegment] + " " + segXmodeCnt[curSegment]);
+                            segXmodeEnb[i] = enable;
+                            if (enable)
+                                 SendString(CMD_EXTMODE + "1");
+                            else SendString(CMD_EXTMODE + "0");
+                        }
+                    }
+
+                    int seg = curSegment+1;
+                    SendString(CMD_SEGS_ENABLE + seg);
+                }
+                else
+                {
+                    segXmodeEnb[curSegment] = enable;
+                    if (enable)
+                         SendString(CMD_EXTMODE + "1");
+                    else SendString(CMD_EXTMODE + "0");
+                }
+
+                SetupControls();    // set control positions without sending commands
                 break;
             }
             case R.id.button_TrigAction:
             {
-                if ((devPatternBits[segPatterns[curSegment]] & 0x20) != 0)
+                if (useSegEnables)
+                {
+                    for (int i = 0; i < numSegments; ++i)
+                    {
+                        if (segEnables[i])
+                        {
+                            int seg = i+1;
+                            SendString(CMD_SEGS_ENABLE + seg);
+
+                            if ((devPatternBits[segPatterns[curSegment]] & 0x20) != 0)
+                                SendString(CMD_TRIGGER + segTrigForce[i]);
+                            else SendString(CMD_TRIGGER + 0);
+                        }
+                    }
+
+                    int seg = curSegment+1;
+                    SendString(CMD_SEGS_ENABLE + seg);
+                }
+                else if ((devPatternBits[segPatterns[curSegment]] & 0x20) != 0)
                      SendString(CMD_TRIGGER + segTrigForce[curSegment]);
                 else SendString(CMD_TRIGGER + 0);
                 break;
             }
             case R.id.button_SegAdd:
             {
-                useSegEnables = segAddButton.isChecked();
+                useSegEnables = !useSegEnables;
+                segAddButton.setText(useSegEnables ? "x" : "+");
+                if (!useSegEnables) ClearSegEnables();
                 break;
             }
             case R.id.radio_1:
@@ -690,39 +813,147 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
         {
             case R.id.seek_Bright:
             {
-                int index = multiStrands ? curSegment : 0;
-                curBright[index] = progress;
-                SendString(CMD_BRIGHT + curBright[index]);
+                if (useSegEnables)
+                {
+                    for (int i = 0; i < numSegments; ++i)
+                    {
+                        if (segEnables[i])
+                        {
+                            int seg = i+1;
+                            SendString(CMD_SEGS_ENABLE + seg);
+
+                            curBright[i] = progress;
+                            SendString(CMD_BRIGHT + curBright[i]);
+                        }
+                    }
+
+                    int seg = curSegment+1;
+                    SendString(CMD_SEGS_ENABLE + seg);
+                }
+                else
+                {
+                    int index = multiStrands ? curSegment : 0;
+                    curBright[index] = progress;
+                    SendString(CMD_BRIGHT + curBright[index]);
+                }
                 break;
             }
             case R.id.seek_Delay:
             {
-                int index = multiStrands ? curSegment : 0;
-                curDelay[index] = rangeDelay - (progress * 2 * rangeDelay)/100;
-                SendString(CMD_DELAY + curDelay[index]);
+                if (useSegEnables)
+                {
+                    for (int i = 0; i < numSegments; ++i)
+                    {
+                        if (segEnables[i])
+                        {
+                            int seg = i+1;
+                            SendString(CMD_SEGS_ENABLE + seg);
+
+                            curDelay[i] = rangeDelay - (progress * 2 * rangeDelay)/100;
+                            SendString(CMD_DELAY + curDelay[i]);
+                        }
+                    }
+
+                    int seg = curSegment+1;
+                    SendString(CMD_SEGS_ENABLE + seg);
+                }
+                else
+                {
+                    int index = multiStrands ? curSegment : 0;
+                    curDelay[index] = rangeDelay - (progress * 2 * rangeDelay)/100;
+                    SendString(CMD_DELAY + curDelay[index]);
+                }
                 break;
             }
             case R.id.seek_PropColor:
             {
-                segXmodeHue[curSegment] = (progress * MAXVAL_HUE) / MAXVAL_PERCENT;
-                SendString(CMD_PROPVALS + segXmodeHue[curSegment] + " " + segXmodeWht[curSegment] + " " + segXmodeCnt[curSegment]);
+                if (useSegEnables)
+                {
+                    for (int i = 0; i < numSegments; ++i)
+                    {
+                        if (segEnables[i])
+                        {
+                            int seg = i+1;
+                            SendString(CMD_SEGS_ENABLE + seg);
+
+                            segXmodeHue[i] = (progress * MAXVAL_HUE) / MAXVAL_PERCENT;
+                            SendString(CMD_PROPVALS + segXmodeHue[i] + " " + segXmodeWht[i] + " " + segXmodeCnt[i]);
+                        }
+                    }
+
+                    int seg = curSegment+1;
+                    SendString(CMD_SEGS_ENABLE + seg);
+                }
+                else
+                {
+                    segXmodeHue[curSegment] = (progress * MAXVAL_HUE) / MAXVAL_PERCENT;
+                    SendString(CMD_PROPVALS + segXmodeHue[curSegment] + " " + segXmodeWht[curSegment] + " " + segXmodeCnt[curSegment]);
+                }
                 break;
             }
             case R.id.seek_PropWhite:
             {
-                segXmodeWht[curSegment] = progress;
-                SendString(CMD_PROPVALS + segXmodeHue[curSegment] + " " + segXmodeWht[curSegment] + " " + segXmodeCnt[curSegment]);
+                if (useSegEnables)
+                {
+                    for (int i = 0; i < numSegments; ++i)
+                    {
+                        if (segEnables[i])
+                        {
+                            int seg = i+1;
+                            SendString(CMD_SEGS_ENABLE + seg);
+
+                            segXmodeWht[i] = progress;
+                            SendString(CMD_PROPVALS + segXmodeHue[i] + " " + segXmodeWht[i] + " " + segXmodeCnt[i]);
+                        }
+                    }
+
+                    int seg = curSegment+1;
+                    SendString(CMD_SEGS_ENABLE + seg);
+                }
+                else
+                {
+                    segXmodeWht[curSegment] = progress;
+                    SendString(CMD_PROPVALS + segXmodeHue[curSegment] + " " + segXmodeWht[curSegment] + " " + segXmodeCnt[curSegment]);
+                }
                 break;
             }
             case R.id.seek_PropCount:
             {
-                segXmodeCnt[curSegment] = progress;
-                SendString(CMD_PROPVALS + segXmodeHue[curSegment] + " " + segXmodeWht[curSegment] + " " + segXmodeCnt[curSegment]);
+                if (useSegEnables)
+                {
+                    for (int i = 0; i < numSegments; ++i)
+                    {
+                        if (segEnables[i])
+                        {
+                            int seg = i+1;
+                            SendString(CMD_SEGS_ENABLE + seg);
+
+                            segXmodeCnt[curSegment] = progress;
+                            SendString(CMD_PROPVALS + segXmodeHue[i] + " " + segXmodeWht[i] + " " + segXmodeCnt[i]);
+                        }
+                    }
+
+                    int seg = curSegment+1;
+                    SendString(CMD_SEGS_ENABLE + seg);
+                }
+                else
+                {
+                    segXmodeCnt[curSegment] = progress;
+                    SendString(CMD_PROPVALS + segXmodeHue[curSegment] + " " + segXmodeWht[curSegment] + " " + segXmodeCnt[curSegment]);
+                }
                 break;
             }
             case R.id.seek_TrigForce:
             {
-                segTrigForce[curSegment] = (10 * progress);
+                int val = (10 * progress);
+                if (useSegEnables)
+                {
+                    for (int i = 0; i < numSegments; ++i)
+                    {
+                        if (segEnables[i]) segTrigForce[i] = val;
+                    }
+                }
+                else segTrigForce[curSegment] = val;
                 break;
             }
         }
