@@ -327,6 +327,8 @@ class ReplyStrs
                     }
                     else initPatterns = true; // trigger sending initial pattern to device
 
+                    editPatterns = true; // default value
+
                     if (customPatterns != 0) // indicates fixed internal device patterns
                     {
                         stdPatternsCount = 0; // prevent using patterns defined here
@@ -491,7 +493,7 @@ class ReplyStrs
         {
             // use 101 to insure the progress bar fills up entirely
             progressPcentInc = 101.0 / ((getSegments ? (numSegments+1) : 0) + (customPatterns*3) + (customPlugins*2));
-            progressPercent = 0;
+            progressPercent = -progressPcentInc; // incremented first, so start at 0
             setPercentage = false;
 
             Log.v(LOGNAME, "ProgressPercentageInc=" + (int)progressPcentInc);

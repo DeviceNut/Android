@@ -301,12 +301,6 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
             curSegment = 0; // always start with first segment
             if (numSegments > 1) SendString(CMD_SEGS_ENABLE + "1"); // segment numbers start at 1 on device
 
-            if ((devPatternBits[segPatterns[curSegment]] & 7) == 0)
-            {
-                autoControls.setVisibility(GONE);
-                manualButton.setVisibility(GONE);
-            }
-
             SelectPattern();    // select the pattern to be displayed
             SetupControls();    // set control positions without sending commands
         }
@@ -389,7 +383,6 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
 
                             int num = curPattern+1; // device pattern numbers start at 1
                             SendString("" + num);   // store current pattern number
-                            // this also pops the stack if not multiple segments
                         }
                         else if (!multiStrands) // must send all segment patterns at once
                         {
@@ -407,7 +400,6 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
 
                             int num = curPattern+1; // device pattern numbers start at 1
                             SendString("" + num);   // store current pattern number
-                            // this also pops the stack if not multiple segments
                         }
                         // else physically separate segments, so can treat them as such
                         else if (useSegEnables)
@@ -424,7 +416,6 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
 
                                     int num = curPattern+1; // device pattern numbers start at 1
                                     SendString("" + num);   // store current pattern number
-                                    // this also pops the stack if not multiple segments
                                 }
                             }
 
@@ -439,8 +430,12 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
 
                             int num = curPattern+1; // device pattern numbers start at 1
                             SendString("" + num);   // store current pattern number
-                            // this also pops the stack if not multiple segments
                         }
+                    }
+                    else
+                    {
+                        int num = curPattern+1; // device pattern numbers start at 1
+                        SendString("" + num);   // store current pattern number
                     }
 
                     SetupControls();    // set control positions without sending commands
@@ -485,7 +480,6 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
         }
         else if (((newmode == 0) || (helpMode > 0)) && toggle)
         {
-            //innerControls.setVisibility(VISIBLE);
             helpButton2.setText("?");
             //helpButton2.setTextSize(22);
             patternHelp.setVisibility(GONE);
@@ -493,7 +487,6 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
         }
         else
         {
-            //innerControls.setVisibility(GONE);
             patternHelp.setVisibility(VISIBLE);
             helpButton2.setText("x");
             //helpButton2.setTextSize(18);
@@ -512,25 +505,31 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
 
         int bits = devPatternBits[segPatterns[curSegment]];
 
-        if (segXmodeEnb[curSegment])
+        if ((bits & 0x07) != 0) // enable properties
         {
-            autoControls.setVisibility(VISIBLE);
-            manualButton.setText(getResources().getString(R.string.name_disable));
+            innerControls.setVisibility(VISIBLE);
 
-            llPropColor.setVisibility(((bits & 1) != 0) ? VISIBLE : GONE);
-            llPropWhite.setVisibility(((bits & 2) != 0) ? VISIBLE : GONE);
-            llPropCount.setVisibility(((bits & 4) != 0) ? VISIBLE : GONE);
+            if (segXmodeEnb[curSegment])
+            {
+                autoControls.setVisibility(VISIBLE);
+                manualButton.setText(getResources().getString(R.string.name_disable));
 
-            seekPropColor.setProgress(((segXmodeHue[curSegment] * MAXVAL_PERCENT) / (MAXVAL_HUE+1)));
-            seekPropWhite.setProgress(segXmodeWht[  curSegment]);
-            seekPropCount.setProgress(segXmodeCnt[  curSegment]);
-            seekTrigForce.setProgress(segTrigForce[ curSegment] / 10);
+                llPropColor.setVisibility(((bits & 1) != 0) ? VISIBLE : GONE);
+                llPropWhite.setVisibility(((bits & 2) != 0) ? VISIBLE : GONE);
+                llPropCount.setVisibility(((bits & 4) != 0) ? VISIBLE : GONE);
+
+                seekPropColor.setProgress(((segXmodeHue[ curSegment] * MAXVAL_PERCENT) / MAXVAL_HUE));
+                seekPropWhite.setProgress(  segXmodeWht[ curSegment]);
+                seekPropCount.setProgress(  segXmodeCnt[ curSegment]);
+                seekTrigForce.setProgress(  segTrigForce[curSegment] / 10);
+            }
+            else
+            {
+                manualButton.setText(getResources().getString(R.string.name_enable));
+                autoControls.setVisibility(GONE);
+            }
         }
-        else
-        {
-            manualButton.setText(getResources().getString(R.string.name_enable));
-            autoControls.setVisibility(GONE);
-        }
+        else innerControls.setVisibility(GONE);
 
         if ((bits & 0x10) != 0) // enable triggering
         {
@@ -605,7 +604,7 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
 
         if (useSegEnables) // allow multiple segment selections
         {
-            if (enable && !segEnables[index]) // set segments controls to current values
+            if (enable && !segEnables[index]) // adding new segment to the chain
             {
                 Log.d(LOGNAME, "Copying all values to segment=" + index);
                 segEnables[index] = true;
@@ -621,14 +620,24 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
 
                 int seg = index+1;
                 int pnum = segPatterns[index]+1;
-                Log.d(LOGNAME, "  segment=" + seg + " pattern==" + pnum);
+                Log.d(LOGNAME, "  segment=" + seg + " pattern=" + pnum);
 
-                // change pattern on that segment:
+                // change the pattern:
                 SendString(CMD_SEGS_ENABLE + seg);
                 SendString("."); // start sequence
                 SendString(devPatternCmds[ segPatterns[index] ]);
                 SendString("."); // end sequence
                 SendString("" + pnum); // store pattern number
+
+                // change brightness/delay:
+                SendString(CMD_BRIGHT + curBright[index]);
+                SendString(CMD_DELAY + curDelay[index]);
+
+                // change properties:
+                if (segXmodeEnb[index])
+                     SendString(CMD_EXTMODE + "1");
+                else SendString(CMD_EXTMODE + "0");
+                SendString(CMD_PROPVALS + segXmodeHue[index] + " " + segXmodeWht[index] + " " + segXmodeCnt[index]);
 
                 // switch back to current segment
                 seg = curSegment+1;
