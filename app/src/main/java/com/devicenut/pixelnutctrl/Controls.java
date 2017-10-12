@@ -30,6 +30,7 @@ import static com.devicenut.pixelnutctrl.Main.CMD_BRIGHT;
 import static com.devicenut.pixelnutctrl.Main.CMD_DELAY;
 import static com.devicenut.pixelnutctrl.Main.CMD_EXTMODE;
 import static com.devicenut.pixelnutctrl.Main.CMD_PAUSE;
+import static com.devicenut.pixelnutctrl.Main.CMD_POP_PATTERN;
 import static com.devicenut.pixelnutctrl.Main.CMD_PROPVALS;
 import static com.devicenut.pixelnutctrl.Main.CMD_RESUME;
 import static com.devicenut.pixelnutctrl.Main.CMD_SEGS_ENABLE;
@@ -378,6 +379,7 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
                         if (numSegments == 1)
                         {
                             SendString("."); // start sequence
+                            SendString(CMD_POP_PATTERN);
                             SendString(devPatternCmds[curPattern]);
                             SendString("."); // end sequence
 
@@ -387,6 +389,7 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
                         else if (!multiStrands) // must send all segment patterns at once
                         {
                             SendString("."); // start sequence
+                            SendString(CMD_POP_PATTERN);
 
                             for (int i = 0; i < numSegments; ++i)
                             {
@@ -411,6 +414,7 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
                                     int seg = i+1;
                                     SendString(CMD_SEGS_ENABLE + seg);
                                     SendString("."); // start sequence
+                                    SendString(CMD_POP_PATTERN);
                                     SendString(devPatternCmds[ segPatterns[i] ]);
                                     SendString("."); // end sequence
 
@@ -425,6 +429,7 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
                         else
                         {
                             SendString("."); // start sequence
+                            SendString(CMD_POP_PATTERN);
                             SendString(devPatternCmds[ segPatterns[ curSegment ] ]);
                             SendString("."); // end sequence
 
