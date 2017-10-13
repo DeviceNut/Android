@@ -373,6 +373,8 @@ public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
         if (status == BLESTAT_SUCCESS)
         {
             Log.i(LOGNAME, "Connected to our device <<<<<<<<<<");
+            isConnected = true; // actually connected now
+            // note: still have isConnecting set as well
 
             new Thread()
             {
@@ -380,7 +382,7 @@ public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
                 {
 
                     isDone = false;
-                    SleepMsecs(250); // don't send too soon...hack!
+                    SleepMsecs(500); // don't send too soon...hack!
                     Log.d(LOGNAME, "Sending command: " + CMD_GET_INFO);
                     ble.WriteString(CMD_GET_INFO);
                 }
@@ -424,7 +426,7 @@ public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
         if (isConnecting)
         {
             isConnecting = false;
-            isConnected = true;
+            //isConnected = true; // now set in onConnect()
 
             // no longer able to Cancel now
             buttonScan.post(new Runnable()

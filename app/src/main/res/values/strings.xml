@@ -71,12 +71,12 @@
     </string>
     <string name="text_help_segs_physical">
         \n\nSelect Segment to Control:
-        \n\nThese radio buttons selects the which segment the following controls apply to.
+        \n\nThese radio buttons selects which segment the following controls apply to.
         Segments normally are independently controllable, unless you chain them together,
         in which case the controls apply to all the selected segments at the same time.
 
         \n\nPressing "+" button enables chaining segments together, after which the segment radio buttons
-        can be enabled/disabled separately. Pressing it when the button is showing "-" turns off chaining,
+        can be enabled/disabled separately. Pressing it when the button is showing "X" turns off chaining,
         returning independent control.
 
     </string>

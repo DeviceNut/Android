@@ -35,6 +35,7 @@ import static com.devicenut.pixelnutctrl.Main.CMD_PROPVALS;
 import static com.devicenut.pixelnutctrl.Main.CMD_RESUME;
 import static com.devicenut.pixelnutctrl.Main.CMD_SEGS_ENABLE;
 import static com.devicenut.pixelnutctrl.Main.CMD_TRIGGER;
+import static com.devicenut.pixelnutctrl.Main.CMD_START_END;
 import static com.devicenut.pixelnutctrl.Main.MAXVAL_HUE;
 import static com.devicenut.pixelnutctrl.Main.MAXVAL_PERCENT;
 import static com.devicenut.pixelnutctrl.Main.basicPatternsCount;
@@ -276,9 +277,10 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
                     Log.d(LOGNAME, "  segment=" + seg + " pattern==" + pnum);
 
                     SendString(CMD_SEGS_ENABLE + seg);
-                    SendString("."); // start sequence
+                    SendString(CMD_START_END);; // start sequence
+                    SendString(CMD_POP_PATTERN);
                     SendString(devPatternCmds[pnum-1]);
-                    SendString("."); // end sequence
+                    SendString(CMD_START_END);; // end sequence
                     SendString("" + pnum); // store pattern number
                 }
                 changePattern = false;
@@ -347,7 +349,6 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
                 return v;
             }
         };
-        //spinnerArrayAdapter.setDropDownViewResource(R.layout.layout_spinner);
 
         AdapterView.OnItemSelectedListener patternListener = new AdapterView.OnItemSelectedListener()
         {
@@ -368,17 +369,17 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
                     {
                         if (numSegments == 1)
                         {
-                            SendString("."); // start sequence
+                            SendString(CMD_START_END);; // start sequence
                             SendString(CMD_POP_PATTERN);
                             SendString(devPatternCmds[curPattern]);
-                            SendString("."); // end sequence
+                            SendString(CMD_START_END);; // end sequence
 
                             int num = curPattern+1; // device pattern numbers start at 1
                             SendString("" + num);   // store current pattern number
                         }
                         else if (!multiStrands) // must send all segment patterns at once
                         {
-                            SendString("."); // start sequence
+                            SendString(CMD_START_END);; // start sequence
                             SendString(CMD_POP_PATTERN);
 
                             for (int i = 0; i < numSegments; ++i)
@@ -389,7 +390,7 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
                                 SendString(devPatternCmds[ segPatterns[i] ]);
                             }
 
-                            SendString("."); // end sequence
+                            SendString(CMD_START_END);; // end sequence
 
                             int num = curPattern+1; // device pattern numbers start at 1
                             SendString("" + num);   // store current pattern number
@@ -403,10 +404,11 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
                                 {
                                     int seg = i+1;
                                     SendString(CMD_SEGS_ENABLE + seg);
-                                    SendString("."); // start sequence
+                                    SendString(CMD_START_END);; // start sequence
                                     SendString(CMD_POP_PATTERN);
+                                    segPatterns[i] = curPattern;
                                     SendString(devPatternCmds[ segPatterns[i] ]);
-                                    SendString("."); // end sequence
+                                    SendString(CMD_START_END);; // end sequence
 
                                     int num = curPattern+1; // device pattern numbers start at 1
                                     SendString("" + num);   // store current pattern number
@@ -418,10 +420,10 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
                         }
                         else
                         {
-                            SendString("."); // start sequence
+                            SendString(CMD_START_END);; // start sequence
                             SendString(CMD_POP_PATTERN);
                             SendString(devPatternCmds[ segPatterns[ curSegment ] ]);
-                            SendString("."); // end sequence
+                            SendString(CMD_START_END);; // end sequence
 
                             int num = curPattern+1; // device pattern numbers start at 1
                             SendString("" + num);   // store current pattern number
@@ -629,9 +631,10 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
 
                 // change the pattern:
                 SendString(CMD_SEGS_ENABLE + seg);
-                SendString("."); // start sequence
+                SendString(CMD_START_END);; // start sequence
+                SendString(CMD_POP_PATTERN);
                 SendString(devPatternCmds[ segPatterns[index] ]);
-                SendString("."); // end sequence
+                SendString(CMD_START_END);; // end sequence
                 SendString("" + pnum); // store pattern number
 
                 // change brightness/delay:

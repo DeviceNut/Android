@@ -21,6 +21,7 @@ public class Main extends Application
     public static final String CMD_RESUME       = "]";
     public static final String CMD_SEGS_ENABLE  = "#";
     public static final String CMD_POP_PATTERN  = "P";
+    public static final String CMD_START_END    = ".";
 
     public static final int MAXVAL_HUE          = 359;
     public static final int MAXVAL_PERCENT      = 100;
