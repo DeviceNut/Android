@@ -476,6 +476,16 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
             {
                 outerControls.setVisibility(GONE);
                 helpTitle.setVisibility(VISIBLE);
+
+                String str = getResources().getString(R.string.text_help_head);
+                if (numSegments > 1)
+                {
+                    if (multiStrands)
+                         str += getResources().getString(R.string.text_help_segs_physical);
+                    else str += getResources().getString(R.string.text_help_segs_logical);
+                }
+                helpText.setText(str + getResources().getString(R.string.text_help_tail));
+
                 helpText.setVisibility(VISIBLE);
                 helpButton.setText(getResources().getString(R.string.name_controls));
                 helpMode = newmode;

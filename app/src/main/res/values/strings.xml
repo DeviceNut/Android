@@ -21,14 +21,14 @@
     <string name="title_select">Select A PixelNut Device</string>
     <string name="title_connecting">Connecting…</string>
     <string name="title_configuring">Configuring…</string>
-    <string name="title_segment">Select segment to control</string>
+    <string name="title_segments">Select segment to control</string>
     <string name="title_pattern">Choose effect pattern</string>
     <string name="title_adjust">Adjust brightness and speed</string>
     <string name="title_modify">Modify effect properties</string>
     <string name="title_trigforce">Select force then trigger</string>
     <string name="title_dotrigger">Press to trigger pattern</string>
     <string name="title_help">Controls Help</string>
-    <string name="text_help">
+    <string name="text_help_head">
         The controls affect the PixelNut! device that is currently connected,
          whose name is displayed in the upper left of the screen.
 
@@ -38,7 +38,9 @@
         \n\nAt any time you can press the Pause button to stop the animation,
         until you restart it with Resume.
 
-        \n\nChoose Preset Effect Pattern:
+    </string>
+    <string name="text_help_tail">
+        \n\nChoose Effect Pattern:
         \n\nThis drop-down list allows the selection one of the built-in patterns.
         You can then modify various setting with the other controls described below.
 
@@ -49,16 +51,33 @@
         and how fast the various animation effects change.
 
         \n\nModify Effect Properties:
-        \n\nWhen set to Auto, the ColorHue, Whiteness, and Count properties are all determined
+        \n\nWhen set to Disable, the ColorHue, Whiteness, and Count properties are all determined
         from the pattern itself. In Advanced designs these properties usually change periodically.
 
-x        \n\nWhen set to Manual you can directly change them yourself with the slider controls.
+        \n\nWhen set to Enable you can directly change them yourself with the slider controls.
         Note that some, or all, of these controls may not be active for any given pattern.
 
         \n\nSelect Force then Trigger:
         \n\nTriggering a pattern causes the pattern to change somehow, depending on the pattern.
         The amount of change is determined by the amount of force that is set with the slider.
 
-        \n\nNote that not all patterns allow setting the force, and some cannot be triggered at all.
+        \n\nNot all patterns allow setting the force, and some cannot be triggered at all.
+    </string>
+    <string name="text_help_segs_logical">
+        \n\nSelect Segment to Control:
+        \n\nThese radio buttons selects the which segment the following controls apply to.
+        Only one segment can be chosen at once, allowing for independent control of each segment.
+
+    </string>
+    <string name="text_help_segs_physical">
+        \n\nSelect Segment to Control:
+        \n\nThese radio buttons selects the which segment the following controls apply to.
+        Segments normally are independently controllable, unless you chain them together,
+        in which case the controls apply to all the selected segments at the same time.
+
+        \n\nPressing "+" button enables chaining segments together, after which the segment radio buttons
+        can be enabled/disabled separately. Pressing it when the button is showing "-" turns off chaining,
+        returning independent control.
+
     </string>
 </resources>
