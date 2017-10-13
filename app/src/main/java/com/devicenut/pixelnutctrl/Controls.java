@@ -113,8 +113,6 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_controls);
 
-        //getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN); // hides keyboard on entry?
-
         int j = 0;
         int extra = (customPatterns > 0) ? 1 : 0;
         if (stdPatternsCount > 0) extra += 2;
@@ -313,7 +311,7 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
         Log.d(LOGNAME, ">>onPause");
         super.onPause();
 
-        if (!isEditing && isConnected) // TODO: don't disconnect if switching origentation
+        if (!isEditing && isConnected)
             ble.disconnect();
     }
 

@@ -25,10 +25,10 @@ public class Main extends Application
     public static final int MAXVAL_HUE          = 359;
     public static final int MAXVAL_PERCENT      = 100;
     public static final int MAXVAL_FORCE        = 1000;
-    public static final int MINVAL_DELAYRANGE   = 60;       // TODO: should be calculated from pattern strings
+    public static final int MINVAL_DELAYRANGE   = 60;       // use this for patterns defined here, and is minimal value for custom patterns
 
     public static final int MINLEN_SEGLEN_FORADV = 20;      // minimum length of each segment to be able to use the advanced patterns
-    public static final int MINLEN_CMDSTR_PERSEG = 80;      // minimum length of command/pattern string, and if less than this per segment
+    public static final int MINLEN_CMDSTR_PERSEG = 100;     // minimum length of command/pattern string, and if less than this per segment
                                                             // then will not be able to use the advanced patterns
 
     public static final String[] basicPatternHelp =
@@ -71,7 +71,7 @@ public class Main extends Application
                     "E51 H232 D10 Q3 T G",
                     "E50 W80 D10 Q3 T G",
                     "E40 H120 C20 D40 Q7 T G",
-                    "E30 C20 D80 Q7 T G",
+                    "E30 C20 D60 Q7 T G",
                     "E20 H30 C25 D30 Q7 T G",
             };
 
@@ -156,9 +156,9 @@ public class Main extends Application
                     "E50 B65 W80 H50 Q3 T E20 B90 C25 D30 F0 O3 T6 E20 U0 B90 H30 C45 D30 F0 I T E120 F1 I G",
                     "E20 W25 C25 D30 Q7 I T E101 F100 T E20 U0 W25 C25 D20 Q7 I T E101 F200 T G",
                     "E40 C25 D20 Q4 T E111 A0 E40 U0 V1 H270 C5 D30 Q1 I E131 F1000 O5 T5 G",
-                    "E30 C20 D80 Q7 T E160 I E120 I E111 F O3 T7 G",
-                    "E52 C25 W65 D20 Q1 T E150 D80 I E120 F1000 I G",
-                    "E51 C10 D80 Q4 T E112 T E131 F1 I T G",
+                    "E30 C20 D60 Q7 T E160 I E120 I E111 F O3 T7 G",
+                    "E52 C25 W65 D20 Q1 T E150 D60 I E120 F1000 I G",
+                    "E51 C10 D60 Q4 T E112 T E131 F1 I T G",
                     "E0 B80 Q3 T E111 F O10 T10 E142 F250 I T G",
                     "E0 H30 D30 T E110 F600 I T E111 A1 G",
                     "E50 V1 B65 W30 H100 Q1 T E40 H270 C10 D50 T E20 D15 C20 A1 F0 I T G"

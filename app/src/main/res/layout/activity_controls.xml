@@ -296,7 +296,7 @@
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="12dp"
+                        android:layout_marginTop="15dp"
                         android:orientation="horizontal">
 
                         <TextView
@@ -327,7 +327,7 @@
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="12dp"
+                        android:layout_marginTop="15dp"
                         android:layout_marginBottom="12dp"
                         android:orientation="horizontal">
 
@@ -398,7 +398,7 @@
                             <LinearLayout
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:layout_marginTop="12dp"
+                                android:layout_marginTop="15dp"
                                 android:orientation="horizontal"
                                 android:id="@+id/ll_PropColor">
 
@@ -418,7 +418,7 @@
                             <LinearLayout
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:layout_marginTop="12dp"
+                                android:layout_marginTop="15dp"
                                 android:orientation="horizontal"
                                 android:id="@+id/ll_PropWhite">
 
@@ -438,7 +438,7 @@
                             <LinearLayout
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:layout_marginTop="12dp"
+                                android:layout_marginTop="15dp"
                                 android:orientation="horizontal"
                                 android:id="@+id/ll_PropCount">
 
@@ -460,7 +460,7 @@
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="12dp"
+                        android:layout_marginTop="15dp"
                         android:orientation="vertical"
                         android:id="@+id/trig_Controls">
 
@@ -478,7 +478,7 @@
                         <LinearLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="12dp"
+                            android:layout_marginTop="15dp"
                             android:orientation="horizontal"
                             android:id="@+id/ll_TrigForce">
 
@@ -509,7 +509,7 @@
                         <Button
                             android:layout_width="match_parent"
                             android:layout_height="40dp"
-                            android:layout_marginTop="10dp"
+                            android:layout_marginTop="12dp"
                             android:textColorLink="@color/UserChoice"
                             android:text="@string/name_trigger"
                             android:onClick="onClick"
