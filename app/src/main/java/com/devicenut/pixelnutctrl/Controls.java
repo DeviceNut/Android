@@ -192,14 +192,6 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
         curSegment = 0; // always start with first segment
         SetupSegments();
 
-        /*
-        segmentGroup = (RadioGroup) findViewById(R.id.radioGroup);
-        segmentGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener()
-        {
-            @Override public void onCheckedChanged(RadioGroup group, int checkedId) { SetSegment(checkedId); }
-        });
-        */
-
         outerControls   = (LinearLayout) findViewById(R.id.ll_OuterControls);
         innerControls   = (LinearLayout) findViewById(R.id.ll_InnerControls);
         patternHelp     = (LinearLayout) findViewById(R.id.ll_PatternHelp);
@@ -232,7 +224,7 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
 
             if (Build.VERSION.SDK_INT < 23)
             {
-                //ble.refreshDeviceCache(); // doesn't work
+                //ble.refreshDeviceCache(); // doesn't work FIXME
 
                 Toast.makeText(context, "Rescan from Settings to see name change", Toast.LENGTH_SHORT).show();
             }
@@ -534,7 +526,6 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
                 seekPropColor.setProgress(((segXmodeHue[ curSegment] * MAXVAL_PERCENT) / MAXVAL_HUE));
                 seekPropWhite.setProgress(  segXmodeWht[ curSegment]);
                 seekPropCount.setProgress(  segXmodeCnt[ curSegment]);
-                seekTrigForce.setProgress(  segTrigForce[curSegment] / 10);
             }
             else
             {
@@ -551,6 +542,7 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
             if ((bits & 0x20) != 0) // enable force control
             {
                 llTrigForce.setVisibility(VISIBLE);
+                seekTrigForce.setProgress(segTrigForce[curSegment] / 10);
                 textTrigger.setText(getResources().getString(R.string.title_trigforce));
             }
             else

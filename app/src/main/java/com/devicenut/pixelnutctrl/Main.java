@@ -151,7 +151,7 @@ public class Main extends Application
     public static final String[] advPatternCmds =
             {
                     "E2 D10 T E101 F1000 I T G",
-                    "E1 D10 F1 I T E101 F1000 I T G",
+                    "E1 D25 F1 I T E101 F1000 I T G",
                     "E0 B50 W20 H232 Q3 T E142 D10 F250 I E50 B80 W80 D10 T G",
                     "E50 B65 W80 H50 Q3 T E20 B90 C25 D30 F0 O3 T6 E20 U0 B90 H30 C45 D30 F0 I T E120 F1 I G",
                     "E20 W25 C25 D30 Q7 I T E101 F100 T E20 U0 W25 C25 D20 Q7 I T E101 F200 T G",
