@@ -2,14 +2,15 @@ package com.devicenut.pixelnutctrl;
 
 import android.util.Log;
 
+import static com.devicenut.pixelnutctrl.Main.ADDLEN_CMDSTR_PERSEG;
 import static com.devicenut.pixelnutctrl.Main.CMD_GET_PATTERNS;
 import static com.devicenut.pixelnutctrl.Main.CMD_GET_PLUGINS;
 import static com.devicenut.pixelnutctrl.Main.CMD_GET_SEGMENTS;
 import static com.devicenut.pixelnutctrl.Main.MAXVAL_FORCE;
 import static com.devicenut.pixelnutctrl.Main.MAXVAL_HUE;
 import static com.devicenut.pixelnutctrl.Main.MAXVAL_PERCENT;
+import static com.devicenut.pixelnutctrl.Main.MINLEN_CMDSTR;
 import static com.devicenut.pixelnutctrl.Main.MINLEN_SEGLEN_FORADV;
-import static com.devicenut.pixelnutctrl.Main.MINLEN_CMDSTR_PERSEG;
 import static com.devicenut.pixelnutctrl.Main.MINVAL_DELAYRANGE;
 import static com.devicenut.pixelnutctrl.Main.TITLE_PIXELNUT;
 import static com.devicenut.pixelnutctrl.Main.advPatternBits;
@@ -317,77 +318,84 @@ class ReplyStrs
                     customPlugins   = Integer.parseInt(strs[4]);
                     maxlenCmdStrs   = Integer.parseInt(strs[5]);
 
-                    if (numSegments < 0)
+                    if (maxlenCmdStrs < MINLEN_CMDSTR)
                     {
-                        multiStrands = true;
-                        numSegments = -numSegments;
+                        Log.e(LOGNAME, "Cmd/Pattern string is too short: len=" + maxlenCmdStrs);
+                        replyFail = true;
                     }
-                    else multiStrands = false;
-
-                    if (segPatterns[0] > 0)
+                    else
                     {
-                        segPatterns[0] -= 1; // device patterns start at 1
-                        initPatterns = false;
-                    }
-                    else initPatterns = true; // trigger sending initial pattern to device
-
-                    editPatterns = true; // default value
-
-                    if (customPatterns != 0) // indicates fixed internal device patterns
-                    {
-                        stdPatternsCount = 0; // prevent using patterns defined here TODO: allow this
-
-                        if (customPatterns < 0)
+                        if (numSegments < 0)
                         {
-                            customPatterns =  -customPatterns;
-                            editPatterns = false;
+                            multiStrands = true;
+                            numSegments = -numSegments;
                         }
+                        else multiStrands = false;
+
+                        if (segPatterns[0] > 0)
+                        {
+                            segPatterns[0] -= 1; // device patterns start at 1
+                            initPatterns = false;
+                        }
+                        else initPatterns = true; // trigger sending initial pattern to device
+
+                        editPatterns = true; // default value
+
+                        if (customPatterns != 0) // indicates fixed internal device patterns
+                        {
+                            stdPatternsCount = 0; // prevent using patterns defined here TODO: allow this
+
+                            if (customPatterns < 0)
+                            {
+                                customPatterns =  -customPatterns;
+                                editPatterns = false;
+                            }
+                        }
+                        else stdPatternsCount = basicPatternsCount + advPatternsCount;
+
+                        // if command/pattern string not long enough then must use only basic patterns
+                        if (maxlenCmdStrs < (MINLEN_CMDSTR + (ADDLEN_CMDSTR_PERSEG * numSegments)))
+                        {
+                            useAdvPatterns = false;
+                            stdPatternsCount = basicPatternsCount;
+                        }
+                        else useAdvPatterns = true;
+
+                        numPatterns = customPatterns + stdPatternsCount;
+
+                        Log.v(LOGNAME, ">> Segments=" + numSegments + ((numSegments > 1) ? (multiStrands ? " (physical)" : " (logical)") : ""));
+                        Log.v(LOGNAME, ">> CurPattern=" + segPatterns[0] + " DoInit=" + initPatterns);
+                        Log.v(LOGNAME, ">> CustomPatterns=" + customPatterns + " CanEdit=" + editPatterns);
+                        Log.v(LOGNAME, ">> MaxCmdStr=" + maxlenCmdStrs + " AdvPatterns=" + useAdvPatterns);
+                        Log.v(LOGNAME, ">> DelayRange=" + rangeDelay + " XPlugins=" + customPlugins);
+                        Log.v(LOGNAME, ">> Total patterns=" + numPatterns);
+
+                        if (numSegments < 1) numSegments = 1;
+                        if (customPlugins < 0) customPlugins = 0;
+
+                        if (customPatterns == 0)
+                        {
+                            rangeDelay = MINVAL_DELAYRANGE;
+                            Log.v(LOGNAME, "Overwriting delay range=" + rangeDelay);
+                        }
+                        else if (rangeDelay < MINVAL_DELAYRANGE)
+                        {
+                            rangeDelay = MINVAL_DELAYRANGE;
+                            Log.v(LOGNAME, "Adjusting custom delay range=" + rangeDelay);
+                        }
+
+                        if (segPatterns[0] >= numPatterns)
+                        {
+                            segPatterns[0] = 0;
+                            Log.v(LOGNAME, "Resetting current pattern=0");
+                        }
+
+                        devPatternNames = new String[numPatterns];
+                        devPatternHelp  = new String[numPatterns];
+                        devPatternBits  = new int[numPatterns];
+
+                        if (editPatterns) devPatternCmds = new String[numPatterns];
                     }
-                    else stdPatternsCount = basicPatternsCount + advPatternsCount;
-
-                    // if the command/pattern string is not long enough,
-                    // then must only use the basic patterns
-                    if (maxlenCmdStrs < (MINLEN_CMDSTR_PERSEG * numSegments))
-                    {
-                        useAdvPatterns = false;
-                        stdPatternsCount = basicPatternsCount;
-                    }
-                    else useAdvPatterns = true;
-
-                    numPatterns = customPatterns + stdPatternsCount;
-
-                    Log.v(LOGNAME, ">> Segments=" + numSegments + ((numSegments > 1) ? (multiStrands ? " (physical)" : " (logical)") : ""));
-                    Log.v(LOGNAME, ">> CurPattern=" + segPatterns[0] + " DoInit=" + initPatterns);
-                    Log.v(LOGNAME, ">> CustomPatterns=" + customPatterns + " CanEdit=" + editPatterns);
-                    Log.v(LOGNAME, ">> MaxCmdStr=" + maxlenCmdStrs + " AdvPatterns=" + useAdvPatterns);
-                    Log.v(LOGNAME, ">> DelayRange=" + rangeDelay + " XPlugins=" + customPlugins);
-                    Log.v(LOGNAME, ">> Total patterns=" + numPatterns);
-
-                    if (numSegments < 1) numSegments = 1;
-                    if (customPlugins < 0) customPlugins = 0;
-
-                    if (customPatterns == 0)
-                    {
-                        rangeDelay = MINVAL_DELAYRANGE;
-                        Log.v(LOGNAME, "Overwriting delay range=" + rangeDelay);
-                    }
-                    else if (rangeDelay < MINVAL_DELAYRANGE)
-                    {
-                        rangeDelay = MINVAL_DELAYRANGE;
-                        Log.v(LOGNAME, "Adjusting custom delay range=" + rangeDelay);
-                    }
-
-                    if (segPatterns[0] >= numPatterns)
-                    {
-                        segPatterns[0] = 0;
-                        Log.v(LOGNAME, "Resetting current pattern=0");
-                    }
-
-                    devPatternNames = new String[numPatterns];
-                    devPatternHelp  = new String[numPatterns];
-                    devPatternBits  = new int[numPatterns];
-
-                    if (editPatterns) devPatternCmds = new String[numPatterns];
                 }
                 else
                 {

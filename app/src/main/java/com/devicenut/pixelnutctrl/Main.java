@@ -29,8 +29,9 @@ public class Main extends Application
     public static final int MINVAL_DELAYRANGE   = 60;       // use this for patterns defined here, and is minimal value for custom patterns
 
     public static final int MINLEN_SEGLEN_FORADV = 20;      // minimum length of each segment to be able to use the advanced patterns
-    public static final int MINLEN_CMDSTR_PERSEG = 100;     // minimum length of command/pattern string, and if less than this per segment
-                                                            // then will not be able to use the advanced patterns
+    public static final int MINLEN_CMDSTR        = 110;     // minimum length of the command/pattern string
+    public static final int ADDLEN_CMDSTR_PERSEG = 50;      // additional length of command/pattern string per additional segment,
+                                                            // otherwise will not be able to use the advanced patterns
 
     public static final String[] basicPatternHelp =
             {
