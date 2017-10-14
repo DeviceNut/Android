@@ -161,7 +161,11 @@ class ReplyStrs
                         segPosCount[j] = val2;
 
                         // if any segment is very short then just use basic patterns
-                        if (val2 < MINLEN_SEGLEN_FORADV) useAdvPatterns = false;
+                        if (val2 < MINLEN_SEGLEN_FORADV)
+                        {
+                            Log.w(LOGNAME, "Disabling advanced patterns: short segment(s)");
+                            useAdvPatterns = false;
+                        }
                     }
                 }
             }
@@ -551,13 +555,16 @@ class ReplyStrs
                 devPatternBits[ i] = basicPatternBits[i];
             }
 
-            int j = i;
-            for (i = 0; i < advPatternsCount; ++i)
+            if (useAdvPatterns)
             {
-                devPatternNames[i+j] = advPatternNames[i];
-                devPatternHelp[ i+j] = advPatternHelp[i];
-                devPatternCmds[ i+j] = advPatternCmds[i];
-                devPatternBits[ i+j] = advPatternBits[i];
+                int j = i;
+                for (i = 0; i < advPatternsCount; ++i)
+                {
+                    devPatternNames[i+j] = advPatternNames[i];
+                    devPatternHelp[ i+j] = advPatternHelp[i];
+                    devPatternCmds[ i+j] = advPatternCmds[i];
+                    devPatternBits[ i+j] = advPatternBits[i];
+                }
             }
         }
 

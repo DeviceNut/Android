@@ -197,8 +197,8 @@ public class Main extends Application
                     0x11,
             };
 
-    public static int basicPatternsCount = basicPatternNames.length;
-    public static int advPatternsCount = advPatternNames.length;
+    public static final int basicPatternsCount = basicPatternNames.length;
+    public static final int advPatternsCount = advPatternNames.length;
     public static int stdPatternsCount;
 
     public static String[] devPatternNames;
