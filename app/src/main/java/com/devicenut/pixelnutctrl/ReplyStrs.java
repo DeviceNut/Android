@@ -354,7 +354,7 @@ class ReplyStrs
                         else stdPatternsCount = basicPatternsCount + advPatternsCount;
 
                         // if command/pattern string not long enough then must use only basic patterns
-                        if (maxlenCmdStrs < (MINLEN_CMDSTR + (ADDLEN_CMDSTR_PERSEG * numSegments)))
+                        if (maxlenCmdStrs < (MINLEN_CMDSTR + (ADDLEN_CMDSTR_PERSEG * (numSegments-1))))
                         {
                             useAdvPatterns = false;
                             stdPatternsCount = basicPatternsCount;
