@@ -75,7 +75,7 @@
         Segments normally are independently controllable, unless you chain them together,
         in which case the controls apply to all the selected segments at the same time.
 
-        \n\nPressing "+" button enables chaining segments together, after which the segment radio buttons
+        \n\nPressing "&amp;" button enables chaining segments together, after which the segment radio buttons
         can be enabled/disabled separately. Pressing it when the button is showing "X" turns off chaining,
         returning independent control.
 

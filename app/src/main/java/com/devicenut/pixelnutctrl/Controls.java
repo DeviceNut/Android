@@ -775,8 +775,8 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
                             int seg = i+1;
                             SendString(CMD_SEGS_ENABLE + seg);
 
-                            if ((devPatternBits[segPatterns[curSegment]] & 0x20) != 0)
-                                SendString(CMD_TRIGGER + segTrigForce[i]);
+                            if ((devPatternBits[segPatterns[i]] & 0x20) != 0)
+                                 SendString(CMD_TRIGGER + segTrigForce[i]);
                             else SendString(CMD_TRIGGER + 0);
                         }
                     }
@@ -792,7 +792,7 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
             case R.id.button_SegAdd:
             {
                 useSegEnables = !useSegEnables;
-                segAddButton.setText(useSegEnables ? "x" : "+");
+                segAddButton.setText(useSegEnables ? "X" : "&");
                 if (!useSegEnables) ClearSegEnables();
                 break;
             }
@@ -945,7 +945,7 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
                             int seg = i+1;
                             SendString(CMD_SEGS_ENABLE + seg);
 
-                            segXmodeCnt[curSegment] = progress;
+                            segXmodeCnt[i] = progress;
                             SendString(CMD_PROPVALS + segXmodeHue[i] + " " + segXmodeWht[i] + " " + segXmodeCnt[i]);
                         }
                     }

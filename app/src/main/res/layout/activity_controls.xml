@@ -196,7 +196,7 @@
                             android:layout_alignParentEnd="true"
                             android:textColor="@color/UserChoice"
                             android:background="@drawable/roundbutton"
-                            android:text="+"
+                            android:text="&amp;"
                             android:textStyle="bold"
                             android:textSize="22dp"
                             android:onClick="onClick"
