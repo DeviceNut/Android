@@ -24,9 +24,10 @@ public class Main extends Application
     public static final String CMD_START_END    = ".";
 
     public static final int MAXVAL_HUE          = 359;
+    public static final int MAXVAL_WHT          = 50;
     public static final int MAXVAL_PERCENT      = 100;
     public static final int MAXVAL_FORCE        = 1000;
-    public static final int MINVAL_DELAYRANGE   = 60;       // use this for patterns defined here, and is minimal value for custom patterns
+    public static final int MINVAL_DELAYRANGE   = 80;       // use this for patterns defined here, and is minimal value for custom patterns
 
     public static final int MINLEN_SEGLEN_FORADV = 20;      // minimum length of each segment to be able to use the advanced patterns
     public static final int MINLEN_CMDSTR        = 110;     // minimum length of the command/pattern string
@@ -35,7 +36,7 @@ public class Main extends Application
 
     public static final String[] basicPatternHelp =
             {
-                    "Just a solid color which can be modified with the ColorHue and Whiteness properties.",
+                    "A solid color which can be modified with the ColorHue and Whiteness properties.",
 
                     "A color that ripples down the strip, and can be modified with the ColorHue and Whiteness properties.",
 
@@ -66,8 +67,8 @@ public class Main extends Application
     public static final String[] basicPatternCmds =
             {
                     "E0 H270 Q3 T G",
-                    "E1 H135 D40 Q3 T G",
-                    "E2 H100 D40 Q3 T G",
+                    "E2 H135 D40 Q3 T G",
+                    "E1 H100 D40 Q3 T G",
                     "E10 D60 Q7 T G",
                     "E52 W30 D10 Q3 T G",
                     "E51 H232 D10 Q3 T G",

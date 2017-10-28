@@ -38,6 +38,7 @@ import static com.devicenut.pixelnutctrl.Main.CMD_TRIGGER;
 import static com.devicenut.pixelnutctrl.Main.CMD_START_END;
 import static com.devicenut.pixelnutctrl.Main.MAXVAL_HUE;
 import static com.devicenut.pixelnutctrl.Main.MAXVAL_PERCENT;
+import static com.devicenut.pixelnutctrl.Main.MAXVAL_WHT;
 import static com.devicenut.pixelnutctrl.Main.basicPatternsCount;
 import static com.devicenut.pixelnutctrl.Main.ble;
 import static com.devicenut.pixelnutctrl.Main.curSegment;
@@ -300,20 +301,16 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
         nameText.setText(devName);
     }
 
-    @Override protected void onPause()
-    {
-        Log.d(LOGNAME, ">>onPause");
-        super.onPause();
-
-        if (!isEditing && isConnected)
-            ble.disconnect();
-    }
-
     @Override public void onBackPressed()
     {
-        if (helpMode < 0) SetHelpMode(true, 0);
+        // deactivate controls help if it's active
+        if (helpMode < 0) ToggleControlsHelp();
+        else
+        {
+            if (isConnected) ble.disconnect();
 
-        else super.onBackPressed();
+            super.onBackPressed();
+        }
     }
 
     private void SetupSpinnerLayout()
@@ -437,7 +434,8 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
 
                     SetupControls();    // set control positions without sending commands
 
-                    if (helpMode > 0) SetHelpMode(false, curPattern);
+                    // change text for new pattern if pattern help is active, but keep it active
+                    if (helpMode > 0) SetPatternHelp(false, curPattern);
                 }
                 else changePattern = true; // reset for next time
             }
@@ -454,41 +452,42 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
         if (sendEnable) ble.WriteString(str);
     }
 
-    private void SetHelpMode(boolean toggle, int newmode)
+    private void ToggleControlsHelp()
     {
-        if ((helpMode < 0) || (newmode < 0))
+        if (helpMode < 0) // turn controls help off
         {
-            if ((newmode == 0) || (helpMode < 0))
-            {
-                helpText.setVisibility(GONE);
-                helpTitle.setVisibility(GONE);
-                outerControls.setVisibility(VISIBLE);
-                helpButton.setText(getResources().getString(R.string.name_help));
-                helpMode = 0;
-            }
-            else
-            {
-                outerControls.setVisibility(GONE);
-                helpTitle.setVisibility(VISIBLE);
-
-                String str = getResources().getString(R.string.text_help_head);
-                if (numSegments > 1)
-                {
-                    if (multiStrands)
-                         str += getResources().getString(R.string.text_help_segs_physical);
-                    else str += getResources().getString(R.string.text_help_segs_logical);
-                }
-                helpText.setText(str + getResources().getString(R.string.text_help_tail));
-
-                helpText.setVisibility(VISIBLE);
-                helpButton.setText(getResources().getString(R.string.name_controls));
-                helpMode = newmode;
-            }
+            helpText.setVisibility(GONE);
+            helpTitle.setVisibility(GONE);
+            outerControls.setVisibility(VISIBLE);
+            helpButton.setText(getResources().getString(R.string.name_help));
+            helpMode = 0;
         }
-        else if (((newmode == 0) || (helpMode > 0)) && toggle)
+        else
+        {
+            outerControls.setVisibility(GONE);
+            helpTitle.setVisibility(VISIBLE);
+
+            String str = getResources().getString(R.string.text_help_head);
+            if (numSegments > 1)
+            {
+                if (multiStrands)
+                     str += getResources().getString(R.string.text_help_segs_physical);
+                else str += getResources().getString(R.string.text_help_segs_logical);
+            }
+            helpText.setText(str + getResources().getString(R.string.text_help_tail));
+
+            helpText.setVisibility(VISIBLE);
+            helpButton.setText(getResources().getString(R.string.name_controls));
+            helpMode = -1;
+        }
+    }
+
+    private void SetPatternHelp(boolean toggle, int pattern)
+    {
+        //Log.d(LOGNAME, "PatternHelp: toggle=" + toggle + " pattern=" + pattern);
+        if ((helpMode > 0) && toggle)
         {
             helpButton2.setText("?");
-            //helpButton2.setTextSize(22);
             patternHelp.setVisibility(GONE);
             helpMode = 0;
         }
@@ -496,9 +495,8 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
         {
             patternHelp.setVisibility(VISIBLE);
             helpButton2.setText("x");
-            //helpButton2.setTextSize(18);
-            helpText2.setText( devPatternHelp[newmode]);
-            helpMode = newmode;
+            helpText2.setText( devPatternHelp[pattern]);
+            helpMode = pattern+1;
         }
     }
 
@@ -526,7 +524,7 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
                 llPropCount.setVisibility(((bits & 4) != 0) ? VISIBLE : GONE);
 
                 seekPropColor.setProgress(((segXmodeHue[ curSegment] * MAXVAL_PERCENT) / MAXVAL_HUE));
-                seekPropWhite.setProgress(  segXmodeWht[ curSegment]);
+                seekPropWhite.setProgress(((segXmodeWht[ curSegment] * MAXVAL_PERCENT) / MAXVAL_WHT));
                 seekPropCount.setProgress(  segXmodeCnt[ curSegment]);
             }
             else
@@ -721,12 +719,12 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
             }
             case R.id.button_PatternHelp:
             {
-                SetHelpMode(true, segPatterns[curSegment]);
+                SetPatternHelp(true, segPatterns[curSegment]);
                 break;
             }
             case R.id.button_ControlsHelp:
             {
-                SetHelpMode(true, -1);
+                ToggleControlsHelp();
                 break;
             }
             case R.id.button_AutoProp:
@@ -919,7 +917,7 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
                             int seg = i+1;
                             SendString(CMD_SEGS_ENABLE + seg);
 
-                            segXmodeWht[i] = progress;
+                            segXmodeWht[i] = (progress * MAXVAL_WHT) / MAXVAL_PERCENT;
                             SendString(CMD_PROPVALS + segXmodeHue[i] + " " + segXmodeWht[i] + " " + segXmodeCnt[i]);
                         }
                     }
@@ -929,7 +927,7 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
                 }
                 else
                 {
-                    segXmodeWht[curSegment] = progress;
+                    segXmodeWht[curSegment] = (progress * MAXVAL_WHT) / MAXVAL_PERCENT;
                     SendString(CMD_PROPVALS + segXmodeHue[curSegment] + " " + segXmodeWht[curSegment] + " " + segXmodeCnt[curSegment]);
                 }
                 break;

@@ -9,6 +9,7 @@ import static com.devicenut.pixelnutctrl.Main.CMD_GET_SEGMENTS;
 import static com.devicenut.pixelnutctrl.Main.MAXVAL_FORCE;
 import static com.devicenut.pixelnutctrl.Main.MAXVAL_HUE;
 import static com.devicenut.pixelnutctrl.Main.MAXVAL_PERCENT;
+import static com.devicenut.pixelnutctrl.Main.MAXVAL_WHT;
 import static com.devicenut.pixelnutctrl.Main.MINLEN_CMDSTR;
 import static com.devicenut.pixelnutctrl.Main.MINLEN_SEGLEN_FORADV;
 import static com.devicenut.pixelnutctrl.Main.MINVAL_DELAYRANGE;
@@ -82,7 +83,7 @@ class ReplyStrs
     {
         if (!CheckValue(segPatterns[i],  0, numPatterns-1))  segPatterns[i] = 0;
         if (!CheckValue(segXmodeHue[i],  0, MAXVAL_HUE))     segXmodeHue[i] = 0;
-        if (!CheckValue(segXmodeWht[i],  0, MAXVAL_PERCENT)) segXmodeWht[i] = 0;
+        if (!CheckValue(segXmodeWht[i],  0, MAXVAL_WHT))     segXmodeWht[i] = MAXVAL_WHT;
         if (!CheckValue(segXmodeCnt[i],  0, MAXVAL_PERCENT)) segXmodeCnt[i] = 0;
         if (!CheckValue(segTrigForce[i], 0, MAXVAL_FORCE))   segTrigForce[i] = MAXVAL_FORCE >> 1;
     }
