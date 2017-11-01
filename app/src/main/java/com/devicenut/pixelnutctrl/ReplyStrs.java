@@ -35,7 +35,6 @@ import static com.devicenut.pixelnutctrl.Main.devPatternHelp;
 import static com.devicenut.pixelnutctrl.Main.devPatternNames;
 import static com.devicenut.pixelnutctrl.Main.initPatterns;
 import static com.devicenut.pixelnutctrl.Main.multiStrands;
-import static com.devicenut.pixelnutctrl.Main.editPatterns;
 import static com.devicenut.pixelnutctrl.Main.useAdvPatterns;
 import static com.devicenut.pixelnutctrl.Main.maxlenCmdStrs;
 import static com.devicenut.pixelnutctrl.Main.numPatterns;
@@ -227,7 +226,6 @@ class ReplyStrs
 
                      if (line == 0)     devPatternNames[index] = new String(reply);
                 else if (line == 1)     devPatternHelp[index] = (new String(reply)).replace('\t', '\n');
-                else if (!editPatterns) devPatternBits[index] = Integer.parseInt(reply, 16);
                 else
                 {
                     devPatternCmds[index] = new String(reply);
@@ -315,7 +313,7 @@ class ReplyStrs
                     numSegments     = Integer.parseInt(strs[0]);
                     segPatterns[0]  = Integer.parseInt(strs[1]);
                     customPatterns  = Integer.parseInt(strs[2]);
-                    rangeDelay      = Integer.parseInt(strs[3]);
+                    rangeDelay      = Integer.parseInt(strs[3]); // always 0 now
                     customPlugins   = Integer.parseInt(strs[4]);
                     maxlenCmdStrs   = Integer.parseInt(strs[5]);
 
@@ -340,35 +338,32 @@ class ReplyStrs
                         }
                         else initPatterns = true; // trigger sending initial pattern to device
 
-                        editPatterns = true; // default value
-
-                        if (customPatterns != 0) // indicates fixed internal device patterns
+                        if (customPatterns == 0)
                         {
-                            stdPatternsCount = 0; // prevent using patterns defined here TODO: allow this
-
-                            if (customPatterns < 0)
+                            // if command/pattern string not long enough then must use only basic patterns
+                            if (maxlenCmdStrs < (MINLEN_CMDSTR + (ADDLEN_CMDSTR_PERSEG * (numSegments-1))))
                             {
-                                customPatterns =  -customPatterns;
-                                editPatterns = false;
+                                useAdvPatterns = false;
+                                stdPatternsCount = basicPatternsCount;
+                            }
+                            else
+                            {
+                                useAdvPatterns = true;
+                                stdPatternsCount = basicPatternsCount + advPatternsCount;
                             }
                         }
-                        else stdPatternsCount = basicPatternsCount + advPatternsCount;
-
-                        // if command/pattern string not long enough then must use only basic patterns
-                        if (maxlenCmdStrs < (MINLEN_CMDSTR + (ADDLEN_CMDSTR_PERSEG * (numSegments-1))))
+                        else
                         {
                             useAdvPatterns = false;
-                            stdPatternsCount = basicPatternsCount;
+                            stdPatternsCount = 0; // prevent using patterns defined here TODO: allow this
                         }
-                        else useAdvPatterns = true;
 
                         numPatterns = customPatterns + stdPatternsCount;
 
                         Log.v(LOGNAME, ">> Segments=" + numSegments + ((numSegments > 1) ? (multiStrands ? " (physical)" : " (logical)") : ""));
                         Log.v(LOGNAME, ">> CurPattern=" + segPatterns[0] + " DoInit=" + initPatterns);
-                        Log.v(LOGNAME, ">> CustomPatterns=" + customPatterns + " CanEdit=" + editPatterns);
-                        Log.v(LOGNAME, ">> MaxCmdStr=" + maxlenCmdStrs + " AdvPatterns=" + useAdvPatterns);
-                        Log.v(LOGNAME, ">> DelayRange=" + rangeDelay + " XPlugins=" + customPlugins);
+                        Log.v(LOGNAME, ">> CustomPatterns=" + customPatterns + " AdvPatterns=" + useAdvPatterns);
+                        Log.v(LOGNAME, ">> CustomPlugins=" + customPlugins + " MaxCmdStr=" + maxlenCmdStrs);
                         Log.v(LOGNAME, ">> Total patterns=" + numPatterns);
 
                         if (numSegments < 1) numSegments = 1;
@@ -394,8 +389,7 @@ class ReplyStrs
                         devPatternNames = new String[numPatterns];
                         devPatternHelp  = new String[numPatterns];
                         devPatternBits  = new int[numPatterns];
-
-                        if (editPatterns) devPatternCmds = new String[numPatterns];
+                        devPatternCmds = new String[numPatterns];
                     }
                 }
                 else

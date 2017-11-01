@@ -5,6 +5,7 @@ import android.app.Application;
 public class Main extends Application
 {
     public static final String TITLE_PIXELNUT = "P!";
+    public static final String TITLE_ADAFRUIT = "Adafruit";
     public static final String URL_PIXELNUT = "http://www.pixelnutstore.com";
 
     public static final String CMD_GET_INFO     = "?";
@@ -221,7 +222,6 @@ public class Main extends Application
     public static int rangeDelay        = MINVAL_DELAYRANGE; // default range of delay offsets
 
     public static boolean useAdvPatterns = true;    // false for small segments and/or limited flash space
-    public static boolean editPatterns = true;      // false if device has fixed patterns that cannot be changed
     public static boolean initPatterns = false;     // true if must initialize device with patterns at startup
     public static boolean multiStrands = false;     // true if device has multiple physical pixel strands
                                                     // false means all segment info must be sent when changing patterns

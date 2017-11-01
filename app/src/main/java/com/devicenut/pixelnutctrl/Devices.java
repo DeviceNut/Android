@@ -23,6 +23,8 @@ import java.util.ArrayList;
 
 import static com.devicenut.pixelnutctrl.Bluetooth.BLESTAT_SUCCESS;
 import static com.devicenut.pixelnutctrl.Main.CMD_GET_INFO;
+import static com.devicenut.pixelnutctrl.Main.TITLE_ADAFRUIT;
+import static com.devicenut.pixelnutctrl.Main.TITLE_PIXELNUT;
 import static com.devicenut.pixelnutctrl.Main.URL_PIXELNUT;
 import static com.devicenut.pixelnutctrl.Main.ble;
 import static com.devicenut.pixelnutctrl.Main.pixelDensity;
@@ -335,7 +337,21 @@ public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
     {
         if (isScanning && !isConnecting && !isConnected && (name != null))
         {
-            if (name.startsWith("P!"))
+            String dspname;
+            boolean haveone = false;
+
+            if (name.startsWith(TITLE_PIXELNUT))
+            {
+                haveone = true;
+                dspname = name.substring(2);
+            }
+            else if (name.startsWith(TITLE_ADAFRUIT))
+            {
+                haveone = true;
+                dspname = name;
+            }
+
+            if (haveone)
             {
                 if (buttonCount < listButtons.length)
                 {
