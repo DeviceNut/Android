@@ -63,8 +63,9 @@ import static com.devicenut.pixelnutctrl.Main.segXmodeEnb;
 import static com.devicenut.pixelnutctrl.Main.segXmodeHue;
 import static com.devicenut.pixelnutctrl.Main.segXmodeWht;
 import static com.devicenut.pixelnutctrl.Main.stdPatternsCount;
-import static com.devicenut.pixelnutctrl.Main.devName;
 import static com.devicenut.pixelnutctrl.Main.useAdvPatterns;
+import static com.devicenut.pixelnutctrl.Main.devName;
+import static com.devicenut.pixelnutctrl.Main.doUpdate;
 
 @SuppressWarnings("unchecked")
 public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChangeListener, Bluetooth.BleCallbacks
@@ -85,8 +86,6 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
     private SeekBar seekTrigForce;
 
     private int helpMode = 0;
-    private boolean doUpdate = true;
-
     private boolean isConnected = false;
     private boolean sendEnable = false;
     private boolean isEditing = false;
@@ -250,6 +249,9 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
 
             devName = devName.substring(2);
             Log.d(LOGNAME, "Device name: " + devName);
+
+            // set pause button to correct state
+            pauseButton.setText(getResources().getString(doUpdate ? R.string.name_pause : R.string.name_resume));
 
             // if only using basic patterns, then the properties will always be displayed
             // so enable the properties for any segment which is currently disabled

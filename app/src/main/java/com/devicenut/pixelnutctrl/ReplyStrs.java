@@ -12,7 +12,6 @@ import static com.devicenut.pixelnutctrl.Main.MAXVAL_PERCENT;
 import static com.devicenut.pixelnutctrl.Main.MAXVAL_WHT;
 import static com.devicenut.pixelnutctrl.Main.MINLEN_CMDSTR;
 import static com.devicenut.pixelnutctrl.Main.MINLEN_SEGLEN_FORADV;
-import static com.devicenut.pixelnutctrl.Main.MINVAL_DELAYRANGE;
 import static com.devicenut.pixelnutctrl.Main.TITLE_PIXELNUT;
 import static com.devicenut.pixelnutctrl.Main.advPatternBits;
 import static com.devicenut.pixelnutctrl.Main.advPatternCmds;
@@ -51,6 +50,7 @@ import static com.devicenut.pixelnutctrl.Main.segXmodeWht;
 import static com.devicenut.pixelnutctrl.Main.segLayers;
 import static com.devicenut.pixelnutctrl.Main.segPixels;
 import static com.devicenut.pixelnutctrl.Main.segTracks;
+import static com.devicenut.pixelnutctrl.Main.doUpdate;
 
 class ReplyStrs
 {
@@ -224,8 +224,8 @@ class ReplyStrs
             {
                 int line = ((replyState-1) % 3);
 
-                     if (line == 0)     devPatternNames[index] = new String(reply);
-                else if (line == 1)     devPatternHelp[index] = (new String(reply)).replace('\t', '\n');
+                     if (line == 0) devPatternNames[index] = new String(reply);
+                else if (line == 1) devPatternHelp[index] = (new String(reply)).replace('\t', '\n');
                 else
                 {
                     devPatternCmds[index] = new String(reply);
@@ -313,7 +313,7 @@ class ReplyStrs
                     numSegments     = Integer.parseInt(strs[0]);
                     segPatterns[0]  = Integer.parseInt(strs[1]);
                     customPatterns  = Integer.parseInt(strs[2]);
-                    rangeDelay      = Integer.parseInt(strs[3]); // always 0 now
+                    int bits        = Integer.parseInt(strs[3]);
                     customPlugins   = Integer.parseInt(strs[4]);
                     maxlenCmdStrs   = Integer.parseInt(strs[5]);
 
@@ -360,25 +360,18 @@ class ReplyStrs
 
                         numPatterns = customPatterns + stdPatternsCount;
 
+                        doUpdate = (bits & 1) == 0;
+
                         Log.v(LOGNAME, ">> Segments=" + numSegments + ((numSegments > 1) ? (multiStrands ? " (physical)" : " (logical)") : ""));
                         Log.v(LOGNAME, ">> CurPattern=" + segPatterns[0] + " DoInit=" + initPatterns);
-                        Log.v(LOGNAME, ">> CustomPatterns=" + customPatterns + " AdvPatterns=" + useAdvPatterns);
-                        Log.v(LOGNAME, ">> CustomPlugins=" + customPlugins + " MaxCmdStr=" + maxlenCmdStrs);
+                        Log.v(LOGNAME, ">> CustomPatterns=" + customPatterns + " Advanced=" + useAdvPatterns);
+                        Log.v(LOGNAME, ">> CustomPlugins=" + customPlugins);
+                        Log.v(LOGNAME, ">> MaxCmdStr=" + maxlenCmdStrs);
+                        Log.v(LOGNAME, ">> DisplayState=" + (doUpdate ? "on" : "paused"));
                         Log.v(LOGNAME, ">> Total patterns=" + numPatterns);
 
                         if (numSegments < 1) numSegments = 1;
                         if (customPlugins < 0) customPlugins = 0;
-
-                        if (customPatterns == 0)
-                        {
-                            rangeDelay = MINVAL_DELAYRANGE;
-                            Log.v(LOGNAME, "Overwriting delay range=" + rangeDelay);
-                        }
-                        else if (rangeDelay < MINVAL_DELAYRANGE)
-                        {
-                            rangeDelay = MINVAL_DELAYRANGE;
-                            Log.v(LOGNAME, "Adjusting custom delay range=" + rangeDelay);
-                        }
 
                         if (segPatterns[0] >= numPatterns)
                         {

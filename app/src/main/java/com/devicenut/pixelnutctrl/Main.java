@@ -28,7 +28,7 @@ public class Main extends Application
     public static final int MAXVAL_WHT          = 50;
     public static final int MAXVAL_PERCENT      = 100;
     public static final int MAXVAL_FORCE        = 1000;
-    public static final int MINVAL_DELAYRANGE   = 80;       // use this for patterns defined here, and is minimal value for custom patterns
+    public static final int MINVAL_DELAYRANGE   = 60;       // use this for patterns defined here, and is minimal value for custom patterns
 
     public static final int MINLEN_SEGLEN_FORADV = 20;      // minimum length of each segment to be able to use the advanced patterns
     public static final int MINLEN_CMDSTR        = 110;     // minimum length of the command/pattern string
@@ -221,6 +221,7 @@ public class Main extends Application
     public static int maxlenCmdStrs     = 0;    // max length of command string that can be sent
     public static int rangeDelay        = MINVAL_DELAYRANGE; // default range of delay offsets
 
+    public static boolean doUpdate = true;          // false if device output is pause mode
     public static boolean useAdvPatterns = true;    // false for small segments and/or limited flash space
     public static boolean initPatterns = false;     // true if must initialize device with patterns at startup
     public static boolean multiStrands = false;     // true if device has multiple physical pixel strands
