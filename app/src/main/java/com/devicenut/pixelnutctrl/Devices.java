@@ -23,6 +23,8 @@ import java.util.ArrayList;
 
 import static com.devicenut.pixelnutctrl.Bluetooth.BLESTAT_SUCCESS;
 import static com.devicenut.pixelnutctrl.Main.CMD_GET_INFO;
+import static com.devicenut.pixelnutctrl.Main.CMD_PAUSE;
+import static com.devicenut.pixelnutctrl.Main.CMD_RESUME;
 import static com.devicenut.pixelnutctrl.Main.TITLE_ADAFRUIT;
 import static com.devicenut.pixelnutctrl.Main.TITLE_PIXELNUT;
 import static com.devicenut.pixelnutctrl.Main.URL_PIXELNUT;
@@ -398,7 +400,9 @@ public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
                 {
 
                     isDone = false;
-                    SleepMsecs(500); // don't send too soon...hack!
+                    SleepMsecs(250); // don't send too soon...hack!
+                    Log.d(LOGNAME, "Sending command: " + CMD_PAUSE);
+                    ble.WriteString(CMD_PAUSE);
                     Log.d(LOGNAME, "Sending command: " + CMD_GET_INFO);
                     ble.WriteString(CMD_GET_INFO);
                 }
@@ -522,7 +526,19 @@ public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
 
                 if (isDone)
                 {
+                    new Thread()
+                    {
+                        @Override public void run()
+                        {
+                            SleepMsecs(250); // don't send too soon...hack!
+                            Log.d(LOGNAME, "Sending command: " + CMD_RESUME);
+                            ble.WriteString(CMD_RESUME);
+                        }
+
+                    }.start();
+
                     Log.i(LOGNAME, ">>> Device Setup Successful <<<");
+                    SleepMsecs(250); // allow time for display update
                     startActivity( new Intent(Devices.this, Controls.class) );
                 }
             }

@@ -360,15 +360,19 @@ class ReplyStrs
 
                         numPatterns = customPatterns + stdPatternsCount;
 
-                        doUpdate = (bits & 1) == 0;
+                        boolean features = false;
+                        if ((bits & 0x80) != 0) // feature is enabled
+                        {
+                            features = true;
+                        }
 
                         Log.v(LOGNAME, ">> Segments=" + numSegments + ((numSegments > 1) ? (multiStrands ? " (physical)" : " (logical)") : ""));
+                        Log.v(LOGNAME, ">> CmdStrLen=" + maxlenCmdStrs);
                         Log.v(LOGNAME, ">> CurPattern=" + segPatterns[0] + " DoInit=" + initPatterns);
                         Log.v(LOGNAME, ">> CustomPatterns=" + customPatterns + " Advanced=" + useAdvPatterns);
-                        Log.v(LOGNAME, ">> CustomPlugins=" + customPlugins);
-                        Log.v(LOGNAME, ">> MaxCmdStr=" + maxlenCmdStrs);
-                        Log.v(LOGNAME, ">> DisplayState=" + (doUpdate ? "on" : "paused"));
                         Log.v(LOGNAME, ">> Total patterns=" + numPatterns);
+                        Log.v(LOGNAME, ">> CustomPlugins=" + customPlugins);
+                        if (features) Log.v(LOGNAME, ">> Features=" + (bits & 0x7F));
 
                         if (numSegments < 1) numSegments = 1;
                         if (customPlugins < 0) customPlugins = 0;
@@ -382,7 +386,7 @@ class ReplyStrs
                         devPatternNames = new String[numPatterns];
                         devPatternHelp  = new String[numPatterns];
                         devPatternBits  = new int[numPatterns];
-                        devPatternCmds = new String[numPatterns];
+                        devPatternCmds  = new String[numPatterns];
                     }
                 }
                 else
