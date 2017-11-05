@@ -39,6 +39,9 @@ import static com.devicenut.pixelnutctrl.Main.CMD_START_END;
 import static com.devicenut.pixelnutctrl.Main.MAXVAL_HUE;
 import static com.devicenut.pixelnutctrl.Main.MAXVAL_PERCENT;
 import static com.devicenut.pixelnutctrl.Main.MAXVAL_WHT;
+import static com.devicenut.pixelnutctrl.Main.TITLE_ADAFRUIT;
+import static com.devicenut.pixelnutctrl.Main.TITLE_NONAME;
+import static com.devicenut.pixelnutctrl.Main.TITLE_PIXELNUT;
 import static com.devicenut.pixelnutctrl.Main.basicPatternsCount;
 import static com.devicenut.pixelnutctrl.Main.ble;
 import static com.devicenut.pixelnutctrl.Main.curSegment;
@@ -247,7 +250,9 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
             isConnected = true;
             sendEnable = true; // allow controls to work
 
-            devName = devName.substring(2);
+            if (devName.startsWith(TITLE_PIXELNUT))
+                 devName = devName.substring(2);
+            else devName = TITLE_NONAME;
             Log.d(LOGNAME, "Device name: " + devName);
 
             // set pause button to correct state

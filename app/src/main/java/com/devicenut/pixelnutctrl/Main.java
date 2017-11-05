@@ -4,9 +4,10 @@ import android.app.Application;
 
 public class Main extends Application
 {
-    public static final String TITLE_PIXELNUT = "P!";
-    public static final String TITLE_ADAFRUIT = "Adafruit";
-    public static final String URL_PIXELNUT = "http://www.pixelnutstore.com";
+    public static final String TITLE_PIXELNUT   = "P!";
+    public static final String TITLE_ADAFRUIT   = "Adafruit";
+    public static final String TITLE_NONAME     = "NoName";
+    public static final String URL_PIXELNUT     = "http://www.pixelnutstore.com";
 
     public static final String CMD_GET_INFO     = "?";
     public static final String CMD_GET_SEGMENTS = "?S";

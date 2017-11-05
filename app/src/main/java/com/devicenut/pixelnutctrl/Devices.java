@@ -26,6 +26,7 @@ import static com.devicenut.pixelnutctrl.Main.CMD_GET_INFO;
 import static com.devicenut.pixelnutctrl.Main.CMD_PAUSE;
 import static com.devicenut.pixelnutctrl.Main.CMD_RESUME;
 import static com.devicenut.pixelnutctrl.Main.TITLE_ADAFRUIT;
+import static com.devicenut.pixelnutctrl.Main.TITLE_NONAME;
 import static com.devicenut.pixelnutctrl.Main.TITLE_PIXELNUT;
 import static com.devicenut.pixelnutctrl.Main.URL_PIXELNUT;
 import static com.devicenut.pixelnutctrl.Main.ble;
@@ -339,7 +340,7 @@ public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
     {
         if (isScanning && !isConnecting && !isConnected && (name != null))
         {
-            String dspname;
+            String dspname = "";
             boolean haveone = false;
 
             if (name.startsWith(TITLE_PIXELNUT))
@@ -350,7 +351,7 @@ public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
             else if (name.startsWith(TITLE_ADAFRUIT))
             {
                 haveone = true;
-                dspname = name;
+                dspname = TITLE_NONAME;
             }
 
             if (haveone)
@@ -358,7 +359,7 @@ public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
                 if (buttonCount < listButtons.length)
                 {
                     Button b = (Button) findViewById(listButtons[buttonCount]);
-                    b.setText(name.substring(2));
+                    b.setText(dspname);
                     b.setVisibility(View.VISIBLE);
 
                     ++buttonCount;
@@ -417,14 +418,15 @@ public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
         final String errstr = "Device Disconnected: Try Again";
         Log.w(LOGNAME, errstr);
 
-        isScanning = false;
+        isConnecting = false;
+        isConnected = false;
 
         context.runOnUiThread(new Runnable()
         {
             public void run()
             {
                 Toast.makeText(context, errstr, Toast.LENGTH_SHORT).show();
-                SetupUserDisplay();
+                StartScanning(); // return to scanning
             }
         });
     }
