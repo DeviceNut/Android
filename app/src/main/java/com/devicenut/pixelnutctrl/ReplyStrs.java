@@ -23,6 +23,11 @@ import static com.devicenut.pixelnutctrl.Main.basicPatternCmds;
 import static com.devicenut.pixelnutctrl.Main.basicPatternHelp;
 import static com.devicenut.pixelnutctrl.Main.basicPatternNames;
 import static com.devicenut.pixelnutctrl.Main.basicPatternsCount;
+import static com.devicenut.pixelnutctrl.Main.fixedPatternBits;
+import static com.devicenut.pixelnutctrl.Main.fixedPatternCmds;
+import static com.devicenut.pixelnutctrl.Main.fixedPatternHelp;
+import static com.devicenut.pixelnutctrl.Main.fixedPatternNames;
+import static com.devicenut.pixelnutctrl.Main.fixedPatternsCount;
 import static com.devicenut.pixelnutctrl.Main.stdPatternsCount;
 import static com.devicenut.pixelnutctrl.Main.curBright;
 import static com.devicenut.pixelnutctrl.Main.curDelay;
@@ -51,6 +56,7 @@ import static com.devicenut.pixelnutctrl.Main.segLayers;
 import static com.devicenut.pixelnutctrl.Main.segPixels;
 import static com.devicenut.pixelnutctrl.Main.segTracks;
 import static com.devicenut.pixelnutctrl.Main.doUpdate;
+import static com.devicenut.pixelnutctrl.Main.useFixedPatterns;
 
 class ReplyStrs
 {
@@ -349,11 +355,14 @@ class ReplyStrs
                             else
                             {
                                 useAdvPatterns = true;
-                                stdPatternsCount = basicPatternsCount + advPatternsCount;
+                                stdPatternsCount = fixedPatternsCount + basicPatternsCount + advPatternsCount;
                             }
+
+                            useFixedPatterns = true;
                         }
                         else
                         {
+                            useFixedPatterns = false;
                             useAdvPatterns = false;
                             stdPatternsCount = 0; // prevent using patterns defined here TODO: allow this
                         }
@@ -546,18 +555,32 @@ class ReplyStrs
 
         if (stdPatternsCount > 0)
         {
-            int i;
+            int i = 0;
+            int j;
+
+            if (useFixedPatterns)
+            {
+                for (i = 0; i < fixedPatternsCount; ++i)
+                {
+                    devPatternNames[i] = fixedPatternNames[i];
+                    devPatternHelp[ i] = fixedPatternHelp[i];
+                    devPatternCmds[ i] = fixedPatternCmds[i];
+                    devPatternBits[ i] = fixedPatternBits[i];
+                }
+            }
+
+            j = i;
             for (i = 0; i < basicPatternsCount; ++i)
             {
-                devPatternNames[i] = basicPatternNames[i];
-                devPatternHelp[ i] = basicPatternHelp[i];
-                devPatternCmds[ i] = basicPatternCmds[i];
-                devPatternBits[ i] = basicPatternBits[i];
+                devPatternNames[i+j] = basicPatternNames[i];
+                devPatternHelp[ i+j] = basicPatternHelp[i];
+                devPatternCmds[ i+j] = basicPatternCmds[i];
+                devPatternBits[ i+j] = basicPatternBits[i];
             }
 
             if (useAdvPatterns)
             {
-                int j = i;
+                j += i;
                 for (i = 0; i < advPatternsCount; ++i)
                 {
                     devPatternNames[i+j] = advPatternNames[i];

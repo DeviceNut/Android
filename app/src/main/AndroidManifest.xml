@@ -18,6 +18,10 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity
+            android:name=".About"
+            android:theme="@style/DialogTheme">
+        </activity>
+        <activity
             android:name=".Devices"
             android:screenOrientation="portrait">
             <intent-filter>
@@ -27,12 +31,12 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".Controls"
+            android:name=".Fixed"
             android:screenOrientation="portrait">
         </activity>
         <activity
-            android:name=".About"
-            android:theme="@style/DialogTheme">
+            android:name=".Controls"
+            android:screenOrientation="portrait">
         </activity>
         <activity
             android:name=".EditName"

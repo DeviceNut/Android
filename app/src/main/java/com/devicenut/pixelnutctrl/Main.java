@@ -36,19 +36,48 @@ public class Main extends Application
     public static final int ADDLEN_CMDSTR_PERSEG = 50;      // additional length of command/pattern string per additional segment,
                                                             // otherwise will not be able to use the advanced patterns
 
+    public static final String[] fixedPatternHelp =
+            {
+                    "Full spectrum colors that rotate slowly down the strip, and also swell up and down in brightness.",
+                    "Bright white twinkling, over a soft blue background, like stars in the daytime sky.",
+                    "Multiple comets that streak up and down, disappear and reappear in a random fashion.",
+                    ""
+            };
+
+    public static final String[] fixedPatternCmds =
+            {
+                    "E0 H270 Q3 T G",
+                    "E2 H135 D40 Q3 T G",
+                    "E1 H100 D40 Q3 T G",
+                    "E10 D60 Q7 T G",
+                    "E52 W30 D10 Q3 T G",
+                    "E51 H232 D10 Q3 T G",
+                    "E50 W80 D10 Q3 T G",
+                    "E40 H120 C20 D40 Q7 T G",
+                    "E30 C20 D60 Q7 T G",
+                    "E20 H30 C25 D30 Q7 T G",
+            };
+
+    public static final String[] fixedPatternNames =
+            {
+                    "Rainbow Waves",
+                    "Twinkle Stars",
+                    "Comet Party",
+                    "Crazy Blinks",
+                    "Ferris Wheel",
+                    "Scanner Mix",
+                    "Color Melts",
+                    "Xmas Lights",
+};
+
+    public static final int[] fixedPatternBits = { 0,0,0,0,0,0,0,0 };
+
     public static final String[] basicPatternHelp =
             {
                     "A solid color which can be modified with the ColorHue and Whiteness properties.",
 
-                    "A color that ripples down the strip, and can be modified with the ColorHue and Whiteness properties.",
-
-                    "A color that rolls down the strip, and can be modified with the ColorHue and Whiteness properties.",
-
                     "This creates the effect of waves (brightness that changes up and down) that move down the strip, in a single color.\n\n" +
                     "The color and frequency of the wave can be modified with the ColorHue, Whiteness, and Count properties.",
-
-                    "Creates what seems like noise (randomly set pixels with a random brightness), using the color selected with the ColorHue and Whiteness properties.\n\n" +
-                    "The Count property determines how many pixels are set at once.",
 
                     "Randomly blinks pixels on/off with equal brightness, in the color selected with the ColorHue and Whiteness properties.\n\n" +
                     "The Count property determines how many pixels blink at once.",
@@ -69,11 +98,8 @@ public class Main extends Application
     public static final String[] basicPatternCmds =
             {
                     "E0 H270 Q3 T G",
-                    "E2 H135 D40 Q3 T G",
-                    "E1 H100 D40 Q3 T G",
                     "E10 D60 Q7 T G",
-                    "E52 W30 D10 Q3 T G",
-                    "E51 H232 D10 Q3 T G",
+                    "E51 H232 D10 Q7 T G",
                     "E50 W80 D10 Q3 T G",
                     "E40 H120 C20 D40 Q7 T G",
                     "E30 C20 D60 Q7 T G",
@@ -83,10 +109,7 @@ public class Main extends Application
     public static final String[] basicPatternNames =
             {
                     "Solid",
-                    "Ripple",
-                    "Roller",
                     "Waves",
-                    "Noisy",
                     "Blinks",
                     "Twinkles",
                     "Scanner",
@@ -97,9 +120,6 @@ public class Main extends Application
     public static final int[] basicPatternBits =
             {
                     0x03,
-                    0x03,
-                    0x03,
-                    0x07,
                     0x07,
                     0x07,
                     0x03,
@@ -116,14 +136,14 @@ public class Main extends Application
                     "Colors hue changes occur at the head and get pushed down the strip. When the end is reached they start getting cleared, creating a \"rolling\" effect.\n\n" +
                     "Triggering restarts the effect, with the amount of Force determining how fast the colors change. At the maximum Force the entire spectrum is displayed again.",
 
-                    "This has bright white twinkling \"stars\" over a background color, which is determined by the ColorHue and Brightness properties.\n\n" +
+                    "This has bright white twinkling \"stars\" over a background color, which is determined by the ColorHue and Whiteness properties.\n\n" +
                     "Triggering causes the background brightness to swell up and down, with the amount of Force determining the speed of the swelling.",
 
                     "This has bright twinkling without a background. The ColorHue property changes the twinkling color.\n\n" +
                     "Occasional comets streak up and down and then disappear. One of the comets is red, and appears randomly every 3-6 seconds.\n\n" +
                     "The other is orange and appears only when Triggered, with the Force determining its length.",
 
-                    "Comets pairs, one in either direction, both of which change color hue occasionally. Trigging causes new comets to be added.\n\n" +
+                    "Comets pairs, one in either direction, both of which change color hue occasionally. Trigging creates new comet pairs.\n\n" +
                     "The comet color and tail lengths can be modified with the ColorHue, Whiteness, and Count properties.",
 
                     "Two scanners (blocks of same brightness pixels that move back and forth), with only the first one visible initially until Triggered.\n\n" +
@@ -145,8 +165,7 @@ public class Main extends Application
 
                     "All pixels move through color hue and whiteness transitions that are slow and smooth.\n\n" +
                     "A new color is chosen every time the previous target color has been reached, or when Triggered, " +
-                    "with the Force determining how large the color changes are.\n\n" +
-                    "The time it takes to reach a new color is proportional to the size of the color change.",
+                    "with the Force determining how large the color changes are.",
 
                     "Combination of a purple scanner over a greenish twinkling background, with a red comet that is fired off every time the scanner " +
                     "bounces off the end of the strip, or when Triggered.\n\n" +
@@ -201,6 +220,7 @@ public class Main extends Application
                     0x11,
             };
 
+    public static final int fixedPatternsCount = fixedPatternNames.length;
     public static final int basicPatternsCount = basicPatternNames.length;
     public static final int advPatternsCount = advPatternNames.length;
     public static int stdPatternsCount;
@@ -223,7 +243,8 @@ public class Main extends Application
     public static int rangeDelay        = MINVAL_DELAYRANGE; // default range of delay offsets
 
     public static boolean doUpdate = true;          // false if device output is pause mode
-    public static boolean useAdvPatterns = true;    // false for small segments and/or limited flash space
+    public static boolean useFixedPatterns = true;  // false if using custom patterns
+    public static boolean useAdvPatterns = true;    // false for small segments and/or limited flash space (or custom)
     public static boolean initPatterns = false;     // true if must initialize device with patterns at startup
     public static boolean multiStrands = false;     // true if device has multiple physical pixel strands
                                                     // false means all segment info must be sent when changing patterns

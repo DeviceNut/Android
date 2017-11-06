@@ -3,6 +3,14 @@
     <string name="my_name">Greg de Valois</string>
     <string name="name_website">Website</string>
     <string name="name_device">Device</string>
+    <string name="fixed_pattern1">Rainbow Swell</string>
+    <string name="fixed_pattern2">Twinkle Stars</string>
+    <string name="fixed_pattern3">Comet Party</string>
+    <string name="fixed_pattern4">Crazy Blinks</string>
+    <string name="fixed_pattern5">Ferris Wheel</string>
+    <string name="fixed_pattern6">Scanner Mix</string>
+    <string name="fixed_pattern7">Color Melts</string>
+    <string name="fixed_pattern8">Xmas Lights</string>
     <string name="name_stop">Stop</string>
     <string name="name_scan">Scan</string>
     <string name="name_wait">Wait</string>

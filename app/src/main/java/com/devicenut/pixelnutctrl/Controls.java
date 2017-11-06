@@ -999,7 +999,6 @@ public class Controls extends AppCompatActivity implements SeekBar.OnSeekBarChan
 
                     Log.v(LOGNAME, "Finishing controls activity...");
                     finish();
-                    //if (!isFinishing()) onBackPressed();
                 }
             });
         }
