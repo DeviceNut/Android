@@ -23,11 +23,6 @@ import static com.devicenut.pixelnutctrl.Main.basicPatternCmds;
 import static com.devicenut.pixelnutctrl.Main.basicPatternHelp;
 import static com.devicenut.pixelnutctrl.Main.basicPatternNames;
 import static com.devicenut.pixelnutctrl.Main.basicPatternsCount;
-import static com.devicenut.pixelnutctrl.Main.fixedPatternBits;
-import static com.devicenut.pixelnutctrl.Main.fixedPatternCmds;
-import static com.devicenut.pixelnutctrl.Main.fixedPatternHelp;
-import static com.devicenut.pixelnutctrl.Main.fixedPatternNames;
-import static com.devicenut.pixelnutctrl.Main.fixedPatternsCount;
 import static com.devicenut.pixelnutctrl.Main.stdPatternsCount;
 import static com.devicenut.pixelnutctrl.Main.curBright;
 import static com.devicenut.pixelnutctrl.Main.curDelay;
@@ -55,8 +50,6 @@ import static com.devicenut.pixelnutctrl.Main.segXmodeWht;
 import static com.devicenut.pixelnutctrl.Main.segLayers;
 import static com.devicenut.pixelnutctrl.Main.segPixels;
 import static com.devicenut.pixelnutctrl.Main.segTracks;
-import static com.devicenut.pixelnutctrl.Main.doUpdate;
-import static com.devicenut.pixelnutctrl.Main.useFixedPatterns;
 
 class ReplyStrs
 {
@@ -172,6 +165,10 @@ class ReplyStrs
                         {
                             Log.w(LOGNAME, "Disabling advanced patterns: short segment(s)");
                             useAdvPatterns = false;
+                            initPatterns = true; // trigger sending initial pattern to device
+                            stdPatternsCount = basicPatternsCount;
+                            numPatterns = customPatterns + stdPatternsCount;
+                            Log.w(LOGNAME, ">> Adjusting total patterns=" + numPatterns);
                         }
                     }
                 }
@@ -355,14 +352,11 @@ class ReplyStrs
                             else
                             {
                                 useAdvPatterns = true;
-                                stdPatternsCount = fixedPatternsCount + basicPatternsCount + advPatternsCount;
+                                stdPatternsCount = basicPatternsCount + advPatternsCount;
                             }
-
-                            useFixedPatterns = true;
                         }
                         else
                         {
-                            useFixedPatterns = false;
                             useAdvPatterns = false;
                             stdPatternsCount = 0; // prevent using patterns defined here TODO: allow this
                         }
@@ -557,17 +551,6 @@ class ReplyStrs
         {
             int i = 0;
             int j;
-
-            if (useFixedPatterns)
-            {
-                for (i = 0; i < fixedPatternsCount; ++i)
-                {
-                    devPatternNames[i] = fixedPatternNames[i];
-                    devPatternHelp[ i] = fixedPatternHelp[i];
-                    devPatternCmds[ i] = fixedPatternCmds[i];
-                    devPatternBits[ i] = fixedPatternBits[i];
-                }
-            }
 
             j = i;
             for (i = 0; i < basicPatternsCount; ++i)

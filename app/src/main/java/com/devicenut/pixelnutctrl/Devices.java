@@ -36,6 +36,7 @@ import static com.devicenut.pixelnutctrl.Main.numSegments;
 import static com.devicenut.pixelnutctrl.Main.pixelDensity;
 import static com.devicenut.pixelnutctrl.Main.pixelLength;
 import static com.devicenut.pixelnutctrl.Main.pixelWidth;
+import static com.devicenut.pixelnutctrl.Main.useAdvPatterns;
 
 public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
 {
@@ -545,9 +546,9 @@ public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
                     Log.i(LOGNAME, ">>> Device Setup Successful <<<");
                     SleepMsecs(250); // allow time for display update
 
-                    if ((customPatterns != 0) || ((numSegments > 1) && !multiStrands))
+                    //if ((customPatterns != 0) || !useAdvPatterns || ((numSegments > 1) && !multiStrands))
                          startActivity( new Intent(Devices.this, Controls.class) );
-                    else startActivity( new Intent(Devices.this, Fixed.class) );
+                    //else startActivity( new Intent(Devices.this, Favorites.class) );
                 }
             }
         });
