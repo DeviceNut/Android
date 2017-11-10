@@ -36,41 +36,7 @@ public class Main extends Application
     public static final int ADDLEN_CMDSTR_PERSEG = 50;      // additional length of command/pattern string per additional segment,
                                                             // otherwise will not be able to use the advanced patterns
 
-    public static final String[] fixedPatternHelp =
-            {
-                    "Full spectrum colors that rotate slowly down the strip, and also swell up and down in brightness.",
-                    "Bright white twinkling, over a soft blue background, like stars in the daytime sky.",
-                    "Multiple comets that streak up and down, disappear and reappear in a random fashion.",
-                    ""
-            };
-
-    public static final String[] fixedPatternCmds =
-            {
-                    "E0 H270 Q3 T G",
-                    "E2 H135 D40 Q3 T G",
-                    "E1 H100 D40 Q3 T G",
-                    "E10 D60 Q7 T G",
-                    "E52 W30 D10 Q3 T G",
-                    "E51 H232 D10 Q3 T G",
-                    "E50 W80 D10 Q3 T G",
-                    "E40 H120 C20 D40 Q7 T G",
-                    "E30 C20 D60 Q7 T G",
-                    "E20 H30 C25 D30 Q7 T G",
-            };
-
-    public static final String[] fixedPatternNames =
-            {
-                    "Rainbow Waves",
-                    "Twinkle Stars",
-                    "Comet Party",
-                    "Crazy Blinks",
-                    "Ferris Wheel",
-                    "Scanner Mix",
-                    "Color Melts",
-                    "Xmas Lights",
-};
-
-    public static final int[] fixedPatternBits = { 0,0,0,0,0,0,0,0 };
+    public static final int[] numsFavorites = { 0,4,5,6,8,10,11 };
 
     public static final String[] basicPatternHelp =
             {
@@ -163,9 +129,11 @@ public class Main extends Application
                     "All pixels swell up and down in brightness, with random color hue and whiteness changes, or set with the ColorHue and Whiteness properties.\n\n" +
                     "Triggering changes the pace of the swelling, with larger Forces causing faster swelling.",
 
-                    "All pixels move through color hue and whiteness transitions that are slow and smooth.\n\n" +
-                    "A new color is chosen every time the previous target color has been reached, or when Triggered, " +
-                    "with the Force determining how large the color changes are.",
+                    "Colors melt from one to the other, with slow and smooth transitions.\n\n" +
+                    "Triggering causes a new target color to be is chosen, with larger Forces causing larger color changes.",
+
+                    "Festive red and green twinkles, with an occasional white comet that streaks across them.\n\n." +
+                    "The comet's whiteness can be modified, and Triggering creates them.",
 
                     "Combination of a purple scanner over a greenish twinkling background, with a red comet that is fired off every time the scanner " +
                     "bounces off the end of the strip, or when Triggered.\n\n" +
@@ -185,6 +153,7 @@ public class Main extends Application
                     "E51 C10 D60 Q4 T E112 T E131 F1 I T G",
                     "E0 B80 D10 Q3 T E111 F O10 T10 E142 F250 I T G",
                     "E0 H30 D30 T E110 F600 I T E111 A1 G",
+                    "E50 B40 H0 D10 T E50 B50 H125 D15 T E20 B80 W80 H270 D30 Q2 C15 F0 I T20 O10 G",
                     "E50 V1 B65 W30 H100 D10 Q1 T E40 H270 C10 D50 T E20 D15 C20 A1 F0 I T G"
             };
 
@@ -194,13 +163,14 @@ public class Main extends Application
                     "Rainbow Roll",
                     "Color Twinkles",
                     "Twinkle Comets",
-                    "Dueling Comets",
-                    "Dueling Scanners",
+                    "Comet Party",
+                    "Scanner Mix",
                     "Ferris Wheel",
                     "Expanding Noise",
-                    "Blink Surges",
+                    "Crazy Blinks",
                     "Bright Swells",
-                    "Color Smooth",
+                    "Color Melts",
+                    "Holiday",
                     "MashUp",
             };
 
@@ -217,10 +187,10 @@ public class Main extends Application
                     0x34,
                     0x33,
                     0x30,
+                    0x12,
                     0x11,
             };
 
-    public static final int fixedPatternsCount = fixedPatternNames.length;
     public static final int basicPatternsCount = basicPatternNames.length;
     public static final int advPatternsCount = advPatternNames.length;
     public static int stdPatternsCount;
@@ -243,7 +213,6 @@ public class Main extends Application
     public static int rangeDelay        = MINVAL_DELAYRANGE; // default range of delay offsets
 
     public static boolean doUpdate = true;          // false if device output is pause mode
-    public static boolean useFixedPatterns = true;  // false if using custom patterns
     public static boolean useAdvPatterns = true;    // false for small segments and/or limited flash space (or custom)
     public static boolean initPatterns = false;     // true if must initialize device with patterns at startup
     public static boolean multiStrands = false;     // true if device has multiple physical pixel strands
