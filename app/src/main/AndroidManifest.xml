@@ -24,11 +24,6 @@
         <activity
             android:name=".Devices"
             android:screenOrientation="portrait">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN"/>
-
-                <category android:name="android.intent.category.LAUNCHER"/>
-            </intent-filter>
         </activity>
         <activity
             android:name=".Favorites"
@@ -41,6 +36,12 @@
         <activity
             android:name=".EditName"
             android:theme="@style/DialogTheme">
+        </activity>
+        <activity android:name=".Master">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
         </activity>
     </application>
 
