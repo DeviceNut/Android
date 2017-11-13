@@ -128,6 +128,8 @@ class Bluetooth
 
     boolean connect(int devid)
     {
+        strLine = ""; // clear any read data
+
         BluetoothDevice bdev = bleDevList.get(devid);
         if (bdev == null) return false;
 
