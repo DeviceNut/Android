@@ -22,26 +22,17 @@
             android:theme="@style/DialogTheme">
         </activity>
         <activity
-            android:name=".Devices"
-            android:screenOrientation="portrait">
-        </activity>
-        <activity
-            android:name=".Favorites"
-            android:screenOrientation="portrait">
-        </activity>
-        <activity
-            android:name=".Controls"
-            android:screenOrientation="portrait">
-        </activity>
-        <activity
-            android:name=".EditName"
-            android:theme="@style/DialogTheme">
-        </activity>
-        <activity android:name=".Master">
+            android:name=".Devices">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
+        </activity>
+        <activity android:name=".Master">
+        </activity>
+        <activity
+            android:name=".EditName"
+            android:theme="@style/DialogTheme">
         </activity>
     </application>
 

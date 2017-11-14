@@ -30,9 +30,14 @@ import static com.devicenut.pixelnutctrl.Main.TITLE_NONAME;
 import static com.devicenut.pixelnutctrl.Main.TITLE_PIXELNUT;
 import static com.devicenut.pixelnutctrl.Main.URL_PIXELNUT;
 import static com.devicenut.pixelnutctrl.Main.ble;
+import static com.devicenut.pixelnutctrl.Main.customPatterns;
+import static com.devicenut.pixelnutctrl.Main.multiStrands;
+import static com.devicenut.pixelnutctrl.Main.numSegments;
 import static com.devicenut.pixelnutctrl.Main.pixelDensity;
 import static com.devicenut.pixelnutctrl.Main.pixelLength;
 import static com.devicenut.pixelnutctrl.Main.pixelWidth;
+import static com.devicenut.pixelnutctrl.Main.useAdvPatterns;
+import static com.devicenut.pixelnutctrl.Main.haveFavorites;
 
 public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
 {
@@ -541,6 +546,9 @@ public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
 
                     Log.i(LOGNAME, ">>> Device Setup Successful <<<");
                     SleepMsecs(250); // allow time for display update
+
+                    if ((customPatterns != 0) || !useAdvPatterns || ((numSegments > 1) && !multiStrands))
+                        haveFavorites = false;
 
                     startActivity( new Intent(Devices.this, Master.class) );
                     /*

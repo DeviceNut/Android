@@ -1,13 +1,111 @@
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-             xmlns:tools="http://schemas.android.com/tools"
-             android:layout_width="match_parent"
-             android:layout_height="match_parent"
-             tools:context="com.devicenut.pixelnutctrl.FragFavs">
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/activity_control"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    android:paddingLeft="0dp"
+    android:paddingRight="0dp"
+    android:paddingTop="0dp"
+    android:background="@color/Background"
+    android:orientation="vertical"
+    tools:context=".Controls">
 
-    <TextView
+    <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:textSize="30sp"
-        android:text="Fragment Favs"/>
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:layout_marginLeft="@dimen/activity_horizontal_margin"
+        android:layout_marginRight="@dimen/activity_horizontal_margin"
+        android:fillViewport="false"
+        android:clipChildren="false"
+        android:fadingEdge="none"
+        android:id="@+id/scroll_Patterns">
 
-</FrameLayout>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <Button
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="12dp"
+                android:textAllCaps="false"
+                android:textColor="@color/UserChoice"
+                android:textSize="22sp"
+                android:textStyle="bold"
+                android:onClick="onClick"
+                android:id="@+id/button_Pattern1"/>
+
+            <Button
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="12dp"
+                android:textAllCaps="false"
+                android:textColor="@color/UserChoice"
+                android:textSize="22sp"
+                android:textStyle="bold"
+                android:onClick="onClick"
+                android:id="@+id/button_Pattern2"/>
+
+            <Button
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="12dp"
+                android:textAllCaps="false"
+                android:textColor="@color/UserChoice"
+                android:textSize="22sp"
+                android:textStyle="bold"
+                android:onClick="onClick"
+                android:id="@+id/button_Pattern3"/>
+
+            <Button
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="12dp"
+                android:textAllCaps="false"
+                android:textColor="@color/UserChoice"
+                android:textSize="22sp"
+                android:textStyle="bold"
+                android:onClick="onClick"
+                android:id="@+id/button_Pattern4"/>
+
+            <Button
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="12dp"
+                android:textAllCaps="false"
+                android:textColor="@color/UserChoice"
+                android:textSize="22sp"
+                android:textStyle="bold"
+                android:onClick="onClick"
+                android:id="@+id/button_Pattern5"/>
+
+            <Button
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="12dp"
+                android:textAllCaps="false"
+                android:textColor="@color/UserChoice"
+                android:textSize="22sp"
+                android:textStyle="bold"
+                android:onClick="onClick"
+                android:id="@+id/button_Pattern6"/>
+
+            <Button
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="12dp"
+                android:textAllCaps="false"
+                android:textColor="@color/UserChoice"
+                android:textSize="22sp"
+                android:textStyle="bold"
+                android:onClick="onClick"
+                android:id="@+id/button_Pattern7"/>
+
+        </LinearLayout>
+    </ScrollView>
+</LinearLayout>

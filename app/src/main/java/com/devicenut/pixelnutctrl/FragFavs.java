@@ -11,7 +11,12 @@ public class FragFavs extends Fragment
 {
     private OnFragmentInteractionListener mListener;
 
-    public FragFavs() {} // Required empty public constructor
+    public interface OnFragmentInteractionListener
+    {
+        void onFragmentInteraction(String s);
+    }
+
+    public FragFavs() {}
 
     public static FragFavs newInstance()
     {
@@ -31,22 +36,10 @@ public class FragFavs extends Fragment
         return inflater.inflate(R.layout.fragment_favs, container, false);
     }
 
-    public void onButtonPressed()
-    {
-        if (mListener != null)
-        {
-            mListener.onFragmentInteraction("Hi");
-        }
-    }
-
     @Override public void onAttach(Context context)
     {
         super.onAttach(context);
-        if (context instanceof OnFragmentInteractionListener)
-        {
-            mListener = (OnFragmentInteractionListener) context;
-        }
-        else throw new RuntimeException(context.toString() + " OnFragmentInteractionListener!");
+        mListener = (OnFragmentInteractionListener)context;
     }
 
     @Override public void onDetach()
@@ -55,8 +48,11 @@ public class FragFavs extends Fragment
         mListener = null;
     }
 
-    public interface OnFragmentInteractionListener
+    public void onButtonPressed()
     {
-        void onFragmentInteraction(String s);
+        if (mListener != null)
+        {
+            mListener.onFragmentInteraction("Hi");
+        }
     }
 }

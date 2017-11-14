@@ -217,6 +217,7 @@ public class Main extends Application
     public static boolean initPatterns = false;     // true if must initialize device with patterns at startup
     public static boolean multiStrands = false;     // true if device has multiple physical pixel strands
                                                     // false means all segment info must be sent when changing patterns
+    public static boolean haveFavorites = true;     // false if cannot support favorties page
 
     // limited to 5 segments
     public static int curDelay[]        = { 0,0,0,0,0 }; // delay in msecs
@@ -235,5 +236,5 @@ public class Main extends Application
     public static int segPosCount[]     = { 0,0,0,0,0 }; // number of pixels for each segment
 
     public static String devName;
-    public static Bluetooth ble; // = new Bluetooth();
+    public static Bluetooth ble;
 }
