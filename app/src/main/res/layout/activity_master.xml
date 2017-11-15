@@ -55,7 +55,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="5dp"
             android:layout_marginBottom="5dp"
-            android:layout_toLeftOf="@id/button_ControlsHelp"
+            android:layout_toLeftOf="@id/button_HelpPage"
             android:text="@string/name_pause"
             android:textAppearance="@style/TextAppearance.AppCompat.Small"
             android:textColor="@color/UserChoice"
@@ -121,11 +121,10 @@
         android:orientation="vertical"
         android:id="@+id/ll_ViewPager">
 
-        <android.support.v4.view.ViewPager
-            android:id="@+id/vpPager"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-        </android.support.v4.view.ViewPager>
+        <com.devicenut.pixelnutctrl.MyPager
+            android:id="@+id/myViewPager"
+            android:layout_height="match_parent"
+            android:layout_width="match_parent" />
 
     </LinearLayout>
 </LinearLayout>

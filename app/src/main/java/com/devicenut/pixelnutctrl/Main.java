@@ -237,4 +237,6 @@ public class Main extends Application
 
     public static String devName;
     public static Bluetooth ble;
+
+    public static MyPager masterPager;
 }

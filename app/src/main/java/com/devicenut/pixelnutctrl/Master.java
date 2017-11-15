@@ -6,7 +6,6 @@ import android.os.Build;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
-import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -29,6 +28,7 @@ import static com.devicenut.pixelnutctrl.Main.ble;
 import static com.devicenut.pixelnutctrl.Main.devName;
 import static com.devicenut.pixelnutctrl.Main.doUpdate;
 import static com.devicenut.pixelnutctrl.Main.haveFavorites;
+import static com.devicenut.pixelnutctrl.Main.masterPager;
 import static com.devicenut.pixelnutctrl.Main.multiStrands;
 import static com.devicenut.pixelnutctrl.Main.numSegments;
 
@@ -40,6 +40,7 @@ public class Master extends AppCompatActivity implements FragFavs.OnFragmentInte
     private boolean isConnected = false;
     private boolean isEditing = false;
     private boolean helpActive = false;
+    private String devNameSaved = "";
 
     private TextView nameText;
     private Button pauseButton, helpButton;
@@ -55,9 +56,10 @@ public class Master extends AppCompatActivity implements FragFavs.OnFragmentInte
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_master);
 
-        ViewPager vpPager = (ViewPager) findViewById(R.id.vpPager);
+        masterPager = (MyPager)findViewById(R.id.myViewPager);
         adapterViewPager = new MasterAdapter(getSupportFragmentManager());
-        vpPager.setAdapter(adapterViewPager);
+        masterPager.setAdapter(adapterViewPager);
+        //masterPager.setPagingEnabled(false);
 
         viewPager       = (LinearLayout) findViewById(R.id.ll_ViewPager);
         helpPage        = (ScrollView)   findViewById(R.id.ll_HelpPage);
@@ -76,14 +78,17 @@ public class Master extends AppCompatActivity implements FragFavs.OnFragmentInte
         if (isEditing && (ble != null))
         {
             isEditing = false;
-            Log.d(LOGNAME, "Renaming device: " + devName);
-            SendString(CMD_BLUENAME + devName);
-
-            if (Build.VERSION.SDK_INT < 23)
+            if (!devNameSaved.equals(devName))
             {
-                //ble.refreshDeviceCache(); // doesn't work FIXME
+                Log.d(LOGNAME, "Renaming device=" + devName);
+                SendString(CMD_BLUENAME + devName);
 
-                Toast.makeText(context, "Rescan from Settings to see name change", Toast.LENGTH_SHORT).show();
+                if (Build.VERSION.SDK_INT < 23)
+                {
+                    //ble.refreshDeviceCache(); // doesn't work FIXME
+
+                    Toast.makeText(context, "Rescan from Settings to see name change", Toast.LENGTH_SHORT).show();
+                }
             }
         }
         else
@@ -105,7 +110,8 @@ public class Master extends AppCompatActivity implements FragFavs.OnFragmentInte
             if (devName.startsWith(TITLE_PIXELNUT))
                  devName = devName.substring(2);
             else devName = TITLE_NONAME;
-            Log.d(LOGNAME, "Device name: " + devName);
+            Log.d(LOGNAME, "Device name=" + devName);
+            devNameSaved = devName;
 
             // set pause button to correct state
             pauseButton.setText(getResources().getString(doUpdate ? R.string.name_pause : R.string.name_resume));
@@ -240,9 +246,10 @@ public class Master extends AppCompatActivity implements FragFavs.OnFragmentInte
         Log.e(LOGNAME, "Unexpected onRead");
     }
 
-    public void onFragmentInteraction(String s)
+    public void onFragmentInteraction(String str)
     {
-        Log.d(LOGNAME, "Fragment says: " + s);
+        Log.d(LOGNAME, "Fragment says: " + str);
+        SendString(str);
     }
 
     public static class MasterAdapter extends FragmentPagerAdapter
