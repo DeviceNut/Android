@@ -406,7 +406,7 @@ public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
                 {
 
                     isDone = false;
-                    SleepMsecs(250); // don't send too soon...hack!
+                    SleepMsecs(350); // don't send too soon...hack!
                     Log.d(LOGNAME, "Sending command: " + CMD_PAUSE);
                     ble.WriteString(CMD_PAUSE);
                     Log.d(LOGNAME, "Sending command: " + CMD_GET_INFO);
@@ -513,7 +513,7 @@ public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
         {
             @Override public void run()
             {
-                SleepMsecs(250); // don't send too soon...hack!
+                SleepMsecs(350); // don't send too soon...hack!
                 Log.d(LOGNAME, "Sending command: " + doReply.sendCmdStr);
                 ble.WriteString(doReply.sendCmdStr);
             }
@@ -537,7 +537,7 @@ public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
                     {
                         @Override public void run()
                         {
-                            SleepMsecs(250); // don't send too soon...hack!
+                            SleepMsecs(350); // don't send too soon...hack!
                             Log.d(LOGNAME, "Sending command: " + CMD_RESUME);
                             ble.WriteString(CMD_RESUME);
                         }
@@ -547,7 +547,7 @@ public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
                     Log.i(LOGNAME, ">>> Device Setup Successful <<<");
                     SleepMsecs(250); // allow time for display update
 
-                    if ((customPatterns != 0) || !useAdvPatterns || ((numSegments > 1) && !multiStrands))
+                    if ((customPatterns != 0) || !useAdvPatterns || (numSegments > 1)) // ((numSegments > 1) && !multiStrands))
                         haveFavorites = false;
 
                     startActivity( new Intent(Devices.this, Master.class) );
