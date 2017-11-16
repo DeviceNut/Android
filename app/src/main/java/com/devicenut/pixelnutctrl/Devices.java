@@ -58,7 +58,7 @@ import static com.devicenut.pixelnutctrl.Main.stdPatternsCount;
 import static com.devicenut.pixelnutctrl.Main.useAdvPatterns;
 import static com.devicenut.pixelnutctrl.Main.haveFavorites;
 
-class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
+public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
 {
     private final String LOGNAME = "Devices";
     private final Activity context = this;

@@ -12,7 +12,7 @@ import android.widget.TextView;
 
 import static com.devicenut.pixelnutctrl.Main.devName;
 
-class EditName extends AppCompatActivity
+public class EditName extends AppCompatActivity
 {
     private EditText editName;
     private String saveName;

@@ -3,7 +3,7 @@ package com.devicenut.pixelnutctrl;
 import android.app.Application;
 import android.content.Context;
 
-class Main extends Application
+public class Main extends Application
 {
     static final String TITLE_PIXELNUT       = "P!";
     static final String TITLE_ADAFRUIT       = "Adafruit";
