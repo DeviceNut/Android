@@ -3,6 +3,7 @@ package com.devicenut.pixelnutctrl;
 import android.Manifest;
 import android.app.Activity;
 import android.content.Intent;
+import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.net.Uri;
@@ -22,24 +23,42 @@ import android.widget.Toast;
 import java.util.ArrayList;
 
 import static com.devicenut.pixelnutctrl.Bluetooth.BLESTAT_SUCCESS;
+import static com.devicenut.pixelnutctrl.Main.CMD_EXTMODE;
 import static com.devicenut.pixelnutctrl.Main.CMD_GET_INFO;
 import static com.devicenut.pixelnutctrl.Main.CMD_PAUSE;
+import static com.devicenut.pixelnutctrl.Main.CMD_POP_PATTERN;
 import static com.devicenut.pixelnutctrl.Main.CMD_RESUME;
+import static com.devicenut.pixelnutctrl.Main.CMD_SEGS_ENABLE;
+import static com.devicenut.pixelnutctrl.Main.CMD_START_END;
 import static com.devicenut.pixelnutctrl.Main.TITLE_ADAFRUIT;
 import static com.devicenut.pixelnutctrl.Main.TITLE_NONAME;
 import static com.devicenut.pixelnutctrl.Main.TITLE_PIXELNUT;
 import static com.devicenut.pixelnutctrl.Main.URL_PIXELNUT;
+import static com.devicenut.pixelnutctrl.Main.basicPatternsCount;
 import static com.devicenut.pixelnutctrl.Main.ble;
+import static com.devicenut.pixelnutctrl.Main.curSegment;
 import static com.devicenut.pixelnutctrl.Main.customPatterns;
+import static com.devicenut.pixelnutctrl.Main.devName;
+import static com.devicenut.pixelnutctrl.Main.devPatternCmds;
+import static com.devicenut.pixelnutctrl.Main.devPatternNames;
+import static com.devicenut.pixelnutctrl.Main.initPatterns;
+import static com.devicenut.pixelnutctrl.Main.listEnables;
+import static com.devicenut.pixelnutctrl.Main.mapIndexToPattern;
+import static com.devicenut.pixelnutctrl.Main.mapPatternToIndex;
 import static com.devicenut.pixelnutctrl.Main.multiStrands;
+import static com.devicenut.pixelnutctrl.Main.numPatterns;
 import static com.devicenut.pixelnutctrl.Main.numSegments;
+import static com.devicenut.pixelnutctrl.Main.patternNames;
 import static com.devicenut.pixelnutctrl.Main.pixelDensity;
 import static com.devicenut.pixelnutctrl.Main.pixelLength;
 import static com.devicenut.pixelnutctrl.Main.pixelWidth;
+import static com.devicenut.pixelnutctrl.Main.segPatterns;
+import static com.devicenut.pixelnutctrl.Main.segXmodeEnb;
+import static com.devicenut.pixelnutctrl.Main.stdPatternsCount;
 import static com.devicenut.pixelnutctrl.Main.useAdvPatterns;
 import static com.devicenut.pixelnutctrl.Main.haveFavorites;
 
-public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
+class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
 {
     private final String LOGNAME = "Devices";
     private final Activity context = this;
@@ -94,7 +113,7 @@ public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
 
         blePresentAndEnabled = true;
 
-        ble = new Bluetooth(this);
+        ble = new Bluetooth();
         if (!ble.checkForBlePresent())
         {
             Toast.makeText(this, "Cannot find Bluetooth LE", Toast.LENGTH_LONG).show();
@@ -120,6 +139,9 @@ public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
         pixelDensity = dm.densityDpi;
 
         Log.w(LOGNAME, "Screen: width=" + pixelWidth + " length=" + pixelLength + " density=" + pixelDensity);
+
+        if (getResources().getBoolean(R.bool.portrait_only))
+            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
     }
 
     @Override protected void onResume()
@@ -406,7 +428,7 @@ public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
                 {
 
                     isDone = false;
-                    SleepMsecs(350); // don't send too soon...hack!
+                    SleepMsecs(500); // don't send too soon...hack!
                     Log.d(LOGNAME, "Sending command: " + CMD_PAUSE);
                     ble.WriteString(CMD_PAUSE);
                     Log.d(LOGNAME, "Sending command: " + CMD_GET_INFO);
@@ -513,7 +535,7 @@ public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
         {
             @Override public void run()
             {
-                SleepMsecs(350); // don't send too soon...hack!
+                SleepMsecs(500); // don't send too soon...hack!
                 Log.d(LOGNAME, "Sending command: " + doReply.sendCmdStr);
                 ble.WriteString(doReply.sendCmdStr);
             }
@@ -537,7 +559,7 @@ public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
                     {
                         @Override public void run()
                         {
-                            SleepMsecs(350); // don't send too soon...hack!
+                            SleepMsecs(500); // don't send too soon...hack!
                             Log.d(LOGNAME, "Sending command: " + CMD_RESUME);
                             ble.WriteString(CMD_RESUME);
                         }
@@ -547,17 +569,133 @@ public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
                     Log.i(LOGNAME, ">>> Device Setup Successful <<<");
                     SleepMsecs(250); // allow time for display update
 
-                    if ((customPatterns != 0) || !useAdvPatterns || (numSegments > 1)) // ((numSegments > 1) && !multiStrands))
-                        haveFavorites = false;
-
+                    SetupDeviceControls();
                     startActivity( new Intent(Devices.this, Master.class) );
-                    /*
-                    if ((customPatterns != 0) || !useAdvPatterns || ((numSegments > 1) && !multiStrands))
-                         startActivity( new Intent(Devices.this, Controls.class) );
-                    else startActivity( new Intent(Devices.this, Favorites.class) );
-                     */
                 }
             }
         });
+    }
+
+    private void SendString(String str)
+    {
+        ble.WriteString(str);
+    }
+
+    private void SetupDeviceControls()
+    {
+        if ((customPatterns != 0) || !useAdvPatterns || (numSegments > 1)) // ((numSegments > 1) && !multiStrands))
+            haveFavorites = false;
+
+        devName = ble.getCurDevName();
+        if ((devName == null) || (devName.length() < 3)) // have disconnected
+        {
+            Log.w(LOGNAME, "Lost connection (no device name)");
+            Toast.makeText(context, "Lost connection", Toast.LENGTH_SHORT).show();
+            onBackPressed();
+            return;
+        }
+
+        if (devName.startsWith(TITLE_PIXELNUT))
+             devName = devName.substring(2);
+        else devName = TITLE_NONAME;
+        Log.d(LOGNAME, "Device name=" + devName);
+
+        CreatePatternArrays();
+
+        // if only using basic patterns, then the properties will always be displayed
+        // so enable the properties for any segment which is currently disabled
+        if (!useAdvPatterns)
+        {
+            Log.d(LOGNAME, "Enabling Properties:");
+            for (int i = 0; i < numSegments; ++i)
+            {
+                if (!segXmodeEnb[i])
+                {
+                    int seg = i + 1;
+                    segXmodeEnb[i] = true;
+                    SendString(CMD_SEGS_ENABLE + seg);
+                    SendString(CMD_EXTMODE + "1");
+                }
+            }
+        }
+
+        if (initPatterns && multiStrands) // initialize all of physical strands
+        {
+            Log.d(LOGNAME, "Initializing Patterns:");
+            for (int i = 0; i < numSegments; ++i)
+            {
+                int seg = i+1; // segment numbers start at 1 on device
+                int pnum = segPatterns[i]+1; // same with pattern numbers
+                Log.d(LOGNAME, "  segment=" + seg + " pattern==" + pnum);
+
+                SendString(CMD_SEGS_ENABLE + seg);
+                SendString(CMD_START_END);; // start sequence
+                SendString(CMD_POP_PATTERN);
+                SendString(devPatternCmds[pnum-1]);
+                SendString(CMD_START_END);; // end sequence
+                SendString("" + pnum); // store pattern number
+            }
+        }
+
+        curSegment = 0; // always start with first segment
+        if (numSegments > 1) SendString(CMD_SEGS_ENABLE + "1");
+    }
+
+    private void CreatePatternArrays()
+    {
+        int j = 0;
+        int extra = (customPatterns > 0) ? 1 : 0;
+        if (stdPatternsCount > 0) extra += 2;
+        if ((customPatterns == 0) && !useAdvPatterns)
+        {
+            extra = 0;
+            numPatterns = basicPatternsCount;
+        }
+        patternNames = new String[numPatterns + extra];
+        listEnables = new boolean[numPatterns + extra];
+        mapIndexToPattern = new int[numPatterns + extra];
+        mapPatternToIndex = new int[numPatterns];
+
+        if (customPatterns > 0)
+        {
+            patternNames[j] = "Custom Patterns";
+            listEnables[j] = false;
+            mapIndexToPattern[j] = 0;
+            ++j;
+        }
+        else if (useAdvPatterns)
+        {
+            patternNames[j] = "Basic Patterns";
+            listEnables[j] = false;
+            mapIndexToPattern[j] = 0;
+            ++j;
+        }
+
+        for (int i = 0; i < numPatterns; ++i)
+        {
+            if ((i > 0) && (i == customPatterns) && useAdvPatterns)
+            {
+                patternNames[j] = "Basic Patterns";
+                listEnables[j] = false;
+                mapIndexToPattern[j] = 0;
+                ++j;
+            }
+
+            if ((i > customPatterns) && (i == basicPatternsCount) && useAdvPatterns)
+            {
+                patternNames[j] = "Advanced Patterns";
+                listEnables[j] = false;
+                mapIndexToPattern[j] = 0;
+                ++j;
+            }
+
+            Log.v(LOGNAME, "Adding pattern i=" + i + " j=" + j + " => " + devPatternNames[i]);
+
+            patternNames[j] = devPatternNames[i];
+            listEnables[j] = true;
+            mapIndexToPattern[j] = i;
+            mapPatternToIndex[i] = j;
+            ++j;
+        }
     }
 }
