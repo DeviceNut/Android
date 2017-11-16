@@ -1,44 +1,45 @@
 package com.devicenut.pixelnutctrl;
 
 import android.app.Application;
+import android.content.Context;
 
-public class Main extends Application
+class Main extends Application
 {
-    public static final String TITLE_PIXELNUT   = "P!";
-    public static final String TITLE_ADAFRUIT   = "Adafruit";
-    public static final String TITLE_NONAME     = "NoName";
-    public static final String URL_PIXELNUT     = "http://www.pixelnutstore.com";
+    static final String TITLE_PIXELNUT       = "P!";
+    static final String TITLE_ADAFRUIT       = "Adafruit";
+    static final String TITLE_NONAME         = "NoName";
+    static final String URL_PIXELNUT         = "http://www.pixelnutstore.com";
 
-    public static final String CMD_GET_INFO     = "?";
-    public static final String CMD_GET_SEGMENTS = "?S";
-    public static final String CMD_GET_PATTERNS = "?P";
-    public static final String CMD_GET_PLUGINS  = "?X";
-    public static final String CMD_BLUENAME     = "@";
-    public static final String CMD_BRIGHT       = "%";
-    public static final String CMD_DELAY        = ":";
-    public static final String CMD_EXTMODE      = "_";
-    public static final String CMD_PROPVALS     = "=";
-    public static final String CMD_TRIGGER      = "!";
-    public static final String CMD_PAUSE        = "[";
-    public static final String CMD_RESUME       = "]";
-    public static final String CMD_SEGS_ENABLE  = "#";
-    public static final String CMD_POP_PATTERN  = "P";
-    public static final String CMD_START_END    = ".";
+    static final String CMD_GET_INFO         = "?";
+    static final String CMD_GET_SEGMENTS     = "?S";
+    static final String CMD_GET_PATTERNS     = "?P";
+    static final String CMD_GET_PLUGINS      = "?X";
+    static final String CMD_BLUENAME         = "@";
+    static final String CMD_BRIGHT           = "%";
+    static final String CMD_DELAY            = ":";
+    static final String CMD_EXTMODE          = "_";
+    static final String CMD_PROPVALS         = "=";
+    static final String CMD_TRIGGER          = "!";
+    static final String CMD_PAUSE            = "[";
+    static final String CMD_RESUME           = "]";
+    static final String CMD_SEGS_ENABLE      = "#";
+    static final String CMD_POP_PATTERN      = "P";
+    static final String CMD_START_END        = ".";
 
-    public static final int MAXVAL_HUE          = 359;
-    public static final int MAXVAL_WHT          = 50;
-    public static final int MAXVAL_PERCENT      = 100;
-    public static final int MAXVAL_FORCE        = 1000;
-    public static final int MINVAL_DELAYRANGE   = 60;       // use this for patterns defined here, and is minimal value for custom patterns
+    static final int MAXVAL_HUE              = 359;
+    static final int MAXVAL_WHT              = 50;
+    static final int MAXVAL_PERCENT          = 100;
+    static final int MAXVAL_FORCE            = 1000;
+    static final int MINVAL_DELAYRANGE       = 60;       // use this for patterns defined here, and is minimal value for custom patterns
 
-    public static final int MINLEN_SEGLEN_FORADV = 20;      // minimum length of each segment to be able to use the advanced patterns
-    public static final int MINLEN_CMDSTR        = 110;     // minimum length of the command/pattern string
-    public static final int ADDLEN_CMDSTR_PERSEG = 50;      // additional length of command/pattern string per additional segment,
-                                                            // otherwise will not be able to use the advanced patterns
+    static final int MINLEN_SEGLEN_FORADV    = 20;      // minimum length of each segment to be able to use the advanced patterns
+    static final int MINLEN_CMDSTR           = 110;     // minimum length of the command/pattern string
+    static final int ADDLEN_CMDSTR_PERSEG    = 50;      // additional length of command/pattern string per additional segment,
+    // otherwise will not be able to use the advanced patterns
 
-    public static final int[] numsFavorites = { 0,4,5,6,8,10,11 };
+    static final int[] numsFavorites = {0, 4, 5, 6, 8, 10, 11};
 
-    public static final String[] basicPatternHelp =
+    static final String[] basicPatternHelp =
             {
                     "A solid color which can be modified with the ColorHue and Whiteness properties.",
 
@@ -61,7 +62,7 @@ public class Main extends Application
                     "Both the color and length of the tail can be modified with the ColorHue, Whiteness, and Count properties.",
             };
 
-    public static final String[] basicPatternCmds =
+    static final String[] basicPatternCmds =
             {
                     "E0 H270 Q3 T G",
                     "E10 D60 Q7 T G",
@@ -72,7 +73,7 @@ public class Main extends Application
                     "E20 H30 C25 D30 Q7 T G",
             };
 
-    public static final String[] basicPatternNames =
+    static final String[] basicPatternNames =
             {
                     "Solid",
                     "Waves",
@@ -83,7 +84,7 @@ public class Main extends Application
                     "Comet",
             };
 
-    public static final int[] basicPatternBits =
+    static final int[] basicPatternBits =
             {
                     0x03,
                     0x07,
@@ -94,7 +95,7 @@ public class Main extends Application
                     0x07,
             };
 
-    public static final String[] advPatternHelp =
+    static final String[] advPatternHelp =
             {
                     "Color hue changes \"ripple\" down the strip. The colors move through the spectrum, and appear stationary until Triggered.\n\n" +
                     "The Force applied changes the amount of color change per pixel. At maximum Force the entire spectrum is displayed again.",
@@ -118,7 +119,7 @@ public class Main extends Application
 
                     "Evenly spaced pixels move together around and around the strip, creating a \"Ferris Wheel\" effect.\n\n" +
                     "The spokes periodically change colors, or can be modified with the ColorHue and Whiteness properties.\n\n" +
-                    "The Count property determines the number of spokes. Triggering toggles the direction of the motion." ,
+                    "The Count property determines the number of spokes. Triggering toggles the direction of the motion.",
 
                     "The background is whitish noise, with the color modified by the ColorHue property.\n\n" +
                     "A Trigger causes the background to slowly and continuously expand and contract, with the Force determining the extent of the expansion.",
@@ -140,7 +141,7 @@ public class Main extends Application
                     "The ColorHue property only affects the color of the twinkling."
             };
 
-    public static final String[] advPatternCmds =
+    static final String[] advPatternCmds =
             {
                     "E2 D20 T E101 F1000 I T G",
                     "E1 D20 F1 I T E101 F1000 I T G",
@@ -157,7 +158,7 @@ public class Main extends Application
                     "E50 V1 B65 W30 H100 D10 Q1 T E40 H270 C10 D50 T E20 C20 D15 A1 F0 I T G"
             };
 
-    public static final String[] advPatternNames =
+    static final String[] advPatternNames =
             {
                     "Rainbow Ripple",
                     "Rainbow Roll",
@@ -174,7 +175,7 @@ public class Main extends Application
                     "MashUp",
             };
 
-    public static final int[] advPatternBits =
+    static final int[] advPatternBits =
             {
                     0x30,
                     0x30,
@@ -191,52 +192,65 @@ public class Main extends Application
                     0x11,
             };
 
-    public static final int basicPatternsCount = basicPatternNames.length;
-    public static final int advPatternsCount = advPatternNames.length;
-    public static int stdPatternsCount;
+    static final int basicPatternsCount = basicPatternNames.length;
+    static final int advPatternsCount = advPatternNames.length;
+    static int stdPatternsCount;
 
-    public static String[] devPatternNames;
-    public static String[] devPatternHelp;
-    public static String[] devPatternCmds;
-    public static int[] devPatternBits;
+    static String[] devPatternNames;
+    static String[] devPatternHelp;
+    static String[] devPatternCmds;
+    static int[] devPatternBits;
 
-    public static int pixelWidth = 0;
-    public static int pixelLength = 0;
-    public static int pixelDensity = 0;
+    static int pixelWidth = 0;
+    static int pixelLength = 0;
+    static int pixelDensity = 0;
 
-    public static int curSegment        = 0;    // index from 0
-    public static int numPatterns       = 0;    // total number of patterns that can be chosen
-    public static int numSegments       = 0;    // total number of pixel segments
-    public static int customPatterns    = 0;    // number of custom patterns defined by device
-    public static int customPlugins     = 0;    // number of custom plugins defined by device
-    public static int maxlenCmdStrs     = 0;    // max length of command string that can be sent
-    public static int rangeDelay        = MINVAL_DELAYRANGE; // default range of delay offsets
+    static int curSegment = 0;                   // index from 0
+    static int numPatterns = 0;                  // total number of patterns that can be chosen
+    static int numSegments = 0;                  // total number of pixel segments
+    static int customPatterns = 0;               // number of custom patterns defined by device
+    static int customPlugins = 0;                // number of custom plugins defined by device
+    static int maxlenCmdStrs = 0;                // max length of command string that can be sent
+    static int rangeDelay = MINVAL_DELAYRANGE;   // default range of delay offsets
 
-    public static boolean doUpdate = true;          // false if device output is pause mode
-    public static boolean useAdvPatterns = true;    // false for small segments and/or limited flash space (or custom)
-    public static boolean initPatterns = false;     // true if must initialize device with patterns at startup
-    public static boolean multiStrands = false;     // true if device has multiple physical pixel strands
-                                                    // false means all segment info must be sent when changing patterns
-    public static boolean haveFavorites = true;     // false if cannot support favorties page
+    static boolean doUpdate = true;              // false if device output is pause mode
+    static boolean useAdvPatterns = true;        // false for small segments and/or limited flash space (or custom)
+    static boolean initPatterns = false;         // true if must initialize device with patterns at startup
+    static boolean multiStrands = false;         // true if device has multiple physical pixel strands
+    // false means all segment info must be sent when changing patterns
+    static boolean haveFavorites = true;         // false if cannot support favorties page
 
     // limited to 5 segments
-    public static int curDelay[]        = { 0,0,0,0,0 }; // delay in msecs
-    public static int curBright[]       = { 0,0,0,0,0 }; // maximum brightness
-    public static boolean segXmodeEnb[] = { false,false,false,false,false };
-    public static int segXmodeHue[]     = { 0,0,0,0,0 };
-    public static int segXmodeWht[]     = { 0,0,0,0,0 };
-    public static int segXmodeCnt[]     = { 0,0,0,0,0 };
-    public static int segTrigForce[]    = { 0,0,0,0,0 };
-    public static int segPatterns[]     = { 0,0,0,0,0 }; // index from 0
-    public static int segPixels[]       = { 0,0,0,0,0 }; // number of pixels
-    public static int segLayers[]       = { 0,0,0,0,0 }; // number of layers
-    public static int segTracks[]       = { 0,0,0,0,0 }; // number of tracks
+    static int curDelay[]        = {0, 0, 0, 0, 0}; // delay in msecs
+    static int curBright[]       = {0, 0, 0, 0, 0}; // maximum brightness
+    static boolean segXmodeEnb[] = {false, false, false, false, false};
+    static int segXmodeHue[]     = {0, 0, 0, 0, 0};
+    static int segXmodeWht[]     = {0, 0, 0, 0, 0};
+    static int segXmodeCnt[]     = {0, 0, 0, 0, 0};
+    static int segTrigForce[]    = {0, 0, 0, 0, 0};
+    static int segPatterns[]     = {0, 0, 0, 0, 0}; // index from 0
+    static int segPixels[]       = {0, 0, 0, 0, 0}; // number of pixels
+    static int segLayers[]       = {0, 0, 0, 0, 0}; // number of layers
+    static int segTracks[]       = {0, 0, 0, 0, 0}; // number of tracks
     // only used for multiple segments on the same physical strand:
-    public static int segPosStart[]     = { 0,0,0,0,0 }; // starting positions for each segment
-    public static int segPosCount[]     = { 0,0,0,0,0 }; // number of pixels for each segment
+    static int segPosStart[]     = {0, 0, 0, 0, 0}; // starting positions for each segment
+    static int segPosCount[]     = {0, 0, 0, 0, 0}; // number of pixels for each segment
 
-    public static String devName;
-    public static Bluetooth ble;
+    static String devName;
+    static Bluetooth ble;
 
-    public static MyPager masterPager;
+    static MyPager masterPager;
+    static int pageFavorites, pageControls;
+
+    static String[] patternNames;
+    static boolean[] listEnables;
+    static int[] mapPatternToIndex;
+    static int[] mapIndexToPattern;
+
+    static Context appContext;
+    @Override public void onCreate()
+    {
+        super.onCreate();
+        appContext = getApplicationContext();
+    }
 }
