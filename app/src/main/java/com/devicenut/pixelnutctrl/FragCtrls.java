@@ -69,7 +69,7 @@ public class FragCtrls extends Fragment implements SeekBar.OnSeekBarChangeListen
     private int helpMode = 0;
     private boolean changePattern = true;
 
-    private LinearLayout llMainControls, llPatternHelp;
+    private LinearLayout llProperties, llPatternHelp;
     private LinearLayout llAutoControls, llPropColor, llPropWhite, llPropCount;
     private LinearLayout llTrigControls, llTrigForce;
 
@@ -98,14 +98,7 @@ public class FragCtrls extends Fragment implements SeekBar.OnSeekBarChangeListen
     private FragListen mListener;
 
     public FragCtrls() {}
-
-    public static FragCtrls newInstance()
-    {
-        FragCtrls fragment = new FragCtrls();
-        Bundle args = new Bundle();
-        fragment.setArguments(args);
-        return fragment;
-    }
+    public static FragCtrls newInstance() { return new FragCtrls(); }
 
     @Override public void onCreate(Bundle savedInstanceState)
     {
@@ -121,7 +114,7 @@ public class FragCtrls extends Fragment implements SeekBar.OnSeekBarChangeListen
         View v = inflater.inflate(R.layout.fragment_ctrls, container, false);
 
         llPatternHelp  = (LinearLayout) v.findViewById(R.id.ll_PatternHelp);
-        llMainControls = (LinearLayout) v.findViewById(R.id.ll_MainControls);
+        llProperties   = (LinearLayout) v.findViewById(R.id.ll_Properties);
         llAutoControls = (LinearLayout) v.findViewById(R.id.ll_AutoControls);
         llPropColor    = (LinearLayout) v.findViewById(R.id.ll_PropColor);
         llPropWhite    = (LinearLayout) v.findViewById(R.id.ll_PropWhite);
@@ -160,8 +153,8 @@ public class FragCtrls extends Fragment implements SeekBar.OnSeekBarChangeListen
         Button triggerButton = (Button)v.findViewById(R.id.button_TrigAction);
         triggerButton.setOnClickListener(mClicker);
 
-        (v.findViewById(R.id.text_GoToFavs)).setOnClickListener(mClicker);
-        (v.findViewById(R.id.text_GoToDetails)).setOnClickListener(mClicker);
+        //(v.findViewById(R.id.text_GoToFavs)).setOnClickListener(mClicker);
+        //FIXME (v.findViewById(R.id.text_GoToDetails)).setOnClickListener(mClicker);
 
         segRadioButtons = new RadioButton[ segRadioIds.length ];
         for (int i = 0; i < segRadioIds.length; ++i)
@@ -218,7 +211,7 @@ public class FragCtrls extends Fragment implements SeekBar.OnSeekBarChangeListen
     {
         Log.d(LOGNAME, ">>onAttach");
         super.onAttach(context);
-        FragListen mListener = (FragListen)getActivity();
+        mListener = (FragListen)getActivity();
     }
 
     @Override public void onDetach()
@@ -402,7 +395,7 @@ public class FragCtrls extends Fragment implements SeekBar.OnSeekBarChangeListen
 
         if ((bits & 0x07) != 0) // enable properties
         {
-            llMainControls.setVisibility(VISIBLE);
+            llProperties.setVisibility(VISIBLE);
 
             if (segXmodeEnb[curSegment])
             {
@@ -423,7 +416,7 @@ public class FragCtrls extends Fragment implements SeekBar.OnSeekBarChangeListen
                 llAutoControls.setVisibility(GONE);
             }
         }
-        else llMainControls.setVisibility(GONE);
+        else llProperties.setVisibility(GONE);
 
         if ((bits & 0x10) != 0) // enable triggering
         {
@@ -635,16 +628,6 @@ public class FragCtrls extends Fragment implements SeekBar.OnSeekBarChangeListen
                     else SendString(CMD_TRIGGER + 0);
                     break;
                 }
-                case R.id.text_GoToFavs:
-                {
-                    if (pageFavorites >= 0)
-                        masterPager.setCurrentItem(pageFavorites);
-                    break;
-                }
-                case R.id.text_GoToDetails:
-                {
-                    break;
-                }
             }
         }
     };
@@ -821,3 +804,40 @@ public class FragCtrls extends Fragment implements SeekBar.OnSeekBarChangeListen
         }
     }
 }
+
+/*
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_marginTop="30dp"
+                android:layout_height="50dp"
+                android:layout_alignParentEnd="true"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="@color/Background2"
+                    android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+                    android:layout_alignParentStart="true"
+                    android:textSize="23sp"
+                    android:textStyle="italic"
+                    android:text="&lt;&lt;&lt; Favorites"
+                    android:clickable="true"
+                    android:id="@+id/text_GoToFavs"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="@color/Background2"
+                    android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+                    android:layout_alignParentEnd="true"
+                    android:textSize="23sp"
+                    android:textStyle="italic"
+                    android:text="Details &gt;&gt;&gt;"
+                    android:clickable="true"
+                    android:id="@+id/text_GoToDetails"/>
+
+            </RelativeLayout>
+
+
+ */

@@ -48,6 +48,9 @@ import static com.devicenut.pixelnutctrl.Main.mapPatternToIndex;
 import static com.devicenut.pixelnutctrl.Main.multiStrands;
 import static com.devicenut.pixelnutctrl.Main.numPatterns;
 import static com.devicenut.pixelnutctrl.Main.numSegments;
+import static com.devicenut.pixelnutctrl.Main.pageControls;
+import static com.devicenut.pixelnutctrl.Main.pageDetails;
+import static com.devicenut.pixelnutctrl.Main.pageFavorites;
 import static com.devicenut.pixelnutctrl.Main.patternNames;
 import static com.devicenut.pixelnutctrl.Main.pixelDensity;
 import static com.devicenut.pixelnutctrl.Main.pixelLength;
@@ -57,6 +60,7 @@ import static com.devicenut.pixelnutctrl.Main.segXmodeEnb;
 import static com.devicenut.pixelnutctrl.Main.stdPatternsCount;
 import static com.devicenut.pixelnutctrl.Main.useAdvPatterns;
 import static com.devicenut.pixelnutctrl.Main.haveFavorites;
+import static com.devicenut.pixelnutctrl.Main.pageCurrent;
 
 public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
 {
@@ -639,6 +643,20 @@ public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
 
         curSegment = 0; // always start with first segment
         if (numSegments > 1) SendString(CMD_SEGS_ENABLE + "1");
+
+        if (haveFavorites)
+        {
+            pageFavorites = 0;
+            pageControls = 1;
+            pageDetails = 2;
+        }
+        else
+        {
+            pageFavorites = -1;
+            pageControls = 0;
+            pageDetails = 1;
+        }
+        pageCurrent = 0;
     }
 
     private void CreatePatternArrays()

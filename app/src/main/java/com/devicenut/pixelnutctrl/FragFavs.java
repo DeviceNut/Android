@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentTransaction;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -42,14 +43,7 @@ public class FragFavs extends Fragment
     private FragListen mListener;
 
     public FragFavs() {}
-
-    public static FragFavs newInstance()
-    {
-        FragFavs fragment = new FragFavs();
-        Bundle args = new Bundle();
-        fragment.setArguments(args);
-        return fragment;
-    }
+    public static FragFavs newInstance() { return new FragFavs(); }
 
     @Override public void onCreate(Bundle savedInstanceState)
     {
@@ -71,7 +65,7 @@ public class FragFavs extends Fragment
             b.setOnClickListener(mClicker);
         }
 
-        (v.findViewById(R.id.text_GoToControls)).setOnClickListener(mClicker);
+        //FIXME (v.findViewById(R.id.text_GoToControls)).setOnClickListener(mClicker);
 
         return v;
     }
@@ -94,9 +88,7 @@ public class FragFavs extends Fragment
     {
         @Override public void onClick(View v)
         {
-            if (v.getId() == R.id.text_GoToControls)
-                masterPager.setCurrentItem(pageControls);
-            else SendPattern(v.getId());
+            SendPattern(v.getId());
         }
     };
 
@@ -133,3 +125,27 @@ public class FragFavs extends Fragment
             mListener.onDeviceCmdSend(str);
     }
 }
+
+/*
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:layout_marginTop="8dp"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="@color/Background2"
+                    android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+                    android:layout_alignParentEnd="true"
+                    android:textSize="23sp"
+                    android:textStyle="italic"
+                    android:text="Controls &gt;&gt;&gt;"
+                    android:clickable="true"
+                    android:id="@+id/text_GoToControls"/>
+
+            </RelativeLayout>
+
+
+ */

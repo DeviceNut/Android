@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
+<RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/activity_master"
@@ -12,113 +12,159 @@
     android:background="@color/Background"
     tools:context=".Master">
 
-    <View
-        android:layout_width="fill_parent"
-        android:layout_height="2dp"
-        android:background="@color/HorzDivider0"/>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:id="@+id/ll_MainView">
+
+        <View
+            android:layout_width="fill_parent"
+            android:layout_height="2dp"
+            android:background="@color/HorzDivider0"/>
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:focusable="true"
+            android:focusableInTouchMode="true"
+            android:background="@color/DarkHeader"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="10dp"
+                android:layout_alignParentStart="true"
+                android:paddingTop="7dp"
+                android:textSize="24sp"
+                android:textStyle="italic|bold"
+                android:textColor="@color/UserChoice"
+                android:onClick="onClick"
+                android:id="@+id/text_Devname"
+                tools:ignore="RtlHardcoded"/>
+
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="5dp"
+                android:layout_marginBottom="5dp"
+                android:layout_alignParentEnd="true"
+                android:text="@string/name_help"
+                android:textAppearance="@style/TextAppearance.AppCompat.Small"
+                android:textColor="@color/UserChoice"
+                android:onClick="onClick"
+                android:id="@+id/button_HelpPage"/>
+
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="5dp"
+                android:layout_marginBottom="5dp"
+                android:layout_toLeftOf="@id/button_HelpPage"
+                android:text="@string/name_pause"
+                android:textAppearance="@style/TextAppearance.AppCompat.Small"
+                android:textColor="@color/UserChoice"
+                android:onClick="onClick"
+                android:id="@+id/button_Pause"
+                tools:ignore="RtlHardcoded"/>
+
+        </RelativeLayout>
+
+        <View
+            android:layout_width="fill_parent"
+            android:layout_height="1dp"
+            android:background="@color/HorzDivider1"/>
+
+        <View
+            android:layout_width="fill_parent"
+            android:layout_height="1dp"
+            android:background="@color/HorzDivider2"/>
+
+        <View
+            android:layout_width="fill_parent"
+            android:layout_height="1dp"
+            android:background="@color/HorzDivider3"/>
+
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:visibility="gone"
+            android:orientation="vertical"
+            android:layout_marginTop="10dp"
+            android:layout_marginLeft="@dimen/activity_horizontal_margin"
+            android:layout_marginRight="@dimen/activity_horizontal_margin"
+            android:layout_marginBottom="16dp"
+            android:id="@+id/ll_HelpPage">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="10dp"
+                    android:text="@string/title_help"
+                    android:textAppearance="@style/TextAppearance.AppCompat.Large"
+                    android:textStyle="italic"/>
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+                    android:text=""
+                    android:id="@+id/view_HelpText"/>
+
+            </LinearLayout>
+        </ScrollView>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:visibility="visible"
+            android:orientation="vertical"
+            android:id="@+id/ll_ViewPages">
+
+            <com.devicenut.pixelnutctrl.MyPager
+                android:id="@+id/myViewPager"
+                android:layout_height="match_parent"
+                android:layout_width="match_parent" />
+
+        </LinearLayout>
+    </LinearLayout>
 
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="50dp"
-        android:focusable="true"
-        android:focusableInTouchMode="true"
-        android:background="@color/DarkHeader"
+        android:layout_alignParentBottom="true"
         android:orientation="horizontal">
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="10dp"
+            android:background="@color/Background2"
+            android:textAppearance="@style/TextAppearance.AppCompat.Medium"
             android:layout_alignParentStart="true"
-            android:paddingTop="7dp"
-            android:textSize="24sp"
-            android:textStyle="italic|bold"
-            android:textColor="@color/UserChoice"
+            android:textSize="23sp"
+            android:textStyle="italic"
+            android:text="&lt;&lt;&lt; Favorites"
             android:onClick="onClick"
-            android:id="@+id/text_Devname"
-            tools:ignore="RtlHardcoded"/>
+            android:id="@+id/text_GoLeft"/>
 
-        <Button
+        <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="5dp"
-            android:layout_marginBottom="5dp"
+            android:background="@color/Background2"
+            android:textAppearance="@style/TextAppearance.AppCompat.Medium"
             android:layout_alignParentEnd="true"
-            android:text="@string/name_help"
-            android:textAppearance="@style/TextAppearance.AppCompat.Small"
-            android:textColor="@color/UserChoice"
+            android:textSize="23sp"
+            android:textStyle="italic"
+            android:text="Details &gt;&gt;&gt;"
             android:onClick="onClick"
-            android:id="@+id/button_HelpPage"/>
-
-        <Button
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="5dp"
-            android:layout_marginBottom="5dp"
-            android:layout_toLeftOf="@id/button_HelpPage"
-            android:text="@string/name_pause"
-            android:textAppearance="@style/TextAppearance.AppCompat.Small"
-            android:textColor="@color/UserChoice"
-            android:onClick="onClick"
-            android:id="@+id/button_Pause"
-            tools:ignore="RtlHardcoded"/>
+            android:id="@+id/text_GoRight"/>
 
     </RelativeLayout>
 
-    <View
-        android:layout_width="fill_parent"
-        android:layout_height="1dp"
-        android:background="@color/HorzDivider1"/>
-
-    <View
-        android:layout_width="fill_parent"
-        android:layout_height="1dp"
-        android:background="@color/HorzDivider2"/>
-
-    <View
-        android:layout_width="fill_parent"
-        android:layout_height="1dp"
-        android:background="@color/HorzDivider3"/>
-
-    <ScrollView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:visibility="gone"
-        android:orientation="vertical"
-        android:layout_marginTop="10dp"
-        android:layout_marginLeft="@dimen/activity_horizontal_margin"
-        android:layout_marginRight="@dimen/activity_horizontal_margin"
-        android:id="@+id/ll_HelpPage">
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical">
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="10dp"
-                android:text="@string/title_help"
-                android:textAppearance="@style/TextAppearance.AppCompat.Large"
-                android:textStyle="italic"/>
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:textAppearance="@style/TextAppearance.AppCompat.Medium"
-                android:text=""
-                android:id="@+id/view_HelpText"/>
-
-        </LinearLayout>
-    </ScrollView>
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:visibility="visible"
-        android:orientation="vertical"
-        android:id="@+id/ll_ViewPager">
-
-    </LinearLayout>
-</LinearLayout>
+</RelativeLayout>

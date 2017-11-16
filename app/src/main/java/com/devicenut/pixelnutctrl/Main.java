@@ -240,7 +240,7 @@ public class Main extends Application
     static Bluetooth ble;
 
     static MyPager masterPager;
-    static int pageFavorites, pageControls;
+    static int pageFavorites, pageControls, pageDetails, pageCurrent;
 
     static String[] patternNames;
     static boolean[] listEnables;
