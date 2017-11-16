@@ -227,11 +227,11 @@ class ReplyStrs
             {
                 int line = ((replyState-1) % 3);
 
-                     if (line == 0) devPatternNames[index] = new String(reply);
-                else if (line == 1) devPatternHelp[index] = (new String(reply)).replace('\t', '\n');
+                     if (line == 0) devPatternNames[index] = reply;
+                else if (line == 1) devPatternHelp[index] = reply.replace('\t', '\n');
                 else
                 {
-                    devPatternCmds[index] = new String(reply);
+                    devPatternCmds[index] = reply;
                     devPatternBits[index] = 0;
 
                     boolean haveforce = false;
