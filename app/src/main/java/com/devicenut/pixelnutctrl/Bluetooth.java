@@ -14,14 +14,14 @@ import android.bluetooth.le.ScanResult;
 import android.bluetooth.le.ScanSettings;
 import android.content.Context;
 import android.content.pm.PackageManager;
-import android.os.Build;
 import android.util.Log;
 
-import java.lang.reflect.Method;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+
+import static com.devicenut.pixelnutctrl.Main.appContext;
 
 class Bluetooth
 {
@@ -33,14 +33,13 @@ class Bluetooth
     private static final String CH_CONFIG   = "00002902-0000-1000-8000-00805f9b34fb";
     private static final int MAXLEN_CHUNK   = 20;
 
-    private static Context context = null;
     private static BluetoothAdapter bleAdapter = null;
     private static final List<BluetoothDevice> bleDevList = new ArrayList<>();
     private static BluetoothDevice bleDevice = null;
     private static BluetoothGatt bleGatt = null;
     private static BluetoothGattCharacteristic bleTx, bleRx;
 
-    private static final PCQueue<String> writeQueue = new PCQueue(50);
+    private static final PCQueue<String> writeQueue = new PCQueue<>(50);
     private static String strLine = "";
     private static boolean writeEnable = false;
     private static boolean doNextChunk = true;
@@ -62,13 +61,11 @@ class Bluetooth
     }
     private static BleCallbacks bleCB;
 
-    Bluetooth(Context ctx)
+    Bluetooth()
     {
-        context = ctx; //getApplicationContext();
-
-        if (context.getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE))
+        if (appContext.getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE))
         {
-            BluetoothManager manager = (BluetoothManager) context.getSystemService(Context.BLUETOOTH_SERVICE);
+            BluetoothManager manager = (BluetoothManager) appContext.getSystemService(Context.BLUETOOTH_SERVICE);
             if (manager != null) bleAdapter = manager.getAdapter();
         }
     }
@@ -86,7 +83,7 @@ class Bluetooth
             Log.w(LOGNAME, "Enabling Bluetooth now...");
             bleAdapter.enable(); // NOT supposed to do this without user permission
 
-            BluetoothManager manager = (BluetoothManager) context.getSystemService(Context.BLUETOOTH_SERVICE);
+            BluetoothManager manager = (BluetoothManager) appContext.getSystemService(Context.BLUETOOTH_SERVICE);
             if (manager == null) return false;
 
             bleAdapter = manager.getAdapter();
@@ -108,7 +105,7 @@ class Bluetooth
             Log.w(LOGNAME, "Reset Adapter to capture name changes");
             if (bleAdapter.disable() && bleAdapter.enable()) // this doesn't work (asynchronous) as well as against rules
             {
-                BluetoothManager manager = (BluetoothManager) context.getSystemService(Context.BLUETOOTH_SERVICE);
+                BluetoothManager manager = (BluetoothManager) appContext.getSystemService(Context.BLUETOOTH_SERVICE);
                 if (manager == null) bleAdapter = null;
                 else bleAdapter = manager.getAdapter();
                 if (bleAdapter == null) Log.e(LOGNAME, "Failed to get BLE adapter");
@@ -136,7 +133,7 @@ class Bluetooth
         Log.i(LOGNAME, "Connecting to GATT...");
 
         bleDevice = bdev;
-        bleGatt = bdev.connectGatt(context, false, bleGattCB);
+        bleGatt = bdev.connectGatt(appContext, false, bleGattCB);
 
         return (bleGatt != null);
     }
@@ -195,7 +192,7 @@ class Bluetooth
         else if (!writeQueue.put(str)) Log.e(LOGNAME, "Queue full: str=" + str + "\"");
     }
 
-    void SendNextChunk()
+    private void SendNextChunk()
     {
         String str = writeChunks[nextChunk++] + " ";
 
