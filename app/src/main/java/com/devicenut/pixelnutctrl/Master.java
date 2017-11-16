@@ -34,7 +34,7 @@ import static com.devicenut.pixelnutctrl.Main.pageControls;
 import static com.devicenut.pixelnutctrl.Main.pageFavorites;
 import static com.devicenut.pixelnutctrl.Main.masterPager;
 
-class Master extends AppCompatActivity implements FragFavs.OnFragmentInteractionListener, FragCtrls.OnFragmentInteractionListener, Bluetooth.BleCallbacks
+class Master extends AppCompatActivity implements FragListen, Bluetooth.BleCallbacks
 {
     private final String LOGNAME = "Master";
     private final Activity context = this;
@@ -269,7 +269,7 @@ class Master extends AppCompatActivity implements FragFavs.OnFragmentInteraction
         Log.e(LOGNAME, "Unexpected onRead");
     }
 
-    public void onFragmentInteraction(String str)
+    public void onDeviceCmdSend(String str)
     {
         Log.d(LOGNAME, "Fragment says: " + str);
         SendString(str);

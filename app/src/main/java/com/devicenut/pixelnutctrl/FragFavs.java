@@ -39,12 +39,7 @@ public class FragFavs extends Fragment
                     R.id.button_Pattern7,
             };
 
-    private OnFragmentInteractionListener mListener;
-
-    public interface OnFragmentInteractionListener
-    {
-        void onFragmentInteraction(String s);
-    }
+    private FragListen mListener;
 
     public FragFavs() {}
 
@@ -85,7 +80,7 @@ public class FragFavs extends Fragment
     {
         Log.d(LOGNAME, ">>onAttach");
         super.onAttach(context);
-        mListener = (OnFragmentInteractionListener)context;
+        mListener = (FragListen)getActivity();
     }
 
     @Override public void onDetach()
@@ -135,6 +130,6 @@ public class FragFavs extends Fragment
     private void SendString(String str)
     {
         if (mListener != null)
-            mListener.onFragmentInteraction(str);
+            mListener.onDeviceCmdSend(str);
     }
 }

@@ -94,13 +94,8 @@ public class FragCtrls extends Fragment implements SeekBar.OnSeekBarChangeListen
             };
 
     private RadioButton segRadioButtons[];
-            
-    private OnFragmentInteractionListener mListener;
 
-    public interface OnFragmentInteractionListener
-    {
-        void onFragmentInteraction(String s);
-    }
+    private FragListen mListener;
 
     public FragCtrls() {}
 
@@ -223,7 +218,7 @@ public class FragCtrls extends Fragment implements SeekBar.OnSeekBarChangeListen
     {
         Log.d(LOGNAME, ">>onAttach");
         super.onAttach(context);
-        mListener = (OnFragmentInteractionListener)context;
+        FragListen mListener = (FragListen)getActivity();
     }
 
     @Override public void onDetach()
@@ -534,7 +529,7 @@ public class FragCtrls extends Fragment implements SeekBar.OnSeekBarChangeListen
     private void SendString(String str)
     {
         if (mListener != null)
-            mListener.onFragmentInteraction(str);
+            mListener.onDeviceCmdSend(str);
     }
 
     private final View.OnClickListener mClicker = new View.OnClickListener()
