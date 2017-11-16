@@ -13,10 +13,20 @@
     android:orientation="vertical"
     tools:context=".Controls">
 
-    <ScrollView
+    <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
+        android:layout_marginBottom="10dp"
+        android:text="@string/title_favs"
+        android:textAlignment="center"
+        android:textAppearance="@style/TextAppearance.AppCompat.Large"
+        android:textSize="28sp"
+        android:textStyle="italic|bold"/>
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
         android:layout_marginLeft="@dimen/activity_horizontal_margin"
         android:layout_marginRight="@dimen/activity_horizontal_margin"
         android:fillViewport="false"
@@ -37,7 +47,6 @@
                 android:textColor="@color/UserChoice"
                 android:textSize="22sp"
                 android:textStyle="bold"
-                android:onClick="onClickFavs"
                 android:id="@+id/button_Pattern1"/>
 
             <Button
@@ -48,7 +57,6 @@
                 android:textColor="@color/UserChoice"
                 android:textSize="22sp"
                 android:textStyle="bold"
-                android:onClick="onClick"
                 android:id="@+id/button_Pattern2"/>
 
             <Button
@@ -59,7 +67,6 @@
                 android:textColor="@color/UserChoice"
                 android:textSize="22sp"
                 android:textStyle="bold"
-                android:onClick="onClick"
                 android:id="@+id/button_Pattern3"/>
 
             <Button
@@ -70,7 +77,6 @@
                 android:textColor="@color/UserChoice"
                 android:textSize="22sp"
                 android:textStyle="bold"
-                android:onClick="onClick"
                 android:id="@+id/button_Pattern4"/>
 
             <Button
@@ -81,7 +87,6 @@
                 android:textColor="@color/UserChoice"
                 android:textSize="22sp"
                 android:textStyle="bold"
-                android:onClick="onClick"
                 android:id="@+id/button_Pattern5"/>
 
             <Button
@@ -92,7 +97,6 @@
                 android:textColor="@color/UserChoice"
                 android:textSize="22sp"
                 android:textStyle="bold"
-                android:onClick="onClick"
                 android:id="@+id/button_Pattern6"/>
 
             <Button
@@ -103,8 +107,27 @@
                 android:textColor="@color/UserChoice"
                 android:textSize="22sp"
                 android:textStyle="bold"
-                android:onClick="onClick"
                 android:id="@+id/button_Pattern7"/>
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:layout_marginTop="8dp"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="@color/Background2"
+                    android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+                    android:layout_alignParentEnd="true"
+                    android:textSize="23sp"
+                    android:textStyle="italic"
+                    android:text="Controls &gt;&gt;&gt;"
+                    android:clickable="true"
+                    android:id="@+id/text_GoToControls"/>
+
+            </RelativeLayout>
 
         </LinearLayout>
     </ScrollView>

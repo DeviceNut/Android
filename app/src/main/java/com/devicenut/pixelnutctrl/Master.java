@@ -2,6 +2,8 @@ package com.devicenut.pixelnutctrl;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.content.pm.ActivityInfo;
+import android.content.res.Configuration;
 import android.os.Build;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -22,17 +24,17 @@ import static com.devicenut.pixelnutctrl.Bluetooth.BLESTAT_DISCONNECTED;
 import static com.devicenut.pixelnutctrl.Main.CMD_BLUENAME;
 import static com.devicenut.pixelnutctrl.Main.CMD_PAUSE;
 import static com.devicenut.pixelnutctrl.Main.CMD_RESUME;
-import static com.devicenut.pixelnutctrl.Main.TITLE_NONAME;
-import static com.devicenut.pixelnutctrl.Main.TITLE_PIXELNUT;
 import static com.devicenut.pixelnutctrl.Main.ble;
 import static com.devicenut.pixelnutctrl.Main.devName;
 import static com.devicenut.pixelnutctrl.Main.doUpdate;
 import static com.devicenut.pixelnutctrl.Main.haveFavorites;
-import static com.devicenut.pixelnutctrl.Main.masterPager;
 import static com.devicenut.pixelnutctrl.Main.multiStrands;
 import static com.devicenut.pixelnutctrl.Main.numSegments;
+import static com.devicenut.pixelnutctrl.Main.pageControls;
+import static com.devicenut.pixelnutctrl.Main.pageFavorites;
+import static com.devicenut.pixelnutctrl.Main.masterPager;
 
-public class Master extends AppCompatActivity implements FragFavs.OnFragmentInteractionListener, FragCtrls.OnFragmentInteractionListener, Bluetooth.BleCallbacks
+class Master extends AppCompatActivity implements FragFavs.OnFragmentInteractionListener, FragCtrls.OnFragmentInteractionListener, Bluetooth.BleCallbacks
 {
     private final String LOGNAME = "Master";
     private final Activity context = this;
@@ -44,11 +46,11 @@ public class Master extends AppCompatActivity implements FragFavs.OnFragmentInte
 
     private TextView nameText;
     private Button pauseButton, helpButton;
-    private TextView helpText, helpTitle;
+    private TextView helpText;
     private ScrollView helpPage;
     private LinearLayout viewPager;
 
-    FragmentPagerAdapter adapterViewPager;
+    //private FragmentPagerAdapter adapterViewPager;
 
     @Override protected void onCreate(Bundle savedInstanceState)
     {
@@ -56,18 +58,54 @@ public class Master extends AppCompatActivity implements FragFavs.OnFragmentInte
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_master);
 
+        /*
+        if (savedInstanceState == null) {
+            TestFragment test = new TestFragment();
+            test.setArguments(getIntent().getExtras());
+            getSupportFragmentManager().beginTransaction().replace(android.R.id.content, test, "your_fragment_tag").commit();
+        } else {
+            TestFragment test = (TestFragment) getSupportFragmentManager().findFragmentByTag("your_fragment_tag");
+        }
+        */
+
+        /*
+        <com.devicenut.pixelnutctrl.MyPager
+            android:id="@+id/myViewPager"
+            android:layout_height="match_parent"
+            android:layout_width="match_parent" />
+
         masterPager = (MyPager)findViewById(R.id.myViewPager);
         adapterViewPager = new MasterAdapter(getSupportFragmentManager());
         masterPager.setAdapter(adapterViewPager);
-        //masterPager.setPagingEnabled(false);
+        */
 
         viewPager       = (LinearLayout) findViewById(R.id.ll_ViewPager);
         helpPage        = (ScrollView)   findViewById(R.id.ll_HelpPage);
         pauseButton     = (Button)       findViewById(R.id.button_Pause);
-        helpButton      = (Button)       findViewById(R.id.button_ControlsHelp);
-        helpTitle       = (TextView)     findViewById(R.id.view_HelpTitle);
+        helpButton      = (Button)       findViewById(R.id.button_HelpPage);
         helpText        = (TextView)     findViewById(R.id.view_HelpText);
         nameText        = (TextView)     findViewById(R.id.text_Devname);
+
+        if (haveFavorites)
+        {
+            pageFavorites = 0;
+            pageControls = 1;
+        }
+        else
+        {
+            pageFavorites = -1;
+            pageControls = 0;
+        }
+
+        if (!getResources().getBoolean(R.bool.portrait_only))
+        {
+            // display is large enough for 2 fragments at once
+            if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE)
+            {
+                // and currently in landscape mode, so display 2 fragments
+            }
+        }
+        else setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
     }
 
     @Override protected void onResume()
@@ -93,24 +131,9 @@ public class Master extends AppCompatActivity implements FragFavs.OnFragmentInte
         }
         else
         {
-            ble = new Bluetooth(this);
+            assert ble != null;
             ble.setCallbacks(this);
-
-            devName = ble.getCurDevName();
-            if ((devName == null) || (devName.length() < 3)) // have disconnected
-            {
-                Log.w(LOGNAME, "Lost connection (no device name)");
-                Toast.makeText(context, "Lost connection", Toast.LENGTH_SHORT).show();
-                onBackPressed();
-                return;
-            }
-
             isConnected = true;
-
-            if (devName.startsWith(TITLE_PIXELNUT))
-                 devName = devName.substring(2);
-            else devName = TITLE_NONAME;
-            Log.d(LOGNAME, "Device name=" + devName);
             devNameSaved = devName;
 
             // set pause button to correct state
@@ -149,7 +172,7 @@ public class Master extends AppCompatActivity implements FragFavs.OnFragmentInte
             if (numSegments > 1)
             {
                 if (multiStrands)
-                    str += getResources().getString(R.string.text_help_segs_physical);
+                     str += getResources().getString(R.string.text_help_segs_physical);
                 else str += getResources().getString(R.string.text_help_segs_logical);
             }
             helpText.setText(str + getResources().getString(R.string.text_help_tail));
@@ -252,6 +275,7 @@ public class Master extends AppCompatActivity implements FragFavs.OnFragmentInte
         SendString(str);
     }
 
+    /*
     public static class MasterAdapter extends FragmentPagerAdapter
     {
         private final String LOGNAME = "Master";
@@ -267,8 +291,8 @@ public class Master extends AppCompatActivity implements FragFavs.OnFragmentInte
         @Override public Fragment getItem(int position)
         {
             Log.d(LOGNAME, "Select fragment " + position);
-            if (position == 0) return (haveFavorites ? FragFavs.newInstance() : FragCtrls.newInstance());
-            if (position == 1) return FragCtrls.newInstance();
+            if (position == pageFavorites) return FragFavs.newInstance();
+            if (position == pageControls)  return FragCtrls.newInstance();
             return null;
         }
 
@@ -278,4 +302,5 @@ public class Master extends AppCompatActivity implements FragFavs.OnFragmentInte
             return "Page " + position;
         }
     }
+    */
 }

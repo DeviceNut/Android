@@ -130,7 +130,7 @@
                             android:background="@drawable/roundbutton"
                             android:text="&amp;"
                             android:textStyle="bold"
-                            android:textSize="22dp"
+                            android:textSize="22sp"
                             android:onClick="onClick"
                             android:visibility="gone"
                             android:id="@+id/button_SegAdd"/>
@@ -170,7 +170,7 @@
                             android:background="@drawable/roundbutton"
                             android:text="\?"
                             android:textStyle="bold"
-                            android:textSize="22dp"
+                            android:textSize="22sp"
                             android:onClick="onClick"
                             android:id="@+id/button_PatternHelp"/>
 
@@ -202,7 +202,7 @@
                         android:layout_marginBottom="10dp"
                         android:layout_marginLeft="10dp"
                         android:layout_marginRight="10dp"
-                        android:textSize="16dp"
+                        android:textSize="16sp"
                         android:textAppearance="@style/TextAppearance.AppCompat.Medium"
                         android:text="Description of pattern here..."
                         android:id="@+id/text_PatternHelp"/>
@@ -292,7 +292,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="vertical"
-                        android:id="@+id/ll_InnerControls">
+                        android:id="@+id/ll_MainControls">
 
                         <View style="@style/DividerHorz" />
 
@@ -325,7 +325,7 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:orientation="vertical"
-                            android:id="@+id/auto_Controls">
+                            android:id="@+id/ll_AutoControls">
 
                             <LinearLayout
                                 android:layout_width="match_parent"
@@ -394,7 +394,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="15dp"
                         android:orientation="vertical"
-                        android:id="@+id/trig_Controls">
+                        android:id="@+id/ll_TrigControls">
 
                         <View style="@style/DividerHorz" />
 
@@ -451,7 +451,39 @@
 
                 </LinearLayout>
             </LinearLayout>
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_marginTop="30dp"
+                android:layout_height="50dp"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="@color/Background2"
+                    android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+                    android:layout_alignParentStart="true"
+                    android:textSize="23sp"
+                    android:textStyle="italic"
+                    android:text="&lt;&lt;&lt; Favorites"
+                    android:clickable="true"
+                    android:id="@+id/text_GoToFavs"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="@color/Background2"
+                    android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+                    android:layout_alignParentEnd="true"
+                    android:textSize="23sp"
+                    android:textStyle="italic"
+                    android:text="Details &gt;&gt;&gt;"
+                    android:clickable="true"
+                    android:id="@+id/text_GoToDetails"/>
+
+            </RelativeLayout>
+
         </LinearLayout>
     </ScrollView>
-
 </LinearLayout>

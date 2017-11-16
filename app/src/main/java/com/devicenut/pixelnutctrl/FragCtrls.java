@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
 import android.util.Log;
@@ -32,7 +33,6 @@ import static com.devicenut.pixelnutctrl.Main.CMD_TRIGGER;
 import static com.devicenut.pixelnutctrl.Main.MAXVAL_HUE;
 import static com.devicenut.pixelnutctrl.Main.MAXVAL_PERCENT;
 import static com.devicenut.pixelnutctrl.Main.MAXVAL_WHT;
-import static com.devicenut.pixelnutctrl.Main.basicPatternsCount;
 import static com.devicenut.pixelnutctrl.Main.curBright;
 import static com.devicenut.pixelnutctrl.Main.curDelay;
 import static com.devicenut.pixelnutctrl.Main.curSegment;
@@ -40,10 +40,11 @@ import static com.devicenut.pixelnutctrl.Main.customPatterns;
 import static com.devicenut.pixelnutctrl.Main.devPatternBits;
 import static com.devicenut.pixelnutctrl.Main.devPatternCmds;
 import static com.devicenut.pixelnutctrl.Main.devPatternHelp;
-import static com.devicenut.pixelnutctrl.Main.devPatternNames;
+import static com.devicenut.pixelnutctrl.Main.initPatterns;
+import static com.devicenut.pixelnutctrl.Main.masterPager;
 import static com.devicenut.pixelnutctrl.Main.multiStrands;
-import static com.devicenut.pixelnutctrl.Main.numPatterns;
 import static com.devicenut.pixelnutctrl.Main.numSegments;
+import static com.devicenut.pixelnutctrl.Main.pageFavorites;
 import static com.devicenut.pixelnutctrl.Main.rangeDelay;
 import static com.devicenut.pixelnutctrl.Main.segPatterns;
 import static com.devicenut.pixelnutctrl.Main.segPosCount;
@@ -55,26 +56,25 @@ import static com.devicenut.pixelnutctrl.Main.segXmodeHue;
 import static com.devicenut.pixelnutctrl.Main.segXmodeWht;
 import static com.devicenut.pixelnutctrl.Main.stdPatternsCount;
 import static com.devicenut.pixelnutctrl.Main.useAdvPatterns;
+import static com.devicenut.pixelnutctrl.Main.patternNames;
+import static com.devicenut.pixelnutctrl.Main.listEnables;
+import static com.devicenut.pixelnutctrl.Main.mapIndexToPattern;
+import static com.devicenut.pixelnutctrl.Main.mapPatternToIndex;
 
 public class FragCtrls extends Fragment implements SeekBar.OnSeekBarChangeListener
 {
     private final String LOGNAME = "Controls";
-    private final Activity context = this.getActivity();
+    private Activity context;
 
-    private String[] patternNames;
-    private boolean[] listEnables;
-    private int[] mapPatternToIndex;
-    private int[] mapIndexToPattern;
-
-    private boolean sendEnable = false;
+    private int helpMode = 0;
     private boolean changePattern = true;
 
-    private Button segAddButton, triggerButton;
-    private Button helpButton, manualButton;
+    private LinearLayout llMainControls, llPatternHelp;
+    private LinearLayout llAutoControls, llPropColor, llPropWhite, llPropCount;
+    private LinearLayout llTrigControls, llTrigForce;
+
+    private Button segAddButton, helpButton, manualButton;
     private TextView helpText, textTrigger;
-    private LinearLayout innerControls, patternHelp;
-    private LinearLayout autoControls, llPropColor, llPropWhite, llPropCount;
-    private LinearLayout trigControls, llTrigForce;
     private Spinner selectPattern;
 
     private SeekBar seekBright, seekDelay;
@@ -93,8 +93,8 @@ public class FragCtrls extends Fragment implements SeekBar.OnSeekBarChangeListen
                     R.id.radio_5,
             };
 
-    private final RadioButton segRadioButtons[] = {};
-
+    private RadioButton segRadioButtons[];
+            
     private OnFragmentInteractionListener mListener;
 
     public interface OnFragmentInteractionListener
@@ -121,18 +121,22 @@ public class FragCtrls extends Fragment implements SeekBar.OnSeekBarChangeListen
     @Override public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
     {
         Log.d(LOGNAME, ">>onCreateView");
+        context = this.getActivity(); // not valid until now
+
         View v = inflater.inflate(R.layout.fragment_ctrls, container, false);
 
-        innerControls   = (LinearLayout) v.findViewById(R.id.ll_InnerControls);
-        patternHelp     = (LinearLayout) v.findViewById(R.id.ll_PatternHelp);
-        autoControls    = (LinearLayout) v.findViewById(R.id.auto_Controls);
-        llPropColor     = (LinearLayout) v.findViewById(R.id.ll_PropColor);
-        llPropWhite     = (LinearLayout) v.findViewById(R.id.ll_PropWhite);
-        llPropCount     = (LinearLayout) v.findViewById(R.id.ll_PropCount);
-        trigControls    = (LinearLayout) v.findViewById(R.id.trig_Controls);
-        llTrigForce     = (LinearLayout) v.findViewById(R.id.ll_TrigForce);
-        textTrigger     = (TextView)     v.findViewById(R.id.text_Trigger);
-        helpText        = (TextView)     v.findViewById(R.id.text_PatternHelp);
+        llPatternHelp  = (LinearLayout) v.findViewById(R.id.ll_PatternHelp);
+        llMainControls = (LinearLayout) v.findViewById(R.id.ll_MainControls);
+        llAutoControls = (LinearLayout) v.findViewById(R.id.ll_AutoControls);
+        llPropColor    = (LinearLayout) v.findViewById(R.id.ll_PropColor);
+        llPropWhite    = (LinearLayout) v.findViewById(R.id.ll_PropWhite);
+        llPropCount    = (LinearLayout) v.findViewById(R.id.ll_PropCount);
+        llTrigControls = (LinearLayout) v.findViewById(R.id.ll_TrigControls);
+        llTrigForce    = (LinearLayout) v.findViewById(R.id.ll_TrigForce);
+
+        selectPattern = (Spinner)  v.findViewById(R.id.spinner_Pattern);
+        textTrigger   = (TextView) v.findViewById(R.id.text_Trigger);
+        helpText      = (TextView) v.findViewById(R.id.text_PatternHelp);
 
         seekBright    = (SeekBar) v.findViewById(R.id.seek_Bright);
         seekDelay     = (SeekBar) v.findViewById(R.id.seek_Delay);
@@ -152,19 +156,65 @@ public class FragCtrls extends Fragment implements SeekBar.OnSeekBarChangeListen
         if (useAdvPatterns) manualButton.setOnClickListener(mClicker);
         else manualButton.setVisibility(GONE);
 
-        segAddButton  = (Button)v.findViewById(R.id.button_SegAdd);
-        helpButton    = (Button)v.findViewById(R.id.button_PatternHelp);
-        triggerButton = (Button)v.findViewById(R.id.button_TrigAction);
-
+        segAddButton = (Button)v.findViewById(R.id.button_SegAdd);
         segAddButton.setOnClickListener(mClicker);
+
+        helpButton = (Button)v.findViewById(R.id.button_PatternHelp);
         helpButton.setOnClickListener(mClicker);
+
+        Button triggerButton = (Button)v.findViewById(R.id.button_TrigAction);
         triggerButton.setOnClickListener(mClicker);
 
+        (v.findViewById(R.id.text_GoToFavs)).setOnClickListener(mClicker);
+        (v.findViewById(R.id.text_GoToDetails)).setOnClickListener(mClicker);
+
+        segRadioButtons = new RadioButton[ segRadioIds.length ];
         for (int i = 0; i < segRadioIds.length; ++i)
             segRadioButtons[i] = (RadioButton)v.findViewById(segRadioIds[i]);
 
-        curSegment = 0; // always start with first segment
-        SetupSegments();
+        LinearLayout llSelectSegs = (LinearLayout) v.findViewById(R.id.ll_SelectSegments);
+        if (numSegments > 1)
+        {
+            llSelectSegs.setVisibility(VISIBLE);
+            if (multiStrands) segAddButton.setVisibility(VISIBLE);
+
+            for (int i = 0; i < numSegments; ++i)
+            {
+                RadioButton b = segRadioButtons[i];
+                b.setVisibility(VISIBLE);
+                b.setEnabled(true);
+                b.setFocusable(true);
+                b.setClickable(true);
+
+                if (i == curSegment)
+                {
+                    b.setChecked(true);
+                    segEnables[i] = true;
+                }
+                else
+                {
+                    b.setChecked(false);
+                    segEnables[i] = false;
+                }
+            }
+
+            useSegEnables = false;
+        }
+        else llSelectSegs.setVisibility(GONE);
+
+        if (initPatterns && multiStrands) // initialize all of physical strands
+        {
+            changePattern = false; // already setup all the segments
+        }
+        else
+        {
+            changePattern = initPatterns;
+            if (changePattern) Log.d(LOGNAME, "Initializing: pattern=" + segPatterns[curSegment]);
+        }
+
+        SetupSpinnerLayout();   // create spinner layout
+        SelectPattern();        // select the pattern to be displayed
+        SetupControls();        // set control positions without sending commands
 
         return v;
     }
@@ -183,67 +233,9 @@ public class FragCtrls extends Fragment implements SeekBar.OnSeekBarChangeListen
         mListener = null;
     }
 
-    private void CreatePatternArrays()
-    {
-        int j = 0;
-        int extra = (customPatterns > 0) ? 1 : 0;
-        if (stdPatternsCount > 0) extra += 2;
-        if ((customPatterns == 0) && !useAdvPatterns)
-        {
-            extra = 0;
-            numPatterns = basicPatternsCount;
-        }
-        patternNames = new String[numPatterns + extra];
-        listEnables = new boolean[numPatterns + extra];
-        mapIndexToPattern = new int[numPatterns + extra];
-        mapPatternToIndex = new int[numPatterns];
-
-        if (customPatterns > 0)
-        {
-            patternNames[j] = "Custom Patterns";
-            listEnables[j] = false;
-            mapIndexToPattern[j] = 0;
-            ++j;
-        }
-        else if (useAdvPatterns)
-        {
-            patternNames[j] = "Basic Patterns";
-            listEnables[j] = false;
-            mapIndexToPattern[j] = 0;
-            ++j;
-        }
-
-        for (int i = 0; i < numPatterns; ++i)
-        {
-            if ((i > 0) && (i == customPatterns) && useAdvPatterns)
-            {
-                patternNames[j] = "Basic Patterns";
-                listEnables[j] = false;
-                mapIndexToPattern[j] = 0;
-                ++j;
-            }
-
-            if ((i > customPatterns) && (i == basicPatternsCount) && useAdvPatterns)
-            {
-                patternNames[j] = "Advanced Patterns";
-                listEnables[j] = false;
-                mapIndexToPattern[j] = 0;
-                ++j;
-            }
-
-            Log.v(LOGNAME, "Adding pattern i=" + i + " j=" + j + " => " + devPatternNames[i]);
-
-            patternNames[j] = devPatternNames[i];
-            listEnables[j] = true;
-            mapIndexToPattern[j] = i;
-            mapPatternToIndex[i] = j;
-            ++j;
-        }
-    }
-
     private void SetupSpinnerLayout()
     {
-        ArrayAdapter<String> spinnerArrayAdapter = new ArrayAdapter<String>(this, R.layout.layout_spinner, patternNames)
+        ArrayAdapter<String> spinnerArrayAdapter = new ArrayAdapter<String>(context, R.layout.layout_spinner, patternNames)
         {
             @Override public boolean isEnabled(int position)
             {
@@ -255,7 +247,7 @@ public class FragCtrls extends Fragment implements SeekBar.OnSeekBarChangeListen
                 return ((customPatterns == 0) || (stdPatternsCount == 0));
             }
 
-            @Override public View getDropDownView(int position, View convertView, ViewGroup parent)
+            @Override public View getDropDownView(int position, View convertView, @NonNull ViewGroup parent)
             {
                 View v = convertView;
                 if (v == null)
@@ -370,9 +362,21 @@ public class FragCtrls extends Fragment implements SeekBar.OnSeekBarChangeListen
             @Override public void onNothingSelected(AdapterView<?> parent) {}
         };
 
-        selectPattern = (Spinner) findViewById(R.id.spinner_Pattern);
         selectPattern.setAdapter(spinnerArrayAdapter);
         selectPattern.setOnItemSelectedListener(patternListener);
+    }
+
+    private void SelectPattern()
+    {
+        selectPattern.setSelection(mapPatternToIndex[segPatterns[curSegment]], false);
+        // changePattern doesn't get reset if the pattern didn't change (same for both segments)
+        // and since the selection is asynchronous, we cannot just set it after this call, and
+        // if we don't reset it you cannot ever change the pattern again, so post a call to do it
+        selectPattern.post(new Runnable() { @Override public void run()
+        {
+            //Log.v(LOGNAME, "Resetting 'changePattern' here, value=" + changePattern);
+            changePattern = true;
+        }});
     }
 
     private void SetPatternHelp(boolean toggle, int pattern)
@@ -380,13 +384,13 @@ public class FragCtrls extends Fragment implements SeekBar.OnSeekBarChangeListen
         //Log.d(LOGNAME, "PatternHelp: toggle=" + toggle + " pattern=" + pattern);
         if ((helpMode > 0) && toggle)
         {
-            helpButton2.setText("?");
-            patternHelp.setVisibility(GONE);
+            helpButton.setText("?");
+            llPatternHelp.setVisibility(GONE);
             helpMode = 0;
         }
         else
         {
-            patternHelp.setVisibility(VISIBLE);
+            llPatternHelp.setVisibility(VISIBLE);
             helpButton.setText("x");
             helpText.setText( devPatternHelp[pattern]);
             helpMode = pattern+1;
@@ -395,8 +399,6 @@ public class FragCtrls extends Fragment implements SeekBar.OnSeekBarChangeListen
 
     private void SetupControls()
     {
-        sendEnable = false; // prevent following from writing commands
-
         int index = multiStrands ? curSegment : 0;
         seekBright.setProgress(curBright[index]);
         seekDelay.setProgress(((rangeDelay - curDelay[index]) * MAXVAL_PERCENT) / (rangeDelay + rangeDelay));
@@ -405,11 +407,11 @@ public class FragCtrls extends Fragment implements SeekBar.OnSeekBarChangeListen
 
         if ((bits & 0x07) != 0) // enable properties
         {
-            innerControls.setVisibility(VISIBLE);
+            llMainControls.setVisibility(VISIBLE);
 
             if (segXmodeEnb[curSegment])
             {
-                autoControls.setVisibility(VISIBLE);
+                llAutoControls.setVisibility(VISIBLE);
                 manualButton.setText(getResources().getString(R.string.name_disable));
 
                 llPropColor.setVisibility(((bits & 1) != 0) ? VISIBLE : GONE);
@@ -423,14 +425,14 @@ public class FragCtrls extends Fragment implements SeekBar.OnSeekBarChangeListen
             else
             {
                 manualButton.setText(getResources().getString(R.string.name_enable));
-                autoControls.setVisibility(GONE);
+                llAutoControls.setVisibility(GONE);
             }
         }
-        else innerControls.setVisibility(GONE);
+        else llMainControls.setVisibility(GONE);
 
         if ((bits & 0x10) != 0) // enable triggering
         {
-            trigControls.setVisibility(VISIBLE);
+            llTrigControls.setVisibility(VISIBLE);
 
             if ((bits & 0x20) != 0) // enable force control
             {
@@ -444,50 +446,7 @@ public class FragCtrls extends Fragment implements SeekBar.OnSeekBarChangeListen
                 textTrigger.setText(getResources().getString(R.string.title_dotrigger));
             }
         }
-        else trigControls.setVisibility(GONE);
-
-        sendEnable = true; // allow controls to work now
-    }
-
-    private void SetupSegments()
-    {
-        LinearLayout ll = (LinearLayout) findViewById(R.id.ll_SelectSegments);
-        if (numSegments > 1)
-        {
-            ll.setVisibility(VISIBLE);
-            if (multiStrands) segAddButton.setVisibility(VISIBLE);
-
-            for (int i = 0; i < numSegments; ++i)
-            {
-                RadioButton b = segRadioButtons[i];
-                b.setVisibility(VISIBLE);
-                b.setEnabled(true);
-                b.setFocusable(true);
-                b.setClickable(true);
-
-                if (i == curSegment)
-                {
-                    b.setChecked(true);
-                    segEnables[i] = true;
-                }
-                else
-                {
-                    b.setChecked(false);
-                    segEnables[i] = false;
-                }
-            }
-
-            useSegEnables = false;
-        }
-        else ll.setVisibility(GONE);
-
-        /* debug: show all segment buttons
-        for (int i = 0; i < segRadioIds.length; ++i)
-        {
-            RadioButton b = (RadioButton) findViewById(segRadioIds[i]);
-            b.setVisibility(VISIBLE);
-        }
-        */
+        else llTrigControls.setVisibility(GONE);
     }
 
     private void SetSegment(int index)
@@ -534,7 +493,7 @@ public class FragCtrls extends Fragment implements SeekBar.OnSeekBarChangeListen
 
                 // change properties:
                 if (segXmodeEnb[index])
-                    SendString(CMD_EXTMODE + "1");
+                     SendString(CMD_EXTMODE + "1");
                 else SendString(CMD_EXTMODE + "0");
                 SendString(CMD_PROPVALS + segXmodeHue[index] + " " + segXmodeWht[index] + " " + segXmodeCnt[index]);
 
@@ -572,96 +531,18 @@ public class FragCtrls extends Fragment implements SeekBar.OnSeekBarChangeListen
         }
     }
 
-    public void SelectPattern()
-    {
-        selectPattern.setSelection(mapPatternToIndex[segPatterns[curSegment]], false);
-        // changePattern doesn't get reset if the pattern didn't change (same for both segments)
-        // and since the selection is asynchronous, we cannot just set it after this call, and
-        // if we don't reset it you cannot ever change the pattern again, so post a call to do it
-        selectPattern.post(new Runnable() { @Override public void run()
-        {
-            //Log.v(LOGNAME, "Resetting 'changePattern' here, value=" + changePattern);
-            changePattern = true;
-        }});
-    }
-
     private void SendString(String str)
     {
         if (mListener != null)
             mListener.onFragmentInteraction(str);
     }
 
-    View.OnClickListener mClicker = new View.OnClickListener()
+    private final View.OnClickListener mClicker = new View.OnClickListener()
     {
         @Override public void onClick(View v)
         {
             switch (v.getId())
             {
-                case R.id.button_PatternHelp:
-                {
-                    SetPatternHelp(true, segPatterns[curSegment]);
-                    break;
-                }
-                case R.id.button_AutoProp:
-                {
-                    boolean enable = !segXmodeEnb[curSegment];
-                    Log.d(LOGNAME, "AutoProps: enable=" + enable);
-
-                    if (useSegEnables)
-                    {
-                        for (int i = 0; i < numSegments; ++i)
-                        {
-                            if (segEnables[i])
-                            {
-                                int seg = i+1;
-                                SendString(CMD_SEGS_ENABLE + seg);
-
-                                segXmodeEnb[i] = enable;
-                                if (enable)
-                                    SendString(CMD_EXTMODE + "1");
-                                else SendString(CMD_EXTMODE + "0");
-                            }
-                        }
-
-                        int seg = curSegment+1;
-                        SendString(CMD_SEGS_ENABLE + seg);
-                    }
-                    else
-                    {
-                        segXmodeEnb[curSegment] = enable;
-                        if (enable)
-                            SendString(CMD_EXTMODE + "1");
-                        else SendString(CMD_EXTMODE + "0");
-                    }
-
-                    SetupControls();    // set control positions without sending commands
-                    break;
-                }
-                case R.id.button_TrigAction:
-                {
-                    if (useSegEnables)
-                    {
-                        for (int i = 0; i < numSegments; ++i)
-                        {
-                            if (segEnables[i])
-                            {
-                                int seg = i+1;
-                                SendString(CMD_SEGS_ENABLE + seg);
-
-                                if ((devPatternBits[segPatterns[i]] & 0x20) != 0)
-                                    SendString(CMD_TRIGGER + segTrigForce[i]);
-                                else SendString(CMD_TRIGGER + 0);
-                            }
-                        }
-
-                        int seg = curSegment+1;
-                        SendString(CMD_SEGS_ENABLE + seg);
-                    }
-                    else if ((devPatternBits[segPatterns[curSegment]] & 0x20) != 0)
-                        SendString(CMD_TRIGGER + segTrigForce[curSegment]);
-                    else SendString(CMD_TRIGGER + 0);
-                    break;
-                }
                 case R.id.button_SegAdd:
                 {
                     useSegEnables = !useSegEnables;
@@ -694,6 +575,81 @@ public class FragCtrls extends Fragment implements SeekBar.OnSeekBarChangeListen
                     SetSegment(4);
                     break;
                 }
+                case R.id.button_PatternHelp:
+                {
+                    SetPatternHelp(true, segPatterns[curSegment]);
+                    break;
+                }
+                case R.id.button_AutoProp:
+                {
+                    boolean enable = !segXmodeEnb[curSegment];
+                    Log.d(LOGNAME, "AutoProps: enable=" + enable);
+
+                    if (useSegEnables)
+                    {
+                        for (int i = 0; i < numSegments; ++i)
+                        {
+                            if (segEnables[i])
+                            {
+                                int seg = i+1;
+                                SendString(CMD_SEGS_ENABLE + seg);
+
+                                segXmodeEnb[i] = enable;
+                                if (enable)
+                                     SendString(CMD_EXTMODE + "1");
+                                else SendString(CMD_EXTMODE + "0");
+                            }
+                        }
+
+                        int seg = curSegment+1;
+                        SendString(CMD_SEGS_ENABLE + seg);
+                    }
+                    else
+                    {
+                        segXmodeEnb[curSegment] = enable;
+                        if (enable)
+                             SendString(CMD_EXTMODE + "1");
+                        else SendString(CMD_EXTMODE + "0");
+                    }
+
+                    SetupControls(); // set control positions without sending commands
+                    break;
+                }
+                case R.id.button_TrigAction:
+                {
+                    if (useSegEnables)
+                    {
+                        for (int i = 0; i < numSegments; ++i)
+                        {
+                            if (segEnables[i])
+                            {
+                                int seg = i+1;
+                                SendString(CMD_SEGS_ENABLE + seg);
+
+                                if ((devPatternBits[segPatterns[i]] & 0x20) != 0)
+                                     SendString(CMD_TRIGGER + segTrigForce[i]);
+                                else SendString(CMD_TRIGGER + 0);
+                            }
+                        }
+
+                        int seg = curSegment+1;
+                        SendString(CMD_SEGS_ENABLE + seg);
+                    }
+                    else if ((devPatternBits[segPatterns[curSegment]] & 0x20) != 0)
+                         SendString(CMD_TRIGGER + segTrigForce[curSegment]);
+                    else SendString(CMD_TRIGGER + 0);
+                    break;
+                }
+                case R.id.text_GoToFavs:
+                {
+                    if (pageFavorites >= 0)
+                        masterPager.setCurrentItem(pageFavorites);
+                    break;
+                }
+                case R.id.text_GoToDetails:
+                {
+                    break;
+                }
             }
         }
     };
@@ -717,7 +673,7 @@ public class FragCtrls extends Fragment implements SeekBar.OnSeekBarChangeListen
 
     @Override public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser)
     {
-        switch (seekBar.getId())
+        if (fromUser) switch (seekBar.getId()) // ignore when setting initial values
         {
             case R.id.seek_Bright:
             {
@@ -794,6 +750,7 @@ public class FragCtrls extends Fragment implements SeekBar.OnSeekBarChangeListen
                 }
                 else
                 {
+                    Log.v(LOGNAME, "PropColor!");
                     segXmodeHue[curSegment] = (progress * MAXVAL_HUE) / MAXVAL_PERCENT;
                     SendString(CMD_PROPVALS + segXmodeHue[curSegment] + " " + segXmodeWht[curSegment] + " " + segXmodeCnt[curSegment]);
                 }
@@ -820,6 +777,7 @@ public class FragCtrls extends Fragment implements SeekBar.OnSeekBarChangeListen
                 }
                 else
                 {
+                    Log.v(LOGNAME, "PropWhite!");
                     segXmodeWht[curSegment] = (progress * MAXVAL_WHT) / MAXVAL_PERCENT;
                     SendString(CMD_PROPVALS + segXmodeHue[curSegment] + " " + segXmodeWht[curSegment] + " " + segXmodeCnt[curSegment]);
                 }
@@ -846,6 +804,7 @@ public class FragCtrls extends Fragment implements SeekBar.OnSeekBarChangeListen
                 }
                 else
                 {
+                    Log.v(LOGNAME, "PropCount!");
                     segXmodeCnt[curSegment] = progress;
                     SendString(CMD_PROPVALS + segXmodeHue[curSegment] + " " + segXmodeWht[curSegment] + " " + segXmodeCnt[curSegment]);
                 }
