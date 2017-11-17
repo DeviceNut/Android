@@ -123,7 +123,6 @@
             android:layout_marginTop="10dp"
             android:layout_marginLeft="@dimen/activity_horizontal_margin"
             android:layout_marginRight="@dimen/activity_horizontal_margin"
-            android:background="@color/Background"
             android:id="@+id/layout_Devices">
 
             <TextView

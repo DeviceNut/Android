@@ -4,7 +4,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentTransaction;
+import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -17,16 +17,14 @@ import static com.devicenut.pixelnutctrl.Main.CMD_SEGS_ENABLE;
 import static com.devicenut.pixelnutctrl.Main.CMD_START_END;
 import static com.devicenut.pixelnutctrl.Main.advPatternNames;
 import static com.devicenut.pixelnutctrl.Main.basicPatternsCount;
+import static com.devicenut.pixelnutctrl.Main.curFavorite;
 import static com.devicenut.pixelnutctrl.Main.devPatternCmds;
 import static com.devicenut.pixelnutctrl.Main.numSegments;
 import static com.devicenut.pixelnutctrl.Main.numsFavorites;
-import static com.devicenut.pixelnutctrl.Main.masterPager;
-import static com.devicenut.pixelnutctrl.Main.pageControls;
 
 public class FragFavs extends Fragment
 {
     private final String LOGNAME = "Favorites";
-    private final int numButtons = 7;
     private Activity context;
 
     private final int[] idsButton =
@@ -39,6 +37,7 @@ public class FragFavs extends Fragment
                     R.id.button_Pattern6,
                     R.id.button_Pattern7,
             };
+    private Button[] objsButton;
 
     private FragListen mListener;
 
@@ -58,14 +57,14 @@ public class FragFavs extends Fragment
 
         View v = inflater.inflate(R.layout.fragment_favs, container, false);
 
-        for (int i = 0; i < numButtons; ++i)
+        objsButton = new Button[idsButton.length];
+        for (int i = 0; i < idsButton.length; ++i)
         {
             Button b = (Button)v.findViewById(idsButton[i]);
             b.setText(advPatternNames[numsFavorites[i]]);
             b.setOnClickListener(mClicker);
+            objsButton[i] = b;
         }
-
-        //FIXME (v.findViewById(R.id.text_GoToControls)).setOnClickListener(mClicker);
 
         return v;
     }
@@ -94,10 +93,12 @@ public class FragFavs extends Fragment
 
     private void SendPattern(int id)
     {
-        for (int i = 0; i < numButtons; ++i)
+        for (int i = 0; i < idsButton.length; ++i)
         {
             if (id == idsButton[i])
             {
+                if (curFavorite == i) break;
+
                 int num = numsFavorites[i] + basicPatternsCount + 1;
                 for (int seg = 1; seg <= numSegments; ++seg)
                 {
@@ -105,6 +106,17 @@ public class FragFavs extends Fragment
                     SendString(CMD_EXTMODE + "0"); // turn off external properties mode
                     SendSegPat(num);
                 }
+
+                //if (curFavorite >= 0) objsButton[curFavorite].setBackgroundColor(ContextCompat.getColor(context, R.color.ThemeBackground));
+                //objsButton[i].setBackgroundColor(ContextCompat.getColor(context, R.color.Background2));
+                if (curFavorite >= 0)
+                {
+                    objsButton[curFavorite].setText(advPatternNames[numsFavorites[curFavorite]]);
+                    objsButton[curFavorite].setTextColor(ContextCompat.getColor(context, R.color.UserChoice));
+                }
+                objsButton[i].setText(">>> " + advPatternNames[numsFavorites[i]] + " <<<");
+                objsButton[i].setTextColor(ContextCompat.getColor(context, R.color.HighLight));
+                curFavorite = i;
                 break;
             }
         }
@@ -125,27 +137,3 @@ public class FragFavs extends Fragment
             mListener.onDeviceCmdSend(str);
     }
 }
-
-/*
-            <RelativeLayout
-                android:layout_width="match_parent"
-                android:layout_height="50dp"
-                android:layout_marginTop="8dp"
-                android:orientation="horizontal">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:background="@color/Background2"
-                    android:textAppearance="@style/TextAppearance.AppCompat.Medium"
-                    android:layout_alignParentEnd="true"
-                    android:textSize="23sp"
-                    android:textStyle="italic"
-                    android:text="Controls &gt;&gt;&gt;"
-                    android:clickable="true"
-                    android:id="@+id/text_GoToControls"/>
-
-            </RelativeLayout>
-
-
- */

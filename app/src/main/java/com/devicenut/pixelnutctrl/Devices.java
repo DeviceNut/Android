@@ -311,7 +311,6 @@ public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
             buttonScan.setText(getResources().getString(R.string.name_scan));
         }
 
-        buttonScan.setTextColor(ContextCompat.getColor(context, R.color.UserChoice));
         buttonScan.setEnabled(true);
 
         didFail = false;

@@ -37,8 +37,6 @@ public class Main extends Application
     static final int ADDLEN_CMDSTR_PERSEG    = 50;      // additional length of command/pattern string per additional segment,
     // otherwise will not be able to use the advanced patterns
 
-    static final int[] numsFavorites = {0, 4, 5, 6, 8, 10, 11};
-
     static final String[] basicPatternHelp =
             {
                     "A solid color which can be modified with the ColorHue and Whiteness properties.",
@@ -246,6 +244,9 @@ public class Main extends Application
     static boolean[] listEnables;
     static int[] mapPatternToIndex;
     static int[] mapIndexToPattern;
+
+    static int[] numsFavorites = {0, 4, 5, 6, 8, 10, 11};
+    static int curFavorite = -1;
 
     static Context appContext;
     @Override public void onCreate()

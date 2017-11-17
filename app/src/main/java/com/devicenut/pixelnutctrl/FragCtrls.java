@@ -41,10 +41,8 @@ import static com.devicenut.pixelnutctrl.Main.devPatternBits;
 import static com.devicenut.pixelnutctrl.Main.devPatternCmds;
 import static com.devicenut.pixelnutctrl.Main.devPatternHelp;
 import static com.devicenut.pixelnutctrl.Main.initPatterns;
-import static com.devicenut.pixelnutctrl.Main.masterPager;
 import static com.devicenut.pixelnutctrl.Main.multiStrands;
 import static com.devicenut.pixelnutctrl.Main.numSegments;
-import static com.devicenut.pixelnutctrl.Main.pageFavorites;
 import static com.devicenut.pixelnutctrl.Main.rangeDelay;
 import static com.devicenut.pixelnutctrl.Main.segPatterns;
 import static com.devicenut.pixelnutctrl.Main.segPosCount;
@@ -153,9 +151,6 @@ public class FragCtrls extends Fragment implements SeekBar.OnSeekBarChangeListen
         Button triggerButton = (Button)v.findViewById(R.id.button_TrigAction);
         triggerButton.setOnClickListener(mClicker);
 
-        //(v.findViewById(R.id.text_GoToFavs)).setOnClickListener(mClicker);
-        //FIXME (v.findViewById(R.id.text_GoToDetails)).setOnClickListener(mClicker);
-
         segRadioButtons = new RadioButton[ segRadioIds.length ];
         for (int i = 0; i < segRadioIds.length; ++i)
             segRadioButtons[i] = (RadioButton)v.findViewById(segRadioIds[i]);
@@ -198,6 +193,7 @@ public class FragCtrls extends Fragment implements SeekBar.OnSeekBarChangeListen
         {
             changePattern = initPatterns;
             if (changePattern) Log.d(LOGNAME, "Initializing: pattern=" + segPatterns[curSegment]);
+            initPatterns = false;
         }
 
         SetupSpinnerLayout();   // create spinner layout
@@ -804,40 +800,3 @@ public class FragCtrls extends Fragment implements SeekBar.OnSeekBarChangeListen
         }
     }
 }
-
-/*
-            <RelativeLayout
-                android:layout_width="match_parent"
-                android:layout_marginTop="30dp"
-                android:layout_height="50dp"
-                android:layout_alignParentEnd="true"
-                android:orientation="horizontal">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:background="@color/Background2"
-                    android:textAppearance="@style/TextAppearance.AppCompat.Medium"
-                    android:layout_alignParentStart="true"
-                    android:textSize="23sp"
-                    android:textStyle="italic"
-                    android:text="&lt;&lt;&lt; Favorites"
-                    android:clickable="true"
-                    android:id="@+id/text_GoToFavs"/>
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:background="@color/Background2"
-                    android:textAppearance="@style/TextAppearance.AppCompat.Medium"
-                    android:layout_alignParentEnd="true"
-                    android:textSize="23sp"
-                    android:textStyle="italic"
-                    android:text="Details &gt;&gt;&gt;"
-                    android:clickable="true"
-                    android:id="@+id/text_GoToDetails"/>
-
-            </RelativeLayout>
-
-
- */

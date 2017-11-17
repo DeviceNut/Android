@@ -357,7 +357,7 @@ public class Master extends AppCompatActivity implements FragListen, Bluetooth.B
             return null;
         }
 
-        @Override public CharSequence getPageTitle(int position)
+        @Override public CharSequence getPageTitle(int position) // never see this called!
         {
             Log.d(LOGNAME, "Fragment Page " + position);
             return "Page " + position;
@@ -365,7 +365,7 @@ public class Master extends AppCompatActivity implements FragListen, Bluetooth.B
 
         @Override public float getPageWidth(int position)
         {
-            Log.d(LOGNAME, "GetPageWidth: landscape=" + inLandscape);
+            //Log.d(LOGNAME, "GetPageWidth: landscape=" + inLandscape);
             return( inLandscape ? 0.5f : 1.0f );
         }
     }
