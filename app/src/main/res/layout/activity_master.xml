@@ -2,14 +2,14 @@
 <RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/activity_master"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:paddingLeft="0dp"
     android:paddingRight="0dp"
     android:paddingTop="0dp"
-    android:orientation="vertical"
+    android:paddingBottom="0dp"
     android:background="@color/Background"
+    android:orientation="vertical"
     tools:context=".Master">
 
     <LinearLayout
@@ -123,7 +123,6 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:visibility="visible"
             android:orientation="vertical"
             android:id="@+id/ll_ViewPages">
 
@@ -137,7 +136,7 @@
 
     <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="50dp"
+        android:layout_height="33dp"
         android:layout_alignParentBottom="true"
         android:orientation="horizontal">
 
@@ -147,9 +146,9 @@
             android:background="@color/Background2"
             android:textAppearance="@style/TextAppearance.AppCompat.Medium"
             android:layout_alignParentStart="true"
+            android:layout_marginLeft="5dp"
             android:textSize="23sp"
             android:textStyle="italic"
-            android:text="&lt;&lt;&lt; Favorites"
             android:onClick="onClick"
             android:id="@+id/text_GoLeft"/>
 
@@ -159,9 +158,9 @@
             android:background="@color/Background2"
             android:textAppearance="@style/TextAppearance.AppCompat.Medium"
             android:layout_alignParentEnd="true"
+            android:layout_marginRight="5dp"
             android:textSize="23sp"
             android:textStyle="italic"
-            android:text="Details &gt;&gt;&gt;"
             android:onClick="onClick"
             android:id="@+id/text_GoRight"/>
 

@@ -13,17 +13,14 @@ import static com.devicenut.pixelnutctrl.Main.MAXVAL_WHT;
 import static com.devicenut.pixelnutctrl.Main.MINLEN_CMDSTR;
 import static com.devicenut.pixelnutctrl.Main.MINLEN_SEGLEN_FORADV;
 import static com.devicenut.pixelnutctrl.Main.TITLE_PIXELNUT;
-import static com.devicenut.pixelnutctrl.Main.advPatternBits;
-import static com.devicenut.pixelnutctrl.Main.advPatternCmds;
-import static com.devicenut.pixelnutctrl.Main.advPatternHelp;
-import static com.devicenut.pixelnutctrl.Main.advPatternNames;
 import static com.devicenut.pixelnutctrl.Main.advPatternsCount;
-import static com.devicenut.pixelnutctrl.Main.basicPatternBits;
-import static com.devicenut.pixelnutctrl.Main.basicPatternCmds;
-import static com.devicenut.pixelnutctrl.Main.basicPatternHelp;
-import static com.devicenut.pixelnutctrl.Main.basicPatternNames;
 import static com.devicenut.pixelnutctrl.Main.basicPatternsCount;
-import static com.devicenut.pixelnutctrl.Main.stdPatternsCount;
+import static com.devicenut.pixelnutctrl.Main.devPatternBits_Custom;
+import static com.devicenut.pixelnutctrl.Main.devPatternCmds_Custom;
+import static com.devicenut.pixelnutctrl.Main.devPatternHelp_Custom;
+import static com.devicenut.pixelnutctrl.Main.devPatternNames_Custom;
+import static com.devicenut.pixelnutctrl.Main.haveBasicSegs;
+import static com.devicenut.pixelnutctrl.Main.segBasicOnly;
 import static com.devicenut.pixelnutctrl.Main.curBright;
 import static com.devicenut.pixelnutctrl.Main.curDelay;
 import static com.devicenut.pixelnutctrl.Main.customPatterns;
@@ -128,6 +125,7 @@ class ReplyStrs
                         segPixels[j] = val1;
                         segLayers[j] = val2;
                         segTracks[j] = val3;
+                        segBasicOnly[j] = false;
 
                         if (!CheckValue(segPixels[j], 1, 0) ||
                             !CheckValue(segLayers[j], 2, 0) ||
@@ -141,6 +139,7 @@ class ReplyStrs
                                 segPixels[j] = val1;
                                 segLayers[j] = val2;
                                 segTracks[j] = val3;
+                                segBasicOnly[j] = false;
                             }
                             break;
                         }
@@ -163,13 +162,11 @@ class ReplyStrs
                         // if any segment is very short then just use basic patterns
                         if (val2 < MINLEN_SEGLEN_FORADV)
                         {
-                            Log.w(LOGNAME, "Disabling advanced patterns: short segment(s)");
-                            useAdvPatterns = false;
-                            initPatterns = true; // trigger sending initial pattern to device
-                            stdPatternsCount = basicPatternsCount;
-                            numPatterns = customPatterns + stdPatternsCount;
-                            Log.w(LOGNAME, ">> Adjusting total patterns=" + numPatterns);
+                            Log.w(LOGNAME, "No advanced patterns for segment=" + j);
+                            segBasicOnly[j] = true;
+                            haveBasicSegs = true;
                         }
+                        else segBasicOnly[j] = false;
                     }
                 }
             }
@@ -227,12 +224,12 @@ class ReplyStrs
             {
                 int line = ((replyState-1) % 3);
 
-                     if (line == 0) devPatternNames[index] = reply;
-                else if (line == 1) devPatternHelp[index] = reply.replace('\t', '\n');
+                     if (line == 0) devPatternNames_Custom[index] = reply;
+                else if (line == 1) devPatternHelp_Custom[index] = reply.replace('\t', '\n');
                 else
                 {
-                    devPatternCmds[index] = reply;
-                    devPatternBits[index] = 0;
+                    devPatternCmds_Custom[index] = reply;
+                    devPatternBits_Custom[index] = 0;
 
                     boolean haveforce = false;
                     String[] strs = reply.split("\\s+"); // remove ALL spaces
@@ -244,15 +241,15 @@ class ReplyStrs
                         if ((strs[i].charAt(0) == 'Q') && (strs[i].length() > 1))
                         {
                             int val = Integer.parseInt(strs[i].substring(1));
-                            devPatternBits[index] |= val;
+                            devPatternBits_Custom[index] |= val;
                         }
                         else if ((strs[i].charAt(0) == 'F') && (strs[i].length() > 1) && (strs[i].charAt(1) != '0')) // ignore zero-force setting
                             haveforce = true;
 
                         else if (strs[i].charAt(0) == 'I')
                         {
-                            devPatternBits[index] |= 0x10;
-                            if (haveforce) devPatternBits[index] |= 0x20;
+                            devPatternBits_Custom[index] |= 0x10;
+                            if (haveforce) devPatternBits_Custom[index] |= 0x20;
                         }
                     }
                 }
@@ -341,27 +338,18 @@ class ReplyStrs
                         }
                         else initPatterns = true; // trigger sending initial pattern to device
 
-                        if (customPatterns == 0)
+                        // if command/pattern string not long enough then must use only basic patterns
+                        if (maxlenCmdStrs < (MINLEN_CMDSTR + (ADDLEN_CMDSTR_PERSEG * (numSegments-1))))
                         {
-                            // if command/pattern string not long enough then must use only basic patterns
-                            if (maxlenCmdStrs < (MINLEN_CMDSTR + (ADDLEN_CMDSTR_PERSEG * (numSegments-1))))
-                            {
-                                useAdvPatterns = false;
-                                stdPatternsCount = basicPatternsCount;
-                            }
-                            else
-                            {
-                                useAdvPatterns = true;
-                                stdPatternsCount = basicPatternsCount + advPatternsCount;
-                            }
+                            useAdvPatterns = false;
+                            numPatterns = basicPatternsCount;
                         }
                         else
                         {
-                            useAdvPatterns = false;
-                            stdPatternsCount = 0; // prevent using patterns defined here TODO: allow this
+                            useAdvPatterns = true;
+                            numPatterns = basicPatternsCount + advPatternsCount;
                         }
-
-                        numPatterns = customPatterns + stdPatternsCount;
+                        numPatterns += customPatterns;
 
                         boolean features = false;
                         if ((bits & 0x80) != 0) // feature is enabled
@@ -545,33 +533,6 @@ class ReplyStrs
             replyState = 1;
             Log.v(LOGNAME, "Send new command...");
             return 2; // send new command
-        }
-
-        if (stdPatternsCount > 0)
-        {
-            int i = 0;
-            int j;
-
-            j = i;
-            for (i = 0; i < basicPatternsCount; ++i)
-            {
-                devPatternNames[i+j] = basicPatternNames[i];
-                devPatternHelp[ i+j] = basicPatternHelp[i];
-                devPatternCmds[ i+j] = basicPatternCmds[i];
-                devPatternBits[ i+j] = basicPatternBits[i];
-            }
-
-            if (useAdvPatterns)
-            {
-                j += i;
-                for (i = 0; i < advPatternsCount; ++i)
-                {
-                    devPatternNames[i+j] = advPatternNames[i];
-                    devPatternHelp[ i+j] = advPatternHelp[i];
-                    devPatternCmds[ i+j] = advPatternCmds[i];
-                    devPatternBits[ i+j] = advPatternBits[i];
-                }
-            }
         }
 
         didFinishReading = true;

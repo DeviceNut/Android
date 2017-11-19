@@ -30,12 +30,23 @@ public class Main extends Application
     static final int MAXVAL_WHT              = 50;
     static final int MAXVAL_PERCENT          = 100;
     static final int MAXVAL_FORCE            = 1000;
-    static final int MINVAL_DELAYRANGE       = 60;       // use this for patterns defined here, and is minimal value for custom patterns
+    static final int MINVAL_DELAYRANGE       = 80;       // use this for patterns defined here, and is minimal value for custom patterns
 
     static final int MINLEN_SEGLEN_FORADV    = 20;      // minimum length of each segment to be able to use the advanced patterns
     static final int MINLEN_CMDSTR           = 110;     // minimum length of the command/pattern string
     static final int ADDLEN_CMDSTR_PERSEG    = 50;      // additional length of command/pattern string per additional segment,
     // otherwise will not be able to use the advanced patterns
+
+    static final String[] basicPatternNames =
+            {
+                    "Solid",
+                    "Waves",
+                    "Blinks",
+                    "Twinkles",
+                    "Scanner",
+                    "Spokes",
+                    "Comet",
+            };
 
     static final String[] basicPatternHelp =
             {
@@ -71,17 +82,6 @@ public class Main extends Application
                     "E20 H30 C25 D30 Q7 T G",
             };
 
-    static final String[] basicPatternNames =
-            {
-                    "Solid",
-                    "Waves",
-                    "Blinks",
-                    "Twinkles",
-                    "Scanner",
-                    "Spokes",
-                    "Comet",
-            };
-
     static final int[] basicPatternBits =
             {
                     0x03,
@@ -91,6 +91,23 @@ public class Main extends Application
                     0x07,
                     0x07,
                     0x07,
+            };
+
+    static final String[] advPatternNames =
+            {
+                    "Rainbow Ripple",
+                    "Rainbow Roll",
+                    "Color Twinkles",
+                    "Twinkle Comets",
+                    "Comet Party",
+                    "Scanner Mix",
+                    "Ferris Wheel",
+                    "Expanding Noise",
+                    "Crazy Blinks",
+                    "Bright Swells",
+                    "Color Melts",
+                    "Holiday",
+                    "MashUp",
             };
 
     static final String[] advPatternHelp =
@@ -156,23 +173,6 @@ public class Main extends Application
                     "E50 V1 B65 W30 H100 D10 Q1 T E40 H270 C10 D50 T E20 C20 D15 A1 F0 I T G"
             };
 
-    static final String[] advPatternNames =
-            {
-                    "Rainbow Ripple",
-                    "Rainbow Roll",
-                    "Color Twinkles",
-                    "Twinkle Comets",
-                    "Comet Party",
-                    "Scanner Mix",
-                    "Ferris Wheel",
-                    "Expanding Noise",
-                    "Crazy Blinks",
-                    "Bright Swells",
-                    "Color Melts",
-                    "Holiday",
-                    "MashUp",
-            };
-
     static final int[] advPatternBits =
             {
                     0x30,
@@ -192,61 +192,92 @@ public class Main extends Application
 
     static final int basicPatternsCount = basicPatternNames.length;
     static final int advPatternsCount = advPatternNames.length;
-    static int stdPatternsCount;
 
+    // determined for android device being used
+    static int pixelWidth = 0;
+    static int pixelHeight = 0;
+    static int pixelDensity = 0;
+    static int masterPageHeight;
+
+    // read from device during configuration
+    static int curSegment = 0;                  // index from 0
+    static int numPatterns = 0;                 // total number of patterns that can be chosen
+    static int numSegments = 0;                 // total number of pixel segments
+    static int customPatterns = 0;              // number of custom patterns defined by device
+    static int customPlugins = 0;               // number of custom plugins defined by device
+    static int maxlenCmdStrs = 0;               // max length of command string that can be sent
+    static int rangeDelay = MINVAL_DELAYRANGE;  // default range of delay offsets
+
+    static int maxNumSegs = 5;      // limited to 5 segments because of layout
+    static int curDelay[]           = new int[maxNumSegs];
+    static int curBright[]          = new int[maxNumSegs];
+    static boolean segXmodeEnb[]    = new boolean[maxNumSegs];
+    static int segXmodeHue[]        = new int[maxNumSegs];
+    static int segXmodeWht[]        = new int[maxNumSegs];
+    static int segXmodeCnt[]        = new int[maxNumSegs];
+    static int segTrigForce[]       = new int[maxNumSegs];
+    static int segPixels[]          = new int[maxNumSegs];
+    static int segTracks[]          = new int[maxNumSegs];
+    static int segLayers[]          = new int[maxNumSegs];
+    static int segPatterns[]        = new int[maxNumSegs];   // current pattern for each segment (index from 0)
+
+    // only used for multiple segments on the same physical strand:
+    static int segPosStart[]        = new int[maxNumSegs];  // starting positions for each segment
+    static int segPosCount[]        = new int[maxNumSegs];  // number of pixels for each segment
+
+    static boolean doUpdate = true;             // false if device output is pause mode
+    static boolean initPatterns = false;        // true if must initialize device with patterns at startup
+    static boolean multiStrands = false;        // true if device has multiple physical pixel strands
+                                                // false means all segment info must be sent when changing patterns
+
+    // used to determine which patterns are allowed on which segments
+    static boolean segBasicOnly[] = new boolean[maxNumSegs];
+    static boolean haveBasicSegs = false;       // true if some segments too small for advanced patterns
+    static boolean useAdvPatterns = true;       // false if limited flash space to receive commands
+
+    // assigned for custom device patterns
+    static String[] devPatternNames_Custom;
+    static String[] devPatternHelp_Custom;
+    static String[] devPatternCmds_Custom;
+    static int[] devPatternBits_Custom;
+
+    // assigned for basic patterns
+    static String[] listNames_Basic;
+    static boolean[] listEnables_Basic;
+    static int[] mapIndexToPattern_Basic;
+    static int[] mapPatternToIndex_Basic;
+    static String[] devPatternNames_Basic;
+    static String[] devPatternHelp_Basic;
+    static String[] devPatternCmds_Basic;
+    static int[] devPatternBits_Basic;
+
+    // assigned for both basic and advanced patterns
+    static String[] listNames_All;
+    static boolean[] listEnables_All;
+    static int[] mapIndexToPattern_All;
+    static int[] mapPatternToIndex_All;
+    static String[] devPatternNames_All;
+    static String[] devPatternHelp_All;
+    static String[] devPatternCmds_All;
+    static int[] devPatternBits_All;
+
+    // set to either _Basic or _All vars when change segments
+    static int[] mapIndexToPattern;
+    static int[] mapPatternToIndex;
     static String[] devPatternNames;
     static String[] devPatternHelp;
     static String[] devPatternCmds;
     static int[] devPatternBits;
 
-    static int pixelWidth = 0;
-    static int pixelLength = 0;
-    static int pixelDensity = 0;
-
-    static int curSegment = 0;                   // index from 0
-    static int numPatterns = 0;                  // total number of patterns that can be chosen
-    static int numSegments = 0;                  // total number of pixel segments
-    static int customPatterns = 0;               // number of custom patterns defined by device
-    static int customPlugins = 0;                // number of custom plugins defined by device
-    static int maxlenCmdStrs = 0;                // max length of command string that can be sent
-    static int rangeDelay = MINVAL_DELAYRANGE;   // default range of delay offsets
-
-    static boolean doUpdate = true;              // false if device output is pause mode
-    static boolean useAdvPatterns = true;        // false for small segments and/or limited flash space (or custom)
-    static boolean initPatterns = false;         // true if must initialize device with patterns at startup
-    static boolean multiStrands = false;         // true if device has multiple physical pixel strands
-    // false means all segment info must be sent when changing patterns
-    static boolean haveFavorites = true;         // false if cannot support favorties page
-
-    // limited to 5 segments
-    static int curDelay[]        = {0, 0, 0, 0, 0}; // delay in msecs
-    static int curBright[]       = {0, 0, 0, 0, 0}; // maximum brightness
-    static boolean segXmodeEnb[] = {false, false, false, false, false};
-    static int segXmodeHue[]     = {0, 0, 0, 0, 0};
-    static int segXmodeWht[]     = {0, 0, 0, 0, 0};
-    static int segXmodeCnt[]     = {0, 0, 0, 0, 0};
-    static int segTrigForce[]    = {0, 0, 0, 0, 0};
-    static int segPatterns[]     = {0, 0, 0, 0, 0}; // index from 0
-    static int segPixels[]       = {0, 0, 0, 0, 0}; // number of pixels
-    static int segLayers[]       = {0, 0, 0, 0, 0}; // number of layers
-    static int segTracks[]       = {0, 0, 0, 0, 0}; // number of tracks
-    // only used for multiple segments on the same physical strand:
-    static int segPosStart[]     = {0, 0, 0, 0, 0}; // starting positions for each segment
-    static int segPosCount[]     = {0, 0, 0, 0, 0}; // number of pixels for each segment
+    static boolean haveFavorites = true;  // false if cannot support favorties page
+    static int[] numsFavorites = {0, 4, 6, 8, 10, 11};
+    static int curFavorite = -1;
 
     static String devName;
     static Bluetooth ble;
 
     static MyPager masterPager;
     static int pageFavorites, pageControls, pageDetails, pageCurrent;
-
-    static String[] patternNames;
-    static boolean[] listEnables;
-    static int[] mapPatternToIndex;
-    static int[] mapIndexToPattern;
-
-    static int[] numsFavorites = {0, 4, 5, 6, 8, 10, 11};
-    static int curFavorite = -1;
 
     static Context appContext;
     @Override public void onCreate()

@@ -8,10 +8,12 @@ import android.os.Build;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
@@ -35,6 +37,7 @@ import static com.devicenut.pixelnutctrl.Main.pageDetails;
 import static com.devicenut.pixelnutctrl.Main.pageFavorites;
 import static com.devicenut.pixelnutctrl.Main.pageCurrent;
 import static com.devicenut.pixelnutctrl.Main.masterPager;
+import static com.devicenut.pixelnutctrl.Main.masterPageHeight;
 
 public class Master extends AppCompatActivity implements FragListen, Bluetooth.BleCallbacks
 {
@@ -65,45 +68,6 @@ public class Master extends AppCompatActivity implements FragListen, Bluetooth.B
         if (inLandscape && getResources().getBoolean(R.bool.portrait_only))
             setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
 
-        /*
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:visibility="visible"
-            android:orientation="horizontal"
-            android:id="@+id/ll_FragPage1">
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:textAppearance="@style/TextAppearance.AppCompat.Medium"
-                android:text="Page1"/>
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:visibility="visible"
-            android:orientation="horizontal"
-            android:id="@+id/ll_FragPage2">
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:textAppearance="@style/TextAppearance.AppCompat.Medium"
-                android:text="Page2"/>
-        </LinearLayout>
-
-            // display is large enough for 2 fragments at once
-            // and currently in landscape mode, so display 2 fragments
-            Log.w(LOGNAME, "Adding both fragments here...");
-            //getSupportFragmentManager().beginTransaction().add(R.id.ll_FragPage1, new FragFavs(),  "Favorites Fragment").commit();
-            //getSupportFragmentManager().beginTransaction().add(R.id.ll_FragPage2, new FragCtrls(), "Controls Fragment").commit();
-            else // if (getResources().getBoolean(R.bool.portrait_only))
-            {
-                Log.w(LOGNAME, "Adding single fragment here...");
-                getSupportFragmentManager().beginTransaction().add(R.id.ll_FragPage1, new FragFavs(),  "Favorites Fragment").commit();
-            }
-        */
-
         masterPager = (MyPager)findViewById(R.id.myViewPager);
         adapterViewPager = new MasterAdapter(getSupportFragmentManager());
         masterPager.setAdapter(adapterViewPager);
@@ -118,6 +82,10 @@ public class Master extends AppCompatActivity implements FragListen, Bluetooth.B
         leftText        = (TextView)     findViewById(R.id.text_GoLeft);
         rightText       = (TextView)     findViewById(R.id.text_GoRight);
 
+        ViewGroup.LayoutParams params = llFragPages.getLayoutParams();
+        params.height = masterPageHeight;
+        llFragPages.setLayoutParams(params);
+
         SetupGoToText();
     }
 
@@ -126,34 +94,36 @@ public class Master extends AppCompatActivity implements FragListen, Bluetooth.B
         if (pageCurrent == pageDetails)
         {
             leftText.setVisibility(VISIBLE);
-            leftText.setText(getResources().getString(R.string.title_ctrls));
+            leftText.setText(getResources().getString(R.string.action_ctrls_left));
         }
         else if ((pageCurrent == pageControls) && (pageFavorites >= 0))
         {
             leftText.setVisibility(VISIBLE);
-            leftText.setText(getResources().getString(R.string.title_favs));
+            leftText.setText(getResources().getString(R.string.action_favs));
         }
         else leftText.setVisibility(GONE);
 
         if (inLandscape)
         {
-            if (pageCurrent != pageControls)
+            /* if (pageCurrent != pageControls)
             {
                 rightText.setVisibility(VISIBLE);
-                rightText.setText(getResources().getString(R.string.title_adv));
+                rightText.setText(getResources().getString(R.string.action_details));
             }
-            else rightText.setVisibility(GONE);
+            else */
+                rightText.setVisibility(GONE);
         }
         else if (pageCurrent == pageFavorites)
         {
             rightText.setVisibility(VISIBLE);
-            rightText.setText(getResources().getString(R.string.title_ctrls));
+            rightText.setText(getResources().getString(R.string.action_ctrls_rite));
         }
-        else if (pageCurrent == pageControls)
+        /* FIXME else if (pageCurrent == pageControls)
         {
             rightText.setVisibility(VISIBLE);
-            rightText.setText(getResources().getString(R.string.title_adv));
+            rightText.setText(getResources().getString(R.string.action_details));
         }
+        */
         else rightText.setVisibility(GONE);
     }
 
@@ -346,14 +316,15 @@ public class Master extends AppCompatActivity implements FragListen, Bluetooth.B
             Log.d(LOGNAME, ">>Adapter");
         }
 
-        @Override public int getCount() { return (haveFavorites  ? 3 : 2); } // number of pages
+        //@Override public int getCount() { return (haveFavorites  ? 3 : 2); } // number of pages
+        @Override public int getCount() { return (haveFavorites  ? 2 : 1); } // number of pages FIXME
 
         @Override public Fragment getItem(int position)
         {
             Log.d(LOGNAME, "Select fragment " + position);
             if (position == pageFavorites) return FragFavs.newInstance();
             if (position == pageControls)  return FragCtrls.newInstance();
-            if (position == pageDetails)   return FragAdv.newInstance();
+            //if (position == pageDetails)   return FragAdv.newInstance();
             return null;
         }
 

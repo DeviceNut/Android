@@ -2,13 +2,12 @@
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/activity_control"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
-    android:paddingBottom="@dimen/activity_vertical_margin"
     android:paddingLeft="0dp"
     android:paddingRight="0dp"
     android:paddingTop="0dp"
+    android:paddingBottom="0dp"
     android:background="@color/Background"
     android:orientation="vertical"
     tools:context=".FragFavs">
@@ -16,8 +15,8 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:layout_marginBottom="10dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="8dp"
         android:text="@string/title_favs"
         android:textAlignment="center"
         android:textAppearance="@style/TextAppearance.AppCompat.Large"
@@ -30,9 +29,7 @@
         android:layout_height="wrap_content"
         android:layout_marginLeft="@dimen/activity_horizontal_margin"
         android:layout_marginRight="@dimen/activity_horizontal_margin"
-        android:fillViewport="false"
-        android:clipChildren="false"
-        android:fadingEdge="none"
+        android:requiresFadingEdge="vertical"
         android:id="@+id/scroll_Patterns">
 
         <LinearLayout
@@ -43,7 +40,7 @@
             <Button
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="15dp"
+                android:layout_marginBottom="13dp"
                 android:textAllCaps="false"
                 android:textColor="@color/UserChoice"
                 android:textSize="22sp"
@@ -53,7 +50,7 @@
             <Button
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="15dp"
+                android:layout_marginBottom="13dp"
                 android:textAllCaps="false"
                 android:textColor="@color/UserChoice"
                 android:textSize="22sp"
@@ -63,7 +60,7 @@
             <Button
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="15dp"
+                android:layout_marginBottom="13dp"
                 android:textAllCaps="false"
                 android:textColor="@color/UserChoice"
                 android:textSize="22sp"
@@ -73,7 +70,7 @@
             <Button
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="15dp"
+                android:layout_marginBottom="13dp"
                 android:textAllCaps="false"
                 android:textColor="@color/UserChoice"
                 android:textSize="22sp"
@@ -83,7 +80,7 @@
             <Button
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="15dp"
+                android:layout_marginBottom="13dp"
                 android:textAllCaps="false"
                 android:textColor="@color/UserChoice"
                 android:textSize="22sp"
@@ -93,22 +90,12 @@
             <Button
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="15dp"
+                android:layout_marginBottom="13dp"
                 android:textAllCaps="false"
                 android:textColor="@color/UserChoice"
                 android:textSize="22sp"
                 android:textStyle="bold"
                 android:id="@+id/button_Pattern6"/>
-
-            <Button
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="15dp"
-                android:textAllCaps="false"
-                android:textColor="@color/UserChoice"
-                android:textSize="22sp"
-                android:textStyle="bold"
-                android:id="@+id/button_Pattern7"/>
 
         </LinearLayout>
     </ScrollView>

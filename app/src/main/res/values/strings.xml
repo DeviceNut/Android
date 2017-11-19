@@ -28,8 +28,10 @@
     <string name="title_dotrigger">Press to trigger pattern</string>
     <string name="title_help">Controls Help</string>
     <string name="title_favs">Favorites</string>
-    <string name="title_ctrls">Controls</string>
-    <string name="title_adv">Details</string>
+    <string name="action_favs">&lt;&lt;&lt; Favorites</string>
+    <string name="action_ctrls_rite">Controls &gt;&gt;&gt;</string>
+    <string name="action_ctrls_left">&lt;&lt;&lt; Controls</string>
+    <string name="action_details">Details &gt;&gt;&gt;</string>
     <string name="text_help_head">
         The controls affect the PixelNut! device that is currently connected,
         whose name is displayed in the upper left of the screen.

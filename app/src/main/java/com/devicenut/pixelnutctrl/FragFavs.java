@@ -15,10 +15,11 @@ import static com.devicenut.pixelnutctrl.Main.CMD_EXTMODE;
 import static com.devicenut.pixelnutctrl.Main.CMD_POP_PATTERN;
 import static com.devicenut.pixelnutctrl.Main.CMD_SEGS_ENABLE;
 import static com.devicenut.pixelnutctrl.Main.CMD_START_END;
-import static com.devicenut.pixelnutctrl.Main.advPatternNames;
 import static com.devicenut.pixelnutctrl.Main.basicPatternsCount;
 import static com.devicenut.pixelnutctrl.Main.curFavorite;
+import static com.devicenut.pixelnutctrl.Main.customPatterns;
 import static com.devicenut.pixelnutctrl.Main.devPatternCmds;
+import static com.devicenut.pixelnutctrl.Main.devPatternNames;
 import static com.devicenut.pixelnutctrl.Main.numSegments;
 import static com.devicenut.pixelnutctrl.Main.numsFavorites;
 
@@ -35,7 +36,6 @@ public class FragFavs extends Fragment
                     R.id.button_Pattern4,
                     R.id.button_Pattern5,
                     R.id.button_Pattern6,
-                    R.id.button_Pattern7,
             };
     private Button[] objsButton;
 
@@ -60,8 +60,9 @@ public class FragFavs extends Fragment
         objsButton = new Button[idsButton.length];
         for (int i = 0; i < idsButton.length; ++i)
         {
+            Log.w(LOGNAME, "Setting favorite: " + devPatternNames[ numsFavorites[i] + customPatterns + basicPatternsCount ]);
             Button b = (Button)v.findViewById(idsButton[i]);
-            b.setText(advPatternNames[numsFavorites[i]]);
+            b.setText(devPatternNames[ numsFavorites[i] + customPatterns + basicPatternsCount ]);
             b.setOnClickListener(mClicker);
             objsButton[i] = b;
         }
@@ -99,7 +100,7 @@ public class FragFavs extends Fragment
             {
                 if (curFavorite == i) break;
 
-                int num = numsFavorites[i] + basicPatternsCount + 1;
+                int num = numsFavorites[i] + customPatterns + basicPatternsCount + 1;
                 for (int seg = 1; seg <= numSegments; ++seg)
                 {
                     if (numSegments > 1) SendString(CMD_SEGS_ENABLE + seg);
@@ -107,15 +108,15 @@ public class FragFavs extends Fragment
                     SendSegPat(num);
                 }
 
-                //if (curFavorite >= 0) objsButton[curFavorite].setBackgroundColor(ContextCompat.getColor(context, R.color.ThemeBackground));
-                //objsButton[i].setBackgroundColor(ContextCompat.getColor(context, R.color.Background2));
                 if (curFavorite >= 0)
                 {
-                    objsButton[curFavorite].setText(advPatternNames[numsFavorites[curFavorite]]);
+                    objsButton[curFavorite].setText(devPatternNames[numsFavorites[curFavorite]]);
                     objsButton[curFavorite].setTextColor(ContextCompat.getColor(context, R.color.UserChoice));
                 }
-                objsButton[i].setText(">>> " + advPatternNames[numsFavorites[i]] + " <<<");
+
+                objsButton[i].setText(">>> " + devPatternNames[numsFavorites[i]] + " <<<");
                 objsButton[i].setTextColor(ContextCompat.getColor(context, R.color.HighLight));
+
                 curFavorite = i;
                 break;
             }

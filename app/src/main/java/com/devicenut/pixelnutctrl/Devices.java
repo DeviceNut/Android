@@ -23,44 +23,77 @@ import android.widget.Toast;
 import java.util.ArrayList;
 
 import static com.devicenut.pixelnutctrl.Bluetooth.BLESTAT_SUCCESS;
-import static com.devicenut.pixelnutctrl.Main.CMD_EXTMODE;
 import static com.devicenut.pixelnutctrl.Main.CMD_GET_INFO;
 import static com.devicenut.pixelnutctrl.Main.CMD_PAUSE;
-import static com.devicenut.pixelnutctrl.Main.CMD_POP_PATTERN;
 import static com.devicenut.pixelnutctrl.Main.CMD_RESUME;
 import static com.devicenut.pixelnutctrl.Main.CMD_SEGS_ENABLE;
-import static com.devicenut.pixelnutctrl.Main.CMD_START_END;
 import static com.devicenut.pixelnutctrl.Main.TITLE_ADAFRUIT;
 import static com.devicenut.pixelnutctrl.Main.TITLE_NONAME;
 import static com.devicenut.pixelnutctrl.Main.TITLE_PIXELNUT;
 import static com.devicenut.pixelnutctrl.Main.URL_PIXELNUT;
-import static com.devicenut.pixelnutctrl.Main.basicPatternsCount;
-import static com.devicenut.pixelnutctrl.Main.ble;
-import static com.devicenut.pixelnutctrl.Main.curSegment;
-import static com.devicenut.pixelnutctrl.Main.customPatterns;
-import static com.devicenut.pixelnutctrl.Main.devName;
+import static com.devicenut.pixelnutctrl.Main.devPatternBits;
 import static com.devicenut.pixelnutctrl.Main.devPatternCmds;
+import static com.devicenut.pixelnutctrl.Main.devPatternHelp;
 import static com.devicenut.pixelnutctrl.Main.devPatternNames;
-import static com.devicenut.pixelnutctrl.Main.initPatterns;
-import static com.devicenut.pixelnutctrl.Main.listEnables;
+import static com.devicenut.pixelnutctrl.Main.haveBasicSegs;
 import static com.devicenut.pixelnutctrl.Main.mapIndexToPattern;
 import static com.devicenut.pixelnutctrl.Main.mapPatternToIndex;
-import static com.devicenut.pixelnutctrl.Main.multiStrands;
+import static com.devicenut.pixelnutctrl.Main.pixelDensity;
+import static com.devicenut.pixelnutctrl.Main.pixelHeight;
+import static com.devicenut.pixelnutctrl.Main.pixelWidth;
+import static com.devicenut.pixelnutctrl.Main.masterPageHeight;
+
+import static com.devicenut.pixelnutctrl.Main.ble;
+import static com.devicenut.pixelnutctrl.Main.devName;
+import static com.devicenut.pixelnutctrl.Main.curSegment;
+import static com.devicenut.pixelnutctrl.Main.customPatterns;
 import static com.devicenut.pixelnutctrl.Main.numPatterns;
 import static com.devicenut.pixelnutctrl.Main.numSegments;
+
+import static com.devicenut.pixelnutctrl.Main.useAdvPatterns;
+import static com.devicenut.pixelnutctrl.Main.haveFavorites;
+import static com.devicenut.pixelnutctrl.Main.initPatterns;
+import static com.devicenut.pixelnutctrl.Main.multiStrands;
+
+import static com.devicenut.pixelnutctrl.Main.basicPatternNames;
+import static com.devicenut.pixelnutctrl.Main.basicPatternHelp;
+import static com.devicenut.pixelnutctrl.Main.basicPatternCmds;
+import static com.devicenut.pixelnutctrl.Main.basicPatternBits;
+import static com.devicenut.pixelnutctrl.Main.basicPatternsCount;
+
+import static com.devicenut.pixelnutctrl.Main.advPatternNames;
+import static com.devicenut.pixelnutctrl.Main.advPatternHelp;
+import static com.devicenut.pixelnutctrl.Main.advPatternCmds;
+import static com.devicenut.pixelnutctrl.Main.advPatternBits;
+import static com.devicenut.pixelnutctrl.Main.advPatternsCount;
+
+import static com.devicenut.pixelnutctrl.Main.devPatternNames_Custom;
+import static com.devicenut.pixelnutctrl.Main.devPatternHelp_Custom;
+import static com.devicenut.pixelnutctrl.Main.devPatternCmds_Custom;
+import static com.devicenut.pixelnutctrl.Main.devPatternBits_Custom;
+
+import static com.devicenut.pixelnutctrl.Main.listNames_Basic;
+import static com.devicenut.pixelnutctrl.Main.listEnables_Basic;
+import static com.devicenut.pixelnutctrl.Main.mapIndexToPattern_Basic;
+import static com.devicenut.pixelnutctrl.Main.mapPatternToIndex_Basic;
+import static com.devicenut.pixelnutctrl.Main.devPatternNames_Basic;
+import static com.devicenut.pixelnutctrl.Main.devPatternHelp_Basic;
+import static com.devicenut.pixelnutctrl.Main.devPatternCmds_Basic;
+import static com.devicenut.pixelnutctrl.Main.devPatternBits_Basic;
+
+import static com.devicenut.pixelnutctrl.Main.listNames_All;
+import static com.devicenut.pixelnutctrl.Main.listEnables_All;
+import static com.devicenut.pixelnutctrl.Main.mapIndexToPattern_All;
+import static com.devicenut.pixelnutctrl.Main.mapPatternToIndex_All;
+import static com.devicenut.pixelnutctrl.Main.devPatternNames_All;
+import static com.devicenut.pixelnutctrl.Main.devPatternHelp_All;
+import static com.devicenut.pixelnutctrl.Main.devPatternCmds_All;
+import static com.devicenut.pixelnutctrl.Main.devPatternBits_All;
+
+import static com.devicenut.pixelnutctrl.Main.pageCurrent;
 import static com.devicenut.pixelnutctrl.Main.pageControls;
 import static com.devicenut.pixelnutctrl.Main.pageDetails;
 import static com.devicenut.pixelnutctrl.Main.pageFavorites;
-import static com.devicenut.pixelnutctrl.Main.patternNames;
-import static com.devicenut.pixelnutctrl.Main.pixelDensity;
-import static com.devicenut.pixelnutctrl.Main.pixelLength;
-import static com.devicenut.pixelnutctrl.Main.pixelWidth;
-import static com.devicenut.pixelnutctrl.Main.segPatterns;
-import static com.devicenut.pixelnutctrl.Main.segXmodeEnb;
-import static com.devicenut.pixelnutctrl.Main.stdPatternsCount;
-import static com.devicenut.pixelnutctrl.Main.useAdvPatterns;
-import static com.devicenut.pixelnutctrl.Main.haveFavorites;
-import static com.devicenut.pixelnutctrl.Main.pageCurrent;
 
 public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
 {
@@ -135,14 +168,15 @@ public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
 
         DisplayMetrics metrics = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(metrics);
-        pixelLength = metrics.heightPixels;
+        pixelHeight = metrics.heightPixels;
         pixelWidth = metrics.widthPixels;
+        masterPageHeight = pixelHeight - (int)(125 * ((float)metrics.densityDpi / DisplayMetrics.DENSITY_DEFAULT));
 
         DisplayMetrics dm = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(dm);
         pixelDensity = dm.densityDpi;
 
-        Log.w(LOGNAME, "Screen: width=" + pixelWidth + " length=" + pixelLength + " density=" + pixelDensity);
+        Log.w(LOGNAME, "Screen: width=" + pixelWidth + " height=" + pixelHeight + " density=" + pixelDensity);
 
         if (getResources().getBoolean(R.bool.portrait_only))
             setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
@@ -586,9 +620,6 @@ public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
 
     private void SetupDeviceControls()
     {
-        if ((customPatterns != 0) || !useAdvPatterns || (numSegments > 1)) // ((numSegments > 1) && !multiStrands))
-            haveFavorites = false;
-
         devName = ble.getCurDevName();
         if ((devName == null) || (devName.length() < 3)) // have disconnected
         {
@@ -603,46 +634,7 @@ public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
         else devName = TITLE_NONAME;
         Log.d(LOGNAME, "Device name=" + devName);
 
-        CreatePatternArrays();
-
-        // if only using basic patterns, then the properties will always be displayed
-        // so enable the properties for any segment which is currently disabled
-        if (!useAdvPatterns)
-        {
-            Log.d(LOGNAME, "Enabling Properties:");
-            for (int i = 0; i < numSegments; ++i)
-            {
-                if (!segXmodeEnb[i])
-                {
-                    int seg = i + 1;
-                    segXmodeEnb[i] = true;
-                    SendString(CMD_SEGS_ENABLE + seg);
-                    SendString(CMD_EXTMODE + "1");
-                }
-            }
-        }
-
-        if (initPatterns && multiStrands) // initialize all of physical strands
-        {
-            Log.d(LOGNAME, "Initializing Patterns:");
-            for (int i = 0; i < numSegments; ++i)
-            {
-                int seg = i+1; // segment numbers start at 1 on device
-                int pnum = segPatterns[i]+1; // same with pattern numbers
-                Log.d(LOGNAME, "  segment=" + seg + " pattern==" + pnum);
-
-                SendString(CMD_SEGS_ENABLE + seg);
-                SendString(CMD_START_END);; // start sequence
-                SendString(CMD_POP_PATTERN);
-                SendString(devPatternCmds[pnum-1]);
-                SendString(CMD_START_END);; // end sequence
-                SendString("" + pnum); // store pattern number
-            }
-        }
-
-        curSegment = 0; // always start with first segment
-        if (numSegments > 1) SendString(CMD_SEGS_ENABLE + "1");
-
+        haveFavorites = ((numSegments == 1) || multiStrands); // not supported for logical segments
         if (haveFavorites)
         {
             pageFavorites = 0;
@@ -656,63 +648,185 @@ public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
             pageDetails = 1;
         }
         pageCurrent = 0;
+
+        if (haveBasicSegs) CreateListArrays_Basic(); // some segments use only basic patterns
+        if (useAdvPatterns)
+        {
+            CreateListArrays_Adv();  // are allowed to use advanced patterns
+
+            mapIndexToPattern   = mapIndexToPattern_All;
+            mapPatternToIndex   = mapPatternToIndex_All;
+            devPatternNames     = devPatternNames_All;
+            devPatternHelp      = devPatternHelp_All;
+            devPatternCmds      = devPatternCmds_All;
+            devPatternBits      = devPatternBits_All;
+        }
+        else
+        {
+            mapIndexToPattern   = mapIndexToPattern_Basic;
+            mapPatternToIndex   = mapPatternToIndex_Basic;
+            devPatternNames     = devPatternNames_Basic;
+            devPatternHelp      = devPatternHelp_Basic;
+            devPatternCmds      = devPatternCmds_Basic;
+            devPatternBits      = devPatternBits_Basic;
+        }
+
+        curSegment = 0; // always start with first segment
+        if (numSegments > 1) SendString(CMD_SEGS_ENABLE + "1");
     }
 
-    private void CreatePatternArrays()
+    private void CreateListArrays_Basic()
     {
+        Log.d(LOGNAME, "Creating Basic List Array");
+
         int j = 0;
-        int extra = (customPatterns > 0) ? 1 : 0;
-        if (stdPatternsCount > 0) extra += 2;
-        if ((customPatterns == 0) && !useAdvPatterns)
-        {
-            extra = 0;
-            numPatterns = basicPatternsCount;
-        }
-        patternNames = new String[numPatterns + extra];
-        listEnables = new boolean[numPatterns + extra];
-        mapIndexToPattern = new int[numPatterns + extra];
-        mapPatternToIndex = new int[numPatterns];
+        int k = 0;
+        int extra = 1;
+        if (customPatterns > 0) ++extra;
+
+        listNames_Basic = new String[numPatterns + extra];
+        listEnables_Basic = new boolean[numPatterns + extra];
+        mapIndexToPattern_Basic = new int[numPatterns + extra];
+        mapPatternToIndex_Basic = new int[numPatterns];
+        devPatternNames_Basic = new String[numPatterns];
+        devPatternHelp_Basic = new String[numPatterns];
+        devPatternCmds_Basic = new String[numPatterns];
+        devPatternBits_Basic = new int[numPatterns];
 
         if (customPatterns > 0)
         {
-            patternNames[j] = "Custom Patterns";
-            listEnables[j] = false;
-            mapIndexToPattern[j] = 0;
+            listNames_Basic[j] = "Custom Patterns";
+            listEnables_Basic[j] = false;
+            mapIndexToPattern_Basic[j] = 0;
             ++j;
-        }
-        else if (useAdvPatterns)
-        {
-            patternNames[j] = "Basic Patterns";
-            listEnables[j] = false;
-            mapIndexToPattern[j] = 0;
-            ++j;
-        }
 
-        for (int i = 0; i < numPatterns; ++i)
-        {
-            if ((i > 0) && (i == customPatterns) && useAdvPatterns)
+            for (int i = 0; i < customPatterns; ++i)
             {
-                patternNames[j] = "Basic Patterns";
-                listEnables[j] = false;
-                mapIndexToPattern[j] = 0;
+                Log.v(LOGNAME, "Adding custom pattern i=" + i + " j=" + j + " => " + devPatternNames_Custom[i]);
+
+                listNames_Basic[j] = devPatternNames_Custom[i];
+                listEnables_Basic[j] = true;
+                mapIndexToPattern_Basic[j] = i;
+                mapPatternToIndex_Basic[k] = j;
+                devPatternNames_Basic[k] = devPatternNames_Custom[i];
+                devPatternHelp_Basic[k] = devPatternHelp_Custom[i];
+                devPatternCmds_Basic[k] = devPatternCmds_Custom[i];
+                devPatternBits_Basic[k] = devPatternBits_Custom[i];
+
                 ++j;
+                ++k;
             }
+        }
 
-            if ((i > customPatterns) && (i == basicPatternsCount) && useAdvPatterns)
-            {
-                patternNames[j] = "Advanced Patterns";
-                listEnables[j] = false;
-                mapIndexToPattern[j] = 0;
-                ++j;
-            }
+        listNames_Basic[j] = "Basic Patterns";
+        listEnables_Basic[j] = false;
+        mapIndexToPattern_Basic[j] = 0;
+        ++j;
 
-            Log.v(LOGNAME, "Adding pattern i=" + i + " j=" + j + " => " + devPatternNames[i]);
+        for (int i = 0; i < basicPatternsCount; ++i)
+        {
+            Log.v(LOGNAME, "Adding basic pattern i=" + i + " j=" + j + " => " + basicPatternNames[i]);
 
-            patternNames[j] = devPatternNames[i];
-            listEnables[j] = true;
-            mapIndexToPattern[j] = i;
-            mapPatternToIndex[i] = j;
+            listNames_Basic[j] = basicPatternNames[i];
+            listEnables_Basic[j] = true;
+            mapIndexToPattern_Basic[j] = i;
+            mapPatternToIndex_Basic[k] = j;
+            devPatternNames_Basic[k] = basicPatternNames[i];
+            devPatternHelp_Basic[k] = basicPatternHelp[i];
+            devPatternCmds_Basic[k] = basicPatternCmds[i];
+            devPatternBits_Basic[k] = basicPatternBits[i];
+
             ++j;
+            ++k;
+        }
+    }
+
+    private void CreateListArrays_Adv()
+    {
+        Log.d(LOGNAME, "Creating Advanced List Array");
+
+        int j = 0;
+        int k = 0;
+        int extra = 2;
+        if (customPatterns > 0) ++extra;
+
+        listNames_All = new String[numPatterns + extra];
+        listEnables_All = new boolean[numPatterns + extra];
+        mapIndexToPattern_All = new int[numPatterns + extra];
+        mapPatternToIndex_All = new int[numPatterns];
+        devPatternNames_All = new String[numPatterns];
+        devPatternHelp_All = new String[numPatterns];
+        devPatternCmds_All = new String[numPatterns];
+        devPatternBits_All = new int[numPatterns];
+
+        if (customPatterns > 0)
+        {
+            listNames_All[j] = "Custom Patterns";
+            listEnables_All[j] = false;
+            mapIndexToPattern_All[j] = 0;
+            ++j;
+
+            for (int i = 0; i < customPatterns; ++i)
+            {
+                Log.v(LOGNAME, "Adding custom pattern j=" + j + " k=" + k + " => " + devPatternNames_Custom[i]);
+
+                listNames_All[j] = devPatternNames_Custom[i];
+                listEnables_All[j] = true;
+                mapIndexToPattern_All[j] = k;
+                mapPatternToIndex_All[k] = j;
+                devPatternNames_All[k] = devPatternNames_Custom[i];
+                devPatternHelp_All[k] = devPatternHelp_Custom[i];
+                devPatternCmds_All[k] = devPatternCmds_Custom[i];
+                devPatternBits_All[k] = devPatternBits_Custom[i];
+
+                ++j;
+                ++k;
+            }
+        }
+
+        listNames_All[j] = "Basic Patterns";
+        listEnables_All[j] = false;
+        mapIndexToPattern_All[j] = 0;
+        ++j;
+
+        for (int i = 0; i < basicPatternsCount; ++i)
+        {
+            Log.v(LOGNAME, "Adding basic pattern j=" + j + " k=" + k + " => " + basicPatternNames[i]);
+
+            listNames_All[j] = basicPatternNames[i];
+            listEnables_All[j] = true;
+            mapIndexToPattern_All[j] = i;
+            mapPatternToIndex_All[k] = j;
+            devPatternNames_All[k] = basicPatternNames[i];
+            devPatternHelp_All[k] = basicPatternHelp[i];
+            devPatternCmds_All[k] = basicPatternCmds[i];
+            devPatternBits_All[k] = basicPatternBits[i];
+
+            ++j;
+            ++k;
+        }
+
+        listNames_All[j] = "Advanced Patterns";
+        listEnables_All[j] = false;
+        mapIndexToPattern_All[j] = 0;
+        ++j;
+
+        for (int i = 0; i < advPatternsCount; ++i)
+        {
+            Log.v(LOGNAME, "Adding advanced pattern j=" + j + " k=" + k + " => " + advPatternNames[i]);
+
+            listNames_All[j] = advPatternNames[i];
+            listEnables_All[j] = true;
+            mapIndexToPattern_All[j] = i;
+            mapPatternToIndex_All[i] = j;
+            mapPatternToIndex_All[k] = j;
+            devPatternNames_All[k] = advPatternNames[i];
+            devPatternHelp_All[k] = advPatternHelp[i];
+            devPatternCmds_All[k] = advPatternCmds[i];
+            devPatternBits_All[k] = advPatternBits[i];
+
+            ++j;
+            ++k;
         }
     }
 }

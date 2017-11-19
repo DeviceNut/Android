@@ -33,17 +33,17 @@ import static com.devicenut.pixelnutctrl.Main.CMD_TRIGGER;
 import static com.devicenut.pixelnutctrl.Main.MAXVAL_HUE;
 import static com.devicenut.pixelnutctrl.Main.MAXVAL_PERCENT;
 import static com.devicenut.pixelnutctrl.Main.MAXVAL_WHT;
+
 import static com.devicenut.pixelnutctrl.Main.curBright;
 import static com.devicenut.pixelnutctrl.Main.curDelay;
 import static com.devicenut.pixelnutctrl.Main.curSegment;
 import static com.devicenut.pixelnutctrl.Main.customPatterns;
-import static com.devicenut.pixelnutctrl.Main.devPatternBits;
-import static com.devicenut.pixelnutctrl.Main.devPatternCmds;
-import static com.devicenut.pixelnutctrl.Main.devPatternHelp;
+import static com.devicenut.pixelnutctrl.Main.haveBasicSegs;
 import static com.devicenut.pixelnutctrl.Main.initPatterns;
 import static com.devicenut.pixelnutctrl.Main.multiStrands;
 import static com.devicenut.pixelnutctrl.Main.numSegments;
 import static com.devicenut.pixelnutctrl.Main.rangeDelay;
+import static com.devicenut.pixelnutctrl.Main.segBasicOnly;
 import static com.devicenut.pixelnutctrl.Main.segPatterns;
 import static com.devicenut.pixelnutctrl.Main.segPosCount;
 import static com.devicenut.pixelnutctrl.Main.segPosStart;
@@ -52,12 +52,29 @@ import static com.devicenut.pixelnutctrl.Main.segXmodeCnt;
 import static com.devicenut.pixelnutctrl.Main.segXmodeEnb;
 import static com.devicenut.pixelnutctrl.Main.segXmodeHue;
 import static com.devicenut.pixelnutctrl.Main.segXmodeWht;
-import static com.devicenut.pixelnutctrl.Main.stdPatternsCount;
-import static com.devicenut.pixelnutctrl.Main.useAdvPatterns;
-import static com.devicenut.pixelnutctrl.Main.patternNames;
-import static com.devicenut.pixelnutctrl.Main.listEnables;
+
+import static com.devicenut.pixelnutctrl.Main.listNames_All;
+import static com.devicenut.pixelnutctrl.Main.listNames_Basic;
+import static com.devicenut.pixelnutctrl.Main.listEnables_All;
+import static com.devicenut.pixelnutctrl.Main.listEnables_Basic;
+import static com.devicenut.pixelnutctrl.Main.devPatternNames_All;
+import static com.devicenut.pixelnutctrl.Main.devPatternNames_Basic;
+import static com.devicenut.pixelnutctrl.Main.devPatternHelp_All;
+import static com.devicenut.pixelnutctrl.Main.devPatternHelp_Basic;
+import static com.devicenut.pixelnutctrl.Main.devPatternCmds_All;
+import static com.devicenut.pixelnutctrl.Main.devPatternCmds_Basic;
+import static com.devicenut.pixelnutctrl.Main.devPatternBits_All;
+import static com.devicenut.pixelnutctrl.Main.devPatternBits_Basic;
+import static com.devicenut.pixelnutctrl.Main.mapIndexToPattern_All;
+import static com.devicenut.pixelnutctrl.Main.mapIndexToPattern_Basic;
+import static com.devicenut.pixelnutctrl.Main.mapPatternToIndex_All;
+import static com.devicenut.pixelnutctrl.Main.mapPatternToIndex_Basic;
 import static com.devicenut.pixelnutctrl.Main.mapIndexToPattern;
 import static com.devicenut.pixelnutctrl.Main.mapPatternToIndex;
+import static com.devicenut.pixelnutctrl.Main.devPatternNames;
+import static com.devicenut.pixelnutctrl.Main.devPatternHelp;
+import static com.devicenut.pixelnutctrl.Main.devPatternCmds;
+import static com.devicenut.pixelnutctrl.Main.devPatternBits;
 
 public class FragCtrls extends Fragment implements SeekBar.OnSeekBarChangeListener
 {
@@ -139,8 +156,7 @@ public class FragCtrls extends Fragment implements SeekBar.OnSeekBarChangeListen
         seekTrigForce.setOnSeekBarChangeListener(this);
 
         manualButton = (Button)v.findViewById(R.id.button_AutoProp);
-        if (useAdvPatterns) manualButton.setOnClickListener(mClicker);
-        else manualButton.setVisibility(GONE);
+        manualButton.setOnClickListener(mClicker);
 
         segAddButton = (Button)v.findViewById(R.id.button_SegAdd);
         segAddButton.setOnClickListener(mClicker);
@@ -196,9 +212,17 @@ public class FragCtrls extends Fragment implements SeekBar.OnSeekBarChangeListen
             initPatterns = false;
         }
 
-        SetupSpinnerLayout();   // create spinner layout
-        SelectPattern();        // select the pattern to be displayed
-        SetupControls();        // set control positions without sending commands
+        // cannot create these until have context
+        if (haveBasicSegs) CreateSpinnerAdapterBasic();
+        CreateSpinnerAdapterAll();
+
+        if (segBasicOnly[curSegment])
+             selectPattern.setAdapter(spinnerArrayAdapter_Basic);
+        else selectPattern.setAdapter(spinnerArrayAdapter_All);
+        selectPattern.setOnItemSelectedListener(patternListener);
+
+        SelectPattern(); // select the pattern to be displayed
+        SetupControls(); // set control positions without sending commands
 
         return v;
     }
@@ -217,19 +241,14 @@ public class FragCtrls extends Fragment implements SeekBar.OnSeekBarChangeListen
         mListener = null;
     }
 
-    private void SetupSpinnerLayout()
+    private ArrayAdapter<String> spinnerArrayAdapter_Basic;
+    private void CreateSpinnerAdapterBasic()
     {
-        ArrayAdapter<String> spinnerArrayAdapter = new ArrayAdapter<String>(context, R.layout.layout_spinner, patternNames)
+        spinnerArrayAdapter_Basic = new ArrayAdapter<String>(context, R.layout.layout_spinner, listNames_Basic)
         {
-            @Override public boolean isEnabled(int position)
-            {
-                return listEnables[position];
-            }
+            @Override public boolean areAllItemsEnabled() { return false; }
 
-            @Override public boolean areAllItemsEnabled()
-            {
-                return ((customPatterns == 0) || (stdPatternsCount == 0));
-            }
+            @Override public boolean isEnabled(int position) { return listEnables_Basic[position]; }
 
             @Override public View getDropDownView(int position, View convertView, @NonNull ViewGroup parent)
             {
@@ -242,113 +261,139 @@ public class FragCtrls extends Fragment implements SeekBar.OnSeekBarChangeListen
                 }
 
                 TextView tv = (TextView) v.findViewById(R.id.spinnerText);
-                tv.setText(patternNames[position]);
+                tv.setText(listNames_Basic[position]);
 
-                if (!listEnables[position]) tv.setTextColor(Color.GRAY);
+                if (!listEnables_Basic[position]) tv.setTextColor(Color.GRAY);
                 else tv.setTextColor(ContextCompat.getColor(context, R.color.UserChoice));
 
                 return v;
             }
         };
-
-        AdapterView.OnItemSelectedListener patternListener = new AdapterView.OnItemSelectedListener()
-        {
-            @Override public void onItemSelected(AdapterView<?> parent, View view, int position, long id)
-            {
-                TextView v = (TextView)view;
-                v.setTextColor(ContextCompat.getColor(context, R.color.UserChoice));
-                v.setTextSize(18);
-
-                if (changePattern)
-                {
-                    Log.d(LOGNAME, "Pattern choice: " + parent.getItemAtPosition(position));
-
-                    int curPattern = mapIndexToPattern[position];
-                    segPatterns[curSegment] = curPattern;
-
-                    if (curPattern >= customPatterns)
-                    {
-                        if (numSegments == 1)
-                        {
-                            SendString(CMD_START_END);; // start sequence
-                            SendString(CMD_POP_PATTERN);
-                            SendString(devPatternCmds[curPattern]);
-                            SendString(CMD_START_END);; // end sequence
-
-                            int num = curPattern+1; // device pattern numbers start at 1
-                            SendString("" + num);   // store current pattern number
-                        }
-                        else if (!multiStrands) // must send all segment patterns at once
-                        {
-                            SendString(CMD_START_END);; // start sequence
-                            SendString(CMD_POP_PATTERN);
-
-                            for (int i = 0; i < numSegments; ++i)
-                            {
-                                if (i == curSegment) segPatterns[i] = curPattern;
-
-                                SendString("X" + segPosStart[i] + " Y" + segPosCount[i]);
-                                SendString(devPatternCmds[ segPatterns[i] ]);
-                            }
-
-                            SendString(CMD_START_END);; // end sequence
-
-                            int num = curPattern+1; // device pattern numbers start at 1
-                            SendString("" + num);   // store current pattern number
-                        }
-                        // else physically separate segments, so can treat them as such
-                        else if (useSegEnables)
-                        {
-                            for (int i = 0; i < numSegments; ++i)
-                            {
-                                if (segEnables[i])
-                                {
-                                    int seg = i+1;
-                                    SendString(CMD_SEGS_ENABLE + seg);
-                                    SendString(CMD_START_END);; // start sequence
-                                    SendString(CMD_POP_PATTERN);
-                                    segPatterns[i] = curPattern;
-                                    SendString(devPatternCmds[ segPatterns[i] ]);
-                                    SendString(CMD_START_END);; // end sequence
-
-                                    int num = curPattern+1; // device pattern numbers start at 1
-                                    SendString("" + num);   // store current pattern number
-                                }
-                            }
-
-                            int seg = curSegment+1;
-                            SendString(CMD_SEGS_ENABLE + seg);
-                        }
-                        else
-                        {
-                            SendString(CMD_START_END);; // start sequence
-                            SendString(CMD_POP_PATTERN);
-                            SendString(devPatternCmds[ segPatterns[ curSegment ] ]);
-                            SendString(CMD_START_END);; // end sequence
-
-                            int num = curPattern+1; // device pattern numbers start at 1
-                            SendString("" + num);   // store current pattern number
-                        }
-                    }
-                    else
-                    {
-                        int num = curPattern+1; // device pattern numbers start at 1
-                        SendString("" + num);   // store current pattern number
-                    }
-
-                    SetupControls();    // set control positions without sending commands
-
-                    // change text for new pattern if pattern help is active, but keep it active
-                    if (helpMode > 0) SetPatternHelp(false, curPattern);
-                }
-                else changePattern = true; // reset for next time
-            }
-            @Override public void onNothingSelected(AdapterView<?> parent) {}
-        };
-
-        selectPattern.setAdapter(spinnerArrayAdapter);
-        selectPattern.setOnItemSelectedListener(patternListener);
     }
+
+    private ArrayAdapter<String> spinnerArrayAdapter_All;
+    private void CreateSpinnerAdapterAll()
+    {
+        spinnerArrayAdapter_All = new ArrayAdapter<String>(context, R.layout.layout_spinner, listNames_All)
+        {
+            @Override public boolean areAllItemsEnabled() { return false; }
+
+            @Override public boolean isEnabled(int position) { return listEnables_All[position]; }
+
+            @Override public View getDropDownView(int position, View convertView, @NonNull ViewGroup parent)
+            {
+                View v = convertView;
+                if (v == null)
+                {
+                    Context mContext = this.getContext();
+                    LayoutInflater vi = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+                    v = vi.inflate(R.layout.layout_spinner, null);
+                }
+
+                TextView tv = (TextView) v.findViewById(R.id.spinnerText);
+                tv.setText(listNames_All[position]);
+
+                if (!listEnables_All[position]) tv.setTextColor(Color.GRAY);
+                else tv.setTextColor(ContextCompat.getColor(context, R.color.UserChoice));
+
+                return v;
+            }
+        };
+    }
+
+    private AdapterView.OnItemSelectedListener patternListener = new AdapterView.OnItemSelectedListener()
+    {
+        @Override public void onNothingSelected(AdapterView<?> parent) {}
+
+        @Override public void onItemSelected(AdapterView<?> parent, View view, int position, long id)
+        {
+            TextView v = (TextView)view;
+            v.setTextColor(ContextCompat.getColor(context, R.color.UserChoice));
+            v.setTextSize(18);
+
+            if (changePattern)
+            {
+                Log.d(LOGNAME, "Pattern choice: " + parent.getItemAtPosition(position));
+
+                int curPattern = mapIndexToPattern[position];
+                segPatterns[curSegment] = curPattern;
+
+                if (curPattern < customPatterns)
+                {
+                    int num = curPattern+1; // device pattern numbers start at 1
+                    SendString("" + num);   // store current pattern number
+                }
+                else if (numSegments == 1)
+                {
+                    SendString(CMD_START_END);; // start sequence
+                    SendString(CMD_POP_PATTERN);
+                    SendString(devPatternCmds[curPattern]);
+                    SendString(CMD_START_END);; // end sequence
+
+                    int num = curPattern+1; // device pattern numbers start at 1
+                    SendString("" + num);   // store current pattern number
+                }
+                else if (!multiStrands) // must send all segment patterns at once
+                {
+                    SendString(CMD_START_END);; // start sequence
+                    SendString(CMD_POP_PATTERN);
+
+                    for (int i = 0; i < numSegments; ++i)
+                    {
+                        if (i == curSegment) segPatterns[i] = curPattern;
+
+                        SendString("X" + segPosStart[i] + " Y" + segPosCount[i]);
+                        SendString(devPatternCmds[ segPatterns[i] ]);
+                    }
+
+                    SendString(CMD_START_END);; // end sequence
+
+                    int num = curPattern+1; // device pattern numbers start at 1
+                    SendString("" + num);   // store current pattern number
+                }
+
+                // else physically separate segments, so can treat them as such
+                else if (useSegEnables)
+                {
+                    for (int i = 0; i < numSegments; ++i)
+                    {
+                        if (segEnables[i])
+                        {
+                            int seg = i+1;
+                            SendString(CMD_SEGS_ENABLE + seg);
+                            SendString(CMD_START_END);; // start sequence
+                            SendString(CMD_POP_PATTERN);
+                            segPatterns[i] = curPattern;
+                            SendString(devPatternCmds[ segPatterns[i] ]);
+                            SendString(CMD_START_END);; // end sequence
+
+                            int num = curPattern+1; // device pattern numbers start at 1
+                            SendString("" + num);   // store current pattern number
+                        }
+                    }
+
+                    int seg = curSegment+1;
+                    SendString(CMD_SEGS_ENABLE + seg);
+                }
+                else
+                {
+                    SendString(CMD_START_END);; // start sequence
+                    SendString(CMD_POP_PATTERN);
+                    SendString(devPatternCmds[ segPatterns[ curSegment ] ]);
+                    SendString(CMD_START_END);; // end sequence
+
+                    int num = curPattern+1; // device pattern numbers start at 1
+                    SendString("" + num);   // store current pattern number
+                }
+
+                SetupControls();    // set control positions without sending commands
+
+                // change text for new pattern if pattern help is active, but keep it active
+                if (helpMode > 0) SetPatternHelp(false, curPattern);
+            }
+            else changePattern = true; // reset for next time
+        }
+    };
 
     private void SelectPattern()
     {
@@ -381,56 +426,103 @@ public class FragCtrls extends Fragment implements SeekBar.OnSeekBarChangeListen
         }
     }
 
+    private void SetupPatternArraysForSegment(int seg)
+    {
+        if (segBasicOnly[seg])
+        {
+            mapIndexToPattern   = mapIndexToPattern_Basic;
+            mapPatternToIndex   = mapPatternToIndex_Basic;
+            devPatternNames     = devPatternNames_Basic;
+            devPatternHelp      = devPatternHelp_Basic;
+            devPatternCmds      = devPatternCmds_Basic;
+            devPatternBits      = devPatternBits_Basic;
+
+            selectPattern.setAdapter(spinnerArrayAdapter_Basic);
+        }
+        else
+        {
+            mapIndexToPattern   = mapIndexToPattern_All;
+            mapPatternToIndex   = mapPatternToIndex_All;
+            devPatternNames     = devPatternNames_All;
+            devPatternHelp      = devPatternHelp_All;
+            devPatternCmds      = devPatternCmds_All;
+            devPatternBits      = devPatternBits_All;
+
+            selectPattern.setAdapter(spinnerArrayAdapter_All);
+        }
+    }
+
     private void SetupControls()
     {
         int index = multiStrands ? curSegment : 0;
         seekBright.setProgress(curBright[index]);
         seekDelay.setProgress(((rangeDelay - curDelay[index]) * MAXVAL_PERCENT) / (rangeDelay + rangeDelay));
 
-        int bits = devPatternBits[segPatterns[curSegment]];
-
-        if ((bits & 0x07) != 0) // enable properties
+        if (segBasicOnly[curSegment])
         {
-            llProperties.setVisibility(VISIBLE);
+            // small segments with only basic patterns
+            // always have the property controls displayed
 
-            if (segXmodeEnb[curSegment])
+            manualButton.setVisibility(GONE);
+
+            if (!segXmodeEnb[curSegment])
             {
-                llAutoControls.setVisibility(VISIBLE);
-                manualButton.setText(getResources().getString(R.string.name_disable));
-
-                llPropColor.setVisibility(((bits & 1) != 0) ? VISIBLE : GONE);
-                llPropWhite.setVisibility(((bits & 2) != 0) ? VISIBLE : GONE);
-                llPropCount.setVisibility(((bits & 4) != 0) ? VISIBLE : GONE);
-
-                seekPropColor.setProgress(((segXmodeHue[ curSegment] * MAXVAL_PERCENT) / MAXVAL_HUE));
-                seekPropWhite.setProgress(((segXmodeWht[ curSegment] * MAXVAL_PERCENT) / MAXVAL_WHT));
-                seekPropCount.setProgress(  segXmodeCnt[ curSegment]);
-            }
-            else
-            {
-                manualButton.setText(getResources().getString(R.string.name_enable));
-                llAutoControls.setVisibility(GONE);
+                Log.d(LOGNAME, "Enabling Properties:");
+                int seg = curSegment + 1;
+                segXmodeEnb[curSegment] = true;
+                SendString(CMD_SEGS_ENABLE + seg);
+                SendString(CMD_EXTMODE + "1");
             }
         }
-        else llProperties.setVisibility(GONE);
-
-        if ((bits & 0x10) != 0) // enable triggering
+        else
         {
-            llTrigControls.setVisibility(VISIBLE);
+            manualButton.setVisibility(VISIBLE);
 
-            if ((bits & 0x20) != 0) // enable force control
+            int bits = devPatternBits[segPatterns[curSegment]];
+
+            if ((bits & 0x07) != 0) // enable properties
             {
-                llTrigForce.setVisibility(VISIBLE);
-                seekTrigForce.setProgress(segTrigForce[curSegment] / 10);
-                textTrigger.setText(getResources().getString(R.string.title_trigforce));
+                llProperties.setVisibility(VISIBLE);
+
+                if (segXmodeEnb[curSegment])
+                {
+                    llAutoControls.setVisibility(VISIBLE);
+                    manualButton.setText(getResources().getString(R.string.name_disable));
+
+                    llPropColor.setVisibility(((bits & 1) != 0) ? VISIBLE : GONE);
+                    llPropWhite.setVisibility(((bits & 2) != 0) ? VISIBLE : GONE);
+                    llPropCount.setVisibility(((bits & 4) != 0) ? VISIBLE : GONE);
+
+                    seekPropColor.setProgress(((segXmodeHue[ curSegment] * MAXVAL_PERCENT) / MAXVAL_HUE));
+                    seekPropWhite.setProgress(((segXmodeWht[ curSegment] * MAXVAL_PERCENT) / MAXVAL_WHT));
+                    seekPropCount.setProgress(  segXmodeCnt[ curSegment]);
+                }
+                else
+                {
+                    manualButton.setText(getResources().getString(R.string.name_enable));
+                    llAutoControls.setVisibility(GONE);
+                }
             }
-            else
+            else llProperties.setVisibility(GONE);
+
+            if ((bits & 0x10) != 0) // enable triggering
             {
-                llTrigForce.setVisibility(GONE);
-                textTrigger.setText(getResources().getString(R.string.title_dotrigger));
+                llTrigControls.setVisibility(VISIBLE);
+
+                if ((bits & 0x20) != 0) // enable force control
+                {
+                    llTrigForce.setVisibility(VISIBLE);
+                    seekTrigForce.setProgress(segTrigForce[curSegment] / 10);
+                    textTrigger.setText(getResources().getString(R.string.title_trigforce));
+                }
+                else
+                {
+                    llTrigForce.setVisibility(GONE);
+                    textTrigger.setText(getResources().getString(R.string.title_dotrigger));
+                }
             }
+            else llTrigControls.setVisibility(GONE);
         }
-        else llTrigControls.setVisibility(GONE);
     }
 
     private void SetSegment(int index)
@@ -440,6 +532,8 @@ public class FragCtrls extends Fragment implements SeekBar.OnSeekBarChangeListen
             Log.w(LOGNAME, "Segment not changed");
             return;
         }
+
+        SetupPatternArraysForSegment(index);
 
         boolean enable = segRadioButtons[index].isChecked();
 
