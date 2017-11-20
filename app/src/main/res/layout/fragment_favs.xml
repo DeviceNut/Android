@@ -38,9 +38,11 @@
             android:orientation="vertical">
 
             <Button
-                android:layout_width="match_parent"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="13dp"
+                android:layout_marginBottom="12dp"
+                android:minWidth="500dp"
+                android:layout_gravity="center_horizontal"
                 android:textAllCaps="false"
                 android:textColor="@color/UserChoice"
                 android:textSize="22sp"
@@ -48,9 +50,11 @@
                 android:id="@+id/button_Pattern1"/>
 
             <Button
-                android:layout_width="match_parent"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="13dp"
+                android:layout_marginBottom="12dp"
+                android:minWidth="500dp"
+                android:layout_gravity="center_horizontal"
                 android:textAllCaps="false"
                 android:textColor="@color/UserChoice"
                 android:textSize="22sp"
@@ -58,9 +62,11 @@
                 android:id="@+id/button_Pattern2"/>
 
             <Button
-                android:layout_width="match_parent"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="13dp"
+                android:layout_marginBottom="12dp"
+                android:minWidth="500dp"
+                android:layout_gravity="center_horizontal"
                 android:textAllCaps="false"
                 android:textColor="@color/UserChoice"
                 android:textSize="22sp"
@@ -68,9 +74,11 @@
                 android:id="@+id/button_Pattern3"/>
 
             <Button
-                android:layout_width="match_parent"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="13dp"
+                android:layout_marginBottom="12dp"
+                android:minWidth="500dp"
+                android:layout_gravity="center_horizontal"
                 android:textAllCaps="false"
                 android:textColor="@color/UserChoice"
                 android:textSize="22sp"
@@ -78,9 +86,11 @@
                 android:id="@+id/button_Pattern4"/>
 
             <Button
-                android:layout_width="match_parent"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="13dp"
+                android:layout_marginBottom="12dp"
+                android:minWidth="500dp"
+                android:layout_gravity="center_horizontal"
                 android:textAllCaps="false"
                 android:textColor="@color/UserChoice"
                 android:textSize="22sp"
@@ -88,9 +98,11 @@
                 android:id="@+id/button_Pattern5"/>
 
             <Button
-                android:layout_width="match_parent"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="13dp"
+                android:layout_marginBottom="12dp"
+                android:minWidth="500dp"
+                android:layout_gravity="center_horizontal"
                 android:textAllCaps="false"
                 android:textColor="@color/UserChoice"
                 android:textSize="22sp"

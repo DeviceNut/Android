@@ -215,7 +215,7 @@
                         tools:ignore="RtlHardcoded"/>
 
                     <SeekBar
-                        android:layout_width="0dp"
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:id="@+id/seek_Bright"/>
@@ -247,7 +247,7 @@
                         tools:ignore="RtlHardcoded"/>
 
                     <SeekBar
-                        android:layout_width="0dp"
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:id="@+id/seek_Delay"/>
@@ -315,7 +315,7 @@
                                 android:text="ColorHue"/>
 
                             <SeekBar
-                                android:layout_width="0dp"
+                                android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:layout_weight="1"
                                 android:id="@+id/seek_PropColor"/>
@@ -335,7 +335,7 @@
                                 android:text="Whiteness"/>
 
                             <SeekBar
-                                android:layout_width="0dp"
+                                android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:layout_weight="1"
                                 android:id="@+id/seek_PropWhite"/>
@@ -355,7 +355,7 @@
                                 android:text="Count"/>
 
                             <SeekBar
-                                android:layout_width="0dp"
+                                android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:layout_weight="1"
                                 android:id="@+id/seek_PropCount"/>
@@ -398,7 +398,7 @@
                             tools:ignore="RtlHardcoded"/>
 
                         <SeekBar
-                            android:layout_width="0dp"
+                            android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
                             android:id="@+id/seek_TrigForce"/>
