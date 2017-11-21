@@ -15,7 +15,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.LinearLayout;
-import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -28,9 +27,7 @@ import static com.devicenut.pixelnutctrl.Main.CMD_RESUME;
 import static com.devicenut.pixelnutctrl.Main.ble;
 import static com.devicenut.pixelnutctrl.Main.devName;
 import static com.devicenut.pixelnutctrl.Main.doUpdate;
-import static com.devicenut.pixelnutctrl.Main.haveFavorites;
-import static com.devicenut.pixelnutctrl.Main.multiStrands;
-import static com.devicenut.pixelnutctrl.Main.numSegments;
+import static com.devicenut.pixelnutctrl.Main.numFragments;
 import static com.devicenut.pixelnutctrl.Main.pageControls;
 import static com.devicenut.pixelnutctrl.Main.pageDetails;
 import static com.devicenut.pixelnutctrl.Main.pageFavorites;
@@ -38,7 +35,10 @@ import static com.devicenut.pixelnutctrl.Main.pageCurrent;
 import static com.devicenut.pixelnutctrl.Main.masterPager;
 import static com.devicenut.pixelnutctrl.Main.masterPageHeight;
 
-public class Master extends AppCompatActivity implements FragListen, Bluetooth.BleCallbacks
+public class Master extends AppCompatActivity implements FragFavs.FavoriteSelectInterface,
+                                                         FragCtrls.DeviceCommandInterface,
+                                                         FragCtrls.PatternSelectionInterface,
+                                                         Bluetooth.BleCallbacks
 {
     private final String LOGNAME = "Master";
     private final Activity context = this;
@@ -49,19 +49,45 @@ public class Master extends AppCompatActivity implements FragListen, Bluetooth.B
     private String devNameSaved = "";
 
     private LinearLayout llFragPages;
-    private ScrollView helpPage;
     private Button pauseButton, helpButton;
-    private TextView nameText, helpText;
+    private TextView nameText;
     private TextView leftText, rightText;
 
+    private Fragment[] myFragments = new Fragment[numFragments];
     private FragmentPagerAdapter adapterViewPager;
     private boolean inLandscape;
+
+    public void onFavoriteSelect(int pnum)
+    {
+        Log.d(LOGNAME, "FragFavs says: " + pnum);
+        FragmentPagerAdapter fa = (FragmentPagerAdapter)masterPager.getAdapter();
+        FragCtrls f = (FragCtrls)fa.getItem(pageControls);
+        f.ChangePattern(pnum);
+    }
+
+    public void onPatternSelect(int pnum)
+    {
+        Log.d(LOGNAME, "FragCtrls says: " + pnum);
+        FragmentPagerAdapter fa = (FragmentPagerAdapter)masterPager.getAdapter();
+        FragFavs f = (FragFavs)fa.getItem(pageFavorites);
+        f.onPatternSelect(pnum);
+    }
+
+    public void onDeviceCommand(String str)
+    {
+        Log.d(LOGNAME, "FragCtrls says: " + str);
+        SendString(str);
+    }
 
     @Override protected void onCreate(Bundle savedInstanceState)
     {
         Log.d(LOGNAME, ">>onCreate: SavedInstance=" + ((savedInstanceState == null) ? "0" : "1"));
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_master);
+
+        if (pageFavorites >= 0) myFragments[pageFavorites] = FragFavs.newInstance();
+        myFragments[pageControls] = FragCtrls.newInstance();
+        //FIXME myFragments[pageDetails] = FragAdv.newInstance();
 
         inLandscape = (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE);
         if (inLandscape && getResources().getBoolean(R.bool.portrait_only))
@@ -73,10 +99,8 @@ public class Master extends AppCompatActivity implements FragListen, Bluetooth.B
         //masterPager.setOffscreenPageLimit(3);
 
         llFragPages     = (LinearLayout) findViewById(R.id.ll_ViewPages);
-        helpPage        = (ScrollView)   findViewById(R.id.ll_HelpPage);
         pauseButton     = (Button)       findViewById(R.id.button_Pause);
         helpButton      = (Button)       findViewById(R.id.button_HelpPage);
-        helpText        = (TextView)     findViewById(R.id.view_HelpText);
         nameText        = (TextView)     findViewById(R.id.text_Devname);
         leftText        = (TextView)     findViewById(R.id.text_GoLeft);
         rightText       = (TextView)     findViewById(R.id.text_GoRight);
@@ -173,27 +197,29 @@ public class Master extends AppCompatActivity implements FragListen, Bluetooth.B
 
     private void ToggleHelp()
     {
+        FragmentPagerAdapter fa = (FragmentPagerAdapter)masterPager.getAdapter();
+        FragFavs favs = (FragFavs)fa.getItem(pageFavorites);
+        FragCtrls ctrls = (FragCtrls)fa.getItem(pageControls);
+        // TODO: show help for Details page
+
         if (helpActive) // turn controls help off
         {
-            helpPage.setVisibility(GONE);
-            llFragPages.setVisibility(VISIBLE);
+            favs.setHelpMode(false);
+            ctrls.setHelpMode(false);
 
             helpButton.setText(getResources().getString(R.string.name_help));
             helpActive = false;
+
+            leftText.setVisibility(VISIBLE);
+            rightText.setVisibility(VISIBLE);
         }
         else
         {
-            llFragPages.setVisibility(GONE);
-            helpPage.setVisibility(VISIBLE);
+            leftText.setVisibility(GONE);
+            rightText.setVisibility(GONE);
 
-            String str = getResources().getString(R.string.text_help_head);
-            if (numSegments > 1)
-            {
-                if (multiStrands)
-                     str += getResources().getString(R.string.text_help_segs_physical);
-                else str += getResources().getString(R.string.text_help_segs_logical);
-            }
-            helpText.setText(str + getResources().getString(R.string.text_help_tail));
+            favs.setHelpMode(true);
+            ctrls.setHelpMode(true);
 
             helpButton.setText(getResources().getString(R.string.name_action));
             helpActive = true;
@@ -299,12 +325,6 @@ public class Master extends AppCompatActivity implements FragListen, Bluetooth.B
         Log.e(LOGNAME, "Unexpected onRead");
     }
 
-    public void onDeviceCmdSend(String str)
-    {
-        Log.d(LOGNAME, "Fragment says: " + str);
-        SendString(str);
-    }
-
     private class MasterAdapter extends FragmentPagerAdapter
     {
         private final String LOGNAME = "Master";
@@ -315,16 +335,12 @@ public class Master extends AppCompatActivity implements FragListen, Bluetooth.B
             Log.d(LOGNAME, ">>Adapter");
         }
 
-        //@Override public int getCount() { return (haveFavorites  ? 3 : 2); } // number of pages
-        @Override public int getCount() { return (haveFavorites  ? 2 : 1); } // number of pages FIXME
+        @Override public int getCount() { return numFragments; }
 
         @Override public Fragment getItem(int position)
         {
             Log.d(LOGNAME, "Select fragment " + position);
-            if (position == pageFavorites) return FragFavs.newInstance();
-            if (position == pageControls)  return FragCtrls.newInstance();
-            //if (position == pageDetails)   return FragAdv.newInstance();
-            return null;
+            return myFragments[position];
         }
 
         @Override public CharSequence getPageTitle(int position) // never see this called!
@@ -336,7 +352,7 @@ public class Master extends AppCompatActivity implements FragListen, Bluetooth.B
         @Override public float getPageWidth(int position)
         {
             //Log.d(LOGNAME, "GetPageWidth: landscape=" + inLandscape);
-            return( inLandscape ? 0.5f : 1.0f );
+            return( inLandscape ? 0.5f : 1.0f ); // allow for 2 pages side by side
         }
     }
 }

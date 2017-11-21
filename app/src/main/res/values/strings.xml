@@ -26,14 +26,15 @@
     <string name="title_modify">Modify effect properties</string>
     <string name="title_trigforce">Select force then trigger</string>
     <string name="title_dotrigger">Press to trigger pattern</string>
-    <string name="title_help">Controls Help</string>
+    <string name="title_help_favs">Favorites Help</string>
+    <string name="title_help_ctrls">Controls Help</string>
     <string name="title_favs">Favorites</string>
     <string name="action_favs">&lt;&lt;&lt; Favorites</string>
     <string name="action_ctrls_rite">Controls &gt;&gt;&gt;</string>
     <string name="action_ctrls_left">&lt;&lt;&lt; Controls</string>
     <string name="action_details">Details &gt;&gt;&gt;</string>
     <string name="text_help_head">
-        The controls affect the PixelNut! device that is currently connected,
+        These controls affect the PixelNut! device that is currently connected,
         whose name is displayed in the upper left of the screen.
 
         \n\nYou can change this name anytime by selecting it, which opens an edit box.
@@ -41,7 +42,9 @@
 
         \n\nAt any time you can press the Pause button to stop the animation,
         until you restart it with Resume.
-
+    </string>
+    <string name="text_help_favs">
+        Help for Favorites page.
     </string>
     <string name="text_help_tail">
         \n\nChoose Effect Pattern:
@@ -71,7 +74,6 @@
         \n\nSelect Segment to Control:
         \n\nThese radio buttons selects the which segment the following controls apply to.
         Only one segment can be chosen at once, allowing for independent control of each segment.
-
     </string>
     <string name="text_help_segs_physical">
         \n\nSelect Segment to Control:
@@ -82,10 +84,5 @@
         \n\nPressing "&amp;" button enables chaining segments together, after which the segment radio buttons
         can be enabled/disabled separately. Pressing it when the button is showing "X" turns off chaining,
         returning independent control.
-
     </string>
-
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
-
 </resources>

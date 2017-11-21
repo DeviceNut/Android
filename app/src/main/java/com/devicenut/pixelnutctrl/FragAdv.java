@@ -14,8 +14,6 @@ public class FragAdv extends Fragment
     private final String LOGNAME = "Controls";
     private Activity context;
 
-    private FragListen mListener;
-
     public FragAdv() {}
     public static FragAdv newInstance() { return new FragAdv(); }
 
@@ -39,14 +37,14 @@ public class FragAdv extends Fragment
     {
         Log.d(LOGNAME, ">>onAttach");
         super.onAttach(context);
-        mListener = (FragListen)getActivity();
+        //mListener = (FragListen)getActivity();
     }
 
     @Override public void onDetach()
     {
         Log.d(LOGNAME, ">>onDetach");
         super.onDetach();
-        mListener = null;
+        //mListener = null;
     }
 
 }

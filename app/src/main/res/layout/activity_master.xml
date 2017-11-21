@@ -15,8 +15,7 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:id="@+id/ll_MainView">
+        android:orientation="vertical">
 
         <View
             android:layout_width="fill_parent"
@@ -85,40 +84,6 @@
             android:layout_width="fill_parent"
             android:layout_height="1dp"
             android:background="@color/HorzDivider3"/>
-
-        <ScrollView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:visibility="gone"
-            android:orientation="vertical"
-            android:layout_marginTop="10dp"
-            android:layout_marginLeft="@dimen/activity_horizontal_margin"
-            android:layout_marginRight="@dimen/activity_horizontal_margin"
-            android:layout_marginBottom="16dp"
-            android:id="@+id/ll_HelpPage">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical">
-
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="10dp"
-                    android:text="@string/title_help"
-                    android:textAppearance="@style/TextAppearance.AppCompat.Large"
-                    android:textStyle="italic"/>
-
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:textAppearance="@style/TextAppearance.AppCompat.Medium"
-                    android:text=""
-                    android:id="@+id/view_HelpText"/>
-
-            </LinearLayout>
-        </ScrollView>
 
         <LinearLayout
             android:layout_width="match_parent"

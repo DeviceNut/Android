@@ -10,23 +10,26 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.LinearLayout;
+import android.widget.ScrollView;
+import android.widget.TextView;
 
-import static com.devicenut.pixelnutctrl.Main.CMD_EXTMODE;
-import static com.devicenut.pixelnutctrl.Main.CMD_POP_PATTERN;
-import static com.devicenut.pixelnutctrl.Main.CMD_SEGS_ENABLE;
-import static com.devicenut.pixelnutctrl.Main.CMD_START_END;
-import static com.devicenut.pixelnutctrl.Main.basicPatternsCount;
-import static com.devicenut.pixelnutctrl.Main.curFavorite;
+import static android.view.View.GONE;
+import static android.view.View.VISIBLE;
+import static com.devicenut.pixelnutctrl.Main.appContext;
 import static com.devicenut.pixelnutctrl.Main.customPatterns;
-import static com.devicenut.pixelnutctrl.Main.devPatternCmds;
+import static com.devicenut.pixelnutctrl.Main.basicPatternsCount;
 import static com.devicenut.pixelnutctrl.Main.devPatternNames;
-import static com.devicenut.pixelnutctrl.Main.numSegments;
 import static com.devicenut.pixelnutctrl.Main.numsFavorites;
+import static com.devicenut.pixelnutctrl.Main.curFavorite;
 
 public class FragFavs extends Fragment
 {
-    private final String LOGNAME = "Favorites";
-    private Activity context;
+    private static final String LOGNAME = "Favorites";
+
+    private static LinearLayout view_Favs;
+    private static ScrollView helpPage;
+    private static TextView helpText;
 
     private final int[] idsButton =
             {
@@ -37,9 +40,13 @@ public class FragFavs extends Fragment
                     R.id.button_Pattern5,
                     R.id.button_Pattern6,
             };
-    private Button[] objsButton;
+    private static Button[] objsButton;
 
-    private FragListen mListener;
+    interface FavoriteSelectInterface
+    {
+        void onFavoriteSelect(int favnum);
+    }
+    private FavoriteSelectInterface mListener;
 
     public FragFavs() {}
     public static FragFavs newInstance() { return new FragFavs(); }
@@ -53,9 +60,12 @@ public class FragFavs extends Fragment
     @Override public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
     {
         Log.d(LOGNAME, ">>onCreateView");
-        context = this.getActivity(); // not valid until now
 
         View v = inflater.inflate(R.layout.fragment_favs, container, false);
+
+        view_Favs   = (LinearLayout) v.findViewById(R.id.ll_Favorites);
+        helpPage    = (ScrollView)   v.findViewById(R.id.ll_HelpPage_Favs);
+        helpText    = (TextView)     v.findViewById(R.id.view_HelpText_Favs);
 
         objsButton = new Button[idsButton.length];
         for (int i = 0; i < idsButton.length; ++i)
@@ -70,11 +80,21 @@ public class FragFavs extends Fragment
         return v;
     }
 
+    @Override public void onDestroyView()
+    {
+        Log.d(LOGNAME, ">>onDestroyView");
+        super.onDestroyView();
+
+        view_Favs = null;
+        helpPage = null;
+        helpText = null;
+    }
+
     @Override public void onAttach(Context context)
     {
         Log.d(LOGNAME, ">>onAttach");
         super.onAttach(context);
-        mListener = (FragListen)getActivity();
+        mListener = (FavoriteSelectInterface)getActivity();
     }
 
     @Override public void onDetach()
@@ -84,57 +104,77 @@ public class FragFavs extends Fragment
         mListener = null;
     }
 
+    public void setHelpMode(boolean enable)
+    {
+        if (enable)
+        {
+            view_Favs.setVisibility(GONE);
+            helpPage.setVisibility(VISIBLE);
+
+            String str = appContext.getResources().getString(R.string.text_help_head);
+            str += appContext.getResources().getString(R.string.text_help_favs);
+            helpText.setText(str);
+        }
+        else
+        {
+            helpPage.setVisibility(GONE);
+            view_Favs.setVisibility(VISIBLE);
+        }
+    }
+
     private final View.OnClickListener mClicker = new View.OnClickListener()
     {
         @Override public void onClick(View v)
         {
-            SendPattern(v.getId());
+            int id = v.getId();
+            for (int i = 0; i < idsButton.length; ++i)
+            {
+                if (id == idsButton[i])
+                {
+                    if (curFavorite == i) break;
+
+                    int pnum = numsFavorites[i] + customPatterns + basicPatternsCount;
+
+                    if (mListener != null)
+                        mListener.onFavoriteSelect(pnum);
+
+                    ChangeSelection(i, pnum);
+                    break;
+                }
+            }
         }
     };
 
-    private void SendPattern(int id)
+    private void ChangeSelection(int findex, int pnum)
     {
-        for (int i = 0; i < idsButton.length; ++i)
+        Log.d(LOGNAME, "FavSelect findex=" + findex + " pnum=" + pnum);
+        if (curFavorite >= 0)
         {
-            if (id == idsButton[i])
+            int prev = numsFavorites[curFavorite] + customPatterns + basicPatternsCount;
+            objsButton[curFavorite].setText(devPatternNames[prev]);
+            objsButton[curFavorite].setTextColor(ContextCompat.getColor(appContext, R.color.UserChoice));
+        }
+
+        if (findex >= 0)
+        {
+            objsButton[findex].setText(">>> " + devPatternNames[pnum] + " <<<");
+            objsButton[findex].setTextColor(ContextCompat.getColor(appContext, R.color.HighLight));
+        }
+
+        curFavorite = findex;
+    }
+
+    public void onPatternSelect(int pnum)
+    {
+        for (int i = 0; i < numsFavorites.length; ++i)
+        {
+            if (numsFavorites[i] == pnum)
             {
-                if (curFavorite == i) break;
-
-                int num = numsFavorites[i] + customPatterns + basicPatternsCount + 1;
-                for (int seg = 1; seg <= numSegments; ++seg)
-                {
-                    if (numSegments > 1) SendString(CMD_SEGS_ENABLE + seg);
-                    SendString(CMD_EXTMODE + "0"); // turn off external properties mode
-                    SendSegPat(num);
-                }
-
-                if (curFavorite >= 0)
-                {
-                    objsButton[curFavorite].setText(devPatternNames[numsFavorites[curFavorite]]);
-                    objsButton[curFavorite].setTextColor(ContextCompat.getColor(context, R.color.UserChoice));
-                }
-
-                objsButton[i].setText(">>> " + devPatternNames[numsFavorites[i]] + " <<<");
-                objsButton[i].setTextColor(ContextCompat.getColor(context, R.color.HighLight));
-
-                curFavorite = i;
-                break;
+                ChangeSelection(i, pnum + customPatterns + basicPatternsCount);
+                return;
             }
         }
-    }
 
-    private void SendSegPat(int num)
-    {
-        SendString(CMD_START_END);; // start sequence
-        SendString(CMD_POP_PATTERN);
-        SendString(devPatternCmds[num-1]);
-        SendString(CMD_START_END);; // end sequence
-        SendString("" + num);   // store current pattern number
-    }
-
-    private void SendString(String str)
-    {
-        if (mListener != null)
-            mListener.onDeviceCmdSend(str);
+        ChangeSelection(-1,0); // deselect current choice
     }
 }
