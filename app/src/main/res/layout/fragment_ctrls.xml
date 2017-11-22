@@ -270,8 +270,8 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="15dp"
-                    android:layout_marginBottom="12dp"
-                    android:orientation="horizontal">
+                    android:orientation="horizontal"
+                    android:id="@+id/ll_DelayControl">
 
                     <TextView
                         android:layout_width="wrap_content"
@@ -301,6 +301,7 @@
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:layout_marginTop="15dp"
                     android:orientation="vertical"
                     android:id="@+id/ll_Properties">
 

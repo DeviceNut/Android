@@ -1,6 +1,5 @@
 package com.devicenut.pixelnutctrl;
 
-import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -17,11 +16,12 @@ import android.widget.TextView;
 import static android.view.View.GONE;
 import static android.view.View.VISIBLE;
 import static com.devicenut.pixelnutctrl.Main.appContext;
-import static com.devicenut.pixelnutctrl.Main.customPatterns;
-import static com.devicenut.pixelnutctrl.Main.basicPatternsCount;
+import static com.devicenut.pixelnutctrl.Main.curSegment;
 import static com.devicenut.pixelnutctrl.Main.devPatternNames;
-import static com.devicenut.pixelnutctrl.Main.numsFavorites;
+import static com.devicenut.pixelnutctrl.Main.listFavorites;
 import static com.devicenut.pixelnutctrl.Main.curFavorite;
+import static com.devicenut.pixelnutctrl.Main.numSegments;
+import static com.devicenut.pixelnutctrl.Main.segPatterns;
 
 public class FragFavs extends Fragment
 {
@@ -70,9 +70,9 @@ public class FragFavs extends Fragment
         objsButton = new Button[idsButton.length];
         for (int i = 0; i < idsButton.length; ++i)
         {
-            Log.w(LOGNAME, "Setting favorite: " + devPatternNames[ numsFavorites[i] + customPatterns + basicPatternsCount ]);
+            Log.w(LOGNAME, "Setting favorite: " + listFavorites[i].getPatternName());
             Button b = (Button)v.findViewById(idsButton[i]);
-            b.setText(devPatternNames[ numsFavorites[i] + customPatterns + basicPatternsCount ]);
+            b.setText(listFavorites[i].getPatternName());
             b.setOnClickListener(mClicker);
             objsButton[i] = b;
         }
@@ -133,48 +133,52 @@ public class FragFavs extends Fragment
                 {
                     if (curFavorite == i) break;
 
-                    int pnum = numsFavorites[i] + customPatterns + basicPatternsCount;
+                    for (int j = 0; j < numSegments; ++j)
+                    {
+                        segPatterns[j] = listFavorites[i].getPatternNum(j);
+                        if (j == curSegment)
+                        {
+                            if (mListener != null)
+                                mListener.onFavoriteSelect(segPatterns[j]);
+                        }
+                    }
 
-                    if (mListener != null)
-                        mListener.onFavoriteSelect(pnum);
-
-                    ChangeSelection(i, pnum);
+                    ChangeSelection(i);
                     break;
                 }
             }
         }
     };
 
-    private void ChangeSelection(int findex, int pnum)
+    private void ChangeSelection(int index)
     {
-        Log.d(LOGNAME, "FavSelect findex=" + findex + " pnum=" + pnum);
+        Log.d(LOGNAME, "FavSelect index=" + index);
         if (curFavorite >= 0)
         {
-            int prev = numsFavorites[curFavorite] + customPatterns + basicPatternsCount;
-            objsButton[curFavorite].setText(devPatternNames[prev]);
+            objsButton[curFavorite].setText(listFavorites[curFavorite].getPatternName());
             objsButton[curFavorite].setTextColor(ContextCompat.getColor(appContext, R.color.UserChoice));
         }
 
-        if (findex >= 0)
+        if (index >= 0)
         {
-            objsButton[findex].setText(">>> " + devPatternNames[pnum] + " <<<");
-            objsButton[findex].setTextColor(ContextCompat.getColor(appContext, R.color.HighLight));
+            objsButton[index].setText(">>> " + listFavorites[index].getPatternName() + " <<<");
+            objsButton[index].setTextColor(ContextCompat.getColor(appContext, R.color.HighLight));
         }
 
-        curFavorite = findex;
+        curFavorite = index;
     }
 
     public void onPatternSelect(int pnum)
     {
-        for (int i = 0; i < numsFavorites.length; ++i)
+        for (int i = 0; i < listFavorites.length; ++i)
         {
-            if (numsFavorites[i] == pnum)
+            if (listFavorites[i].getPatternNum(curSegment) == pnum)
             {
-                ChangeSelection(i, pnum + customPatterns + basicPatternsCount);
+                ChangeSelection(i);
                 return;
             }
         }
 
-        ChangeSelection(-1,0); // deselect current choice
+        ChangeSelection(-1); // deselect current choice
     }
 }

@@ -23,7 +23,7 @@ import static com.devicenut.pixelnutctrl.Main.haveBasicSegs;
 import static com.devicenut.pixelnutctrl.Main.segBasicOnly;
 import static com.devicenut.pixelnutctrl.Main.curBright;
 import static com.devicenut.pixelnutctrl.Main.curDelay;
-import static com.devicenut.pixelnutctrl.Main.customPatterns;
+import static com.devicenut.pixelnutctrl.Main.devicePatterns;
 import static com.devicenut.pixelnutctrl.Main.customPlugins;
 import static com.devicenut.pixelnutctrl.Main.devPatternBits;
 import static com.devicenut.pixelnutctrl.Main.devPatternCmds;
@@ -86,7 +86,7 @@ class ReplyStrs
     private void CheckForExtendedCommands()
     {
         getSegments = (numSegments > 1);
-        getPatterns = (customPatterns > 0);
+        getPatterns = (devicePatterns > 0);
         getPlugins = (customPlugins > 0);
         setPercentage = (getSegments || getPatterns || getPlugins);
     }
@@ -220,7 +220,7 @@ class ReplyStrs
         else if (getPatterns)
         {
             int index = (replyState-1)/3;
-            if (index < customPatterns)
+            if (index < devicePatterns)
             {
                 int line = ((replyState-1) % 3);
 
@@ -312,7 +312,7 @@ class ReplyStrs
                 {
                     numSegments     = Integer.parseInt(strs[0]);
                     segPatterns[0]  = Integer.parseInt(strs[1]);
-                    customPatterns  = Integer.parseInt(strs[2]);
+                    devicePatterns = Integer.parseInt(strs[2]);
                     int bits        = Integer.parseInt(strs[3]);
                     customPlugins   = Integer.parseInt(strs[4]);
                     maxlenCmdStrs   = Integer.parseInt(strs[5]);
@@ -349,7 +349,7 @@ class ReplyStrs
                             useAdvPatterns = true;
                             numPatterns = basicPatternsCount + advPatternsCount;
                         }
-                        numPatterns += customPatterns;
+                        numPatterns += devicePatterns;
 
                         boolean features = false;
                         if ((bits & 0x80) != 0) // feature is enabled
@@ -360,7 +360,7 @@ class ReplyStrs
                         Log.v(LOGNAME, ">> Segments=" + numSegments + ((numSegments > 1) ? (multiStrands ? " (physical)" : " (logical)") : ""));
                         Log.v(LOGNAME, ">> CmdStrLen=" + maxlenCmdStrs);
                         Log.v(LOGNAME, ">> CurPattern=" + segPatterns[0] + " DoInit=" + initPatterns);
-                        Log.v(LOGNAME, ">> CustomPatterns=" + customPatterns + " Advanced=" + useAdvPatterns);
+                        Log.v(LOGNAME, ">> DevicePatterns=" + devicePatterns + " Advanced=" + useAdvPatterns);
                         Log.v(LOGNAME, ">> Total patterns=" + numPatterns);
                         Log.v(LOGNAME, ">> CustomPlugins=" + customPlugins);
                         if (features) Log.v(LOGNAME, ">> Features=" + (bits & 0x7F));
@@ -502,7 +502,7 @@ class ReplyStrs
         if (setPercentage)
         {
             // use 101 to insure the progress bar fills up entirely
-            progressPcentInc = 101.0 / ((getSegments ? (numSegments+1) : 0) + (customPatterns*3) + (customPlugins*2));
+            progressPcentInc = 101.0 / ((getSegments ? (numSegments+1) : 0) + (devicePatterns *3) + (customPlugins*2));
             progressPercent = -progressPcentInc; // incremented first, so start at 0
             setPercentage = false;
 
@@ -518,7 +518,7 @@ class ReplyStrs
         else if (getPatterns)
         {
             sendCmdStr = CMD_GET_PATTERNS;
-            optionLines = customPatterns*3;
+            optionLines = devicePatterns *3;
             moreinfo = true;
         }
         else if (getPlugins)

@@ -1,6 +1,5 @@
 package com.devicenut.pixelnutctrl;
 
-import android.app.Activity;
 import android.content.Context;
 import android.graphics.Color;
 import android.os.Bundle;
@@ -39,8 +38,7 @@ import static com.devicenut.pixelnutctrl.Main.appContext;
 import static com.devicenut.pixelnutctrl.Main.curBright;
 import static com.devicenut.pixelnutctrl.Main.curDelay;
 import static com.devicenut.pixelnutctrl.Main.curSegment;
-import static com.devicenut.pixelnutctrl.Main.customPatterns;
-import static com.devicenut.pixelnutctrl.Main.haveBasicSegs;
+import static com.devicenut.pixelnutctrl.Main.devicePatterns;
 import static com.devicenut.pixelnutctrl.Main.initPatterns;
 import static com.devicenut.pixelnutctrl.Main.multiStrands;
 import static com.devicenut.pixelnutctrl.Main.numSegments;
@@ -78,6 +76,9 @@ import static com.devicenut.pixelnutctrl.Main.devPatternHelp;
 import static com.devicenut.pixelnutctrl.Main.devPatternCmds;
 import static com.devicenut.pixelnutctrl.Main.devPatternBits;
 
+import static com.devicenut.pixelnutctrl.Main.haveBasicSegs;
+import static com.devicenut.pixelnutctrl.Main.haveAdvPatterns;
+
 public class FragCtrls extends Fragment implements SeekBar.OnSeekBarChangeListener
 {
     private static final String LOGNAME = "Controls";
@@ -89,8 +90,9 @@ public class FragCtrls extends Fragment implements SeekBar.OnSeekBarChangeListen
     private static int helpMode = 0;
     private static boolean changePattern = true;
 
-    private static LinearLayout llProperties, llPatternHelp;
-    private static LinearLayout llAutoControls, llPropColor, llPropWhite, llPropCount;
+    private static LinearLayout llPatternHelp, llDelayControl;
+    private static LinearLayout llProperties, llAutoControls;
+    private static LinearLayout llPropColor, llPropWhite, llPropCount;
     private static LinearLayout llTrigControls, llTrigForce;
 
     private static Button segAddButton, helpButton, manualButton;
@@ -141,6 +143,7 @@ public class FragCtrls extends Fragment implements SeekBar.OnSeekBarChangeListen
         helpText       = (TextView)   v.findViewById(R.id.view_HelpText_Ctrls);
 
         llPatternHelp  = (LinearLayout) v.findViewById(R.id.ll_PatternHelp);
+        llDelayControl = (LinearLayout) v.findViewById(R.id.ll_DelayControl);
         llProperties   = (LinearLayout) v.findViewById(R.id.ll_Properties);
         llAutoControls = (LinearLayout) v.findViewById(R.id.ll_AutoControls);
         llPropColor    = (LinearLayout) v.findViewById(R.id.ll_PropColor);
@@ -212,6 +215,8 @@ public class FragCtrls extends Fragment implements SeekBar.OnSeekBarChangeListen
             useSegEnables = false;
         }
         else llSelectSegs.setVisibility(GONE);
+
+        SetupPatternArraysForSegment(curSegment);
 
         // cannot create these until have context
         if (haveBasicSegs) CreateSpinnerAdapterBasic();
@@ -357,7 +362,7 @@ public class FragCtrls extends Fragment implements SeekBar.OnSeekBarChangeListen
                 int curPattern = mapIndexToPattern[position];
                 segPatterns[curSegment] = curPattern;
 
-                if (curPattern < customPatterns)
+                if (curPattern < devicePatterns)
                 {
                     int num = curPattern+1; // device pattern numbers start at 1
                     SendString("" + num);   // store current pattern number
@@ -482,6 +487,8 @@ public class FragCtrls extends Fragment implements SeekBar.OnSeekBarChangeListen
     {
         if (segBasicOnly[seg])
         {
+            haveAdvPatterns = false;
+
             mapIndexToPattern   = mapIndexToPattern_Basic;
             mapPatternToIndex   = mapPatternToIndex_Basic;
             devPatternNames     = devPatternNames_Basic;
@@ -493,6 +500,8 @@ public class FragCtrls extends Fragment implements SeekBar.OnSeekBarChangeListen
         }
         else
         {
+            haveAdvPatterns = true;
+
             mapIndexToPattern   = mapIndexToPattern_All;
             mapPatternToIndex   = mapPatternToIndex_All;
             devPatternNames     = devPatternNames_All;
@@ -574,6 +583,8 @@ public class FragCtrls extends Fragment implements SeekBar.OnSeekBarChangeListen
                 }
             }
             else llTrigControls.setVisibility(GONE);
+
+            llDelayControl.setVisibility(((bits & 0x80) == 0) ? VISIBLE : GONE);
         }
     }
 

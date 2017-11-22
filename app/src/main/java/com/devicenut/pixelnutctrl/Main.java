@@ -3,10 +3,26 @@ package com.devicenut.pixelnutctrl;
 import android.app.Application;
 import android.content.Context;
 import android.util.Log;
-import android.view.View;
 
 public class Main extends Application
 {
+    private static final String LOGNAME = "Main";
+
+    static String devName;
+    static Bluetooth ble;
+
+    static MyPager masterPager;
+    static int numFragments, pageFavorites, pageControls, pageDetails, pageCurrent;
+
+    static Context appContext;
+    @Override public void onCreate()
+    {
+        super.onCreate();
+        appContext = getApplicationContext();
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
     static final String TITLE_PIXELNUT       = "P!";
     static final String TITLE_ADAFRUIT       = "Adafruit";
     static final String TITLE_NONAME         = "NoName";
@@ -86,7 +102,7 @@ public class Main extends Application
 
     static final int[] basicPatternBits =
             {
-                    0x03,
+                    0x83, // disable Delay control
                     0x07,
                     0x07,
                     0x03,
@@ -205,12 +221,12 @@ public class Main extends Application
     static int curSegment = 0;                  // index from 0
     static int numPatterns = 0;                 // total number of patterns that can be chosen
     static int numSegments = 0;                 // total number of pixel segments
-    static int customPatterns = 0;              // number of custom patterns defined by device
+    static int devicePatterns = 0;              // number of custom patterns defined by device
     static int customPlugins = 0;               // number of custom plugins defined by device
     static int maxlenCmdStrs = 0;               // max length of command string that can be sent
     static int rangeDelay = MINVAL_DELAYRANGE;  // default range of delay offsets
 
-    static int maxNumSegs = 5;      // limited to 5 segments because of layout
+    static final int maxNumSegs = 5;            // limited because of layout
     static int curDelay[]           = new int[maxNumSegs];
     static int curBright[]          = new int[maxNumSegs];
     static boolean segXmodeEnb[]    = new boolean[maxNumSegs];
@@ -232,10 +248,177 @@ public class Main extends Application
     static boolean multiStrands = false;        // true if device has multiple physical pixel strands
                                                 // false means all segment info must be sent when changing patterns
 
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    static final int MAXNUM_FAVORITIES = 6; // limited by layout
+    static final int FAVTYPE_BASIC = 0;
+    static final int FAVTYPE_ADV = 1;
+    static final int FAVTYPE_STORED = 2;
+
+    static class FavoriteInfo
+    {
+        private static final String LOGNAME = "FavInfo";
+
+        static class FavPatternData
+        {
+            int type;
+            int index;
+            String values;
+        }
+        String name;
+        FavPatternData[] data;
+        int segs; // number of segments
+
+        // used for static initialization of single segment
+        FavoriteInfo(String n, int t, int p, String v)
+        {
+            name = n;
+            data = new FavPatternData[1];
+            segs = 1;
+            if (!addValue(0, t, p, v)) data = null;
+        }
+
+        // used along with addValue to add multiple segments
+        FavoriteInfo(String n, int c)
+        {
+            name = n;
+            segs = c;
+            data = new FavPatternData[segs];
+        }
+
+        boolean addValue(int i, int t, int p, String v)
+        {
+            if ((i >= segs) || !TestTypePnum(t, p))
+                return false;
+
+            data[i].type = t;
+            data[i].index = p;
+            data[i].values = v;
+
+            return true;
+        }
+
+        // creates instance from single string
+        boolean FavoriteInfo(String s)
+        {
+            String[] lines = s.split("\n"); // break into lines
+            if (lines.length < 2) return false;
+
+            name = lines[0];
+            segs = lines.length-1;
+            data = new FavPatternData[segs];
+
+            for (int i = 1; i < segs; ++i)
+            {
+                String[] strs = lines[i].split("\\s+"); // remove ALL spaces
+                if (strs.length < 9) return false;
+
+                data[i].type = Integer.parseInt(strs[0]);
+                data[i].index = Integer.parseInt(strs[1]);
+                if (!TestTypePnum(data[i].type, data[i].index))
+                    return false;
+
+                data[i].values = "";
+                for (int j = 0; j < 7; ++j)
+                    data[i].values += strs[j + 2] + " ";
+            }
+
+            return true;
+        }
+
+        // creates string from instance
+        String makeString()
+        {
+            if (data == null) return "";
+
+            String s = name + "\n";
+            for (int i = 0; i < segs; ++i)
+            {
+                FavPatternData fd = data[i];
+                s += fd.type + " " + fd.index + " " + fd.values;
+                if (i < (segs-1)) s += "\n";
+            }
+
+            return s;
+        }
+
+        private boolean TestTypePnum(int t, int p)
+        {
+            switch (t)
+            {
+                case FAVTYPE_BASIC:
+                {
+                    if (p >= advPatternsCount) return false;
+                    break;
+                }
+                case FAVTYPE_ADV:
+                {
+                    if (p >= basicPatternsCount) return false;
+                    break;
+                }
+                default: return false;
+            }
+            return true;
+        }
+
+        String getPatternName()
+        {
+            return name;
+        }
+
+        int getPatternNum(int seg)
+        {
+            int pnum = data[seg].index;
+
+            switch (data[seg].type)
+            {
+                default:
+                {
+                    pnum += devicePatterns;
+                    break;
+                }
+                case FAVTYPE_ADV:
+                {
+                    pnum += devicePatterns + basicPatternsCount;
+                    break;
+                }
+                case FAVTYPE_STORED:
+                {
+                    pnum += devicePatterns + basicPatternsCount + advPatternsCount;
+                    break;
+                }
+            }
+
+            return pnum;
+        }
+
+        String getPatternVals(int seg)
+        {
+            return data[seg].values;
+        }
+    }
+
+    static final FavoriteInfo[] listFavorites = new FavoriteInfo[MAXNUM_FAVORITIES];
+    static int numFavorites = 0;
+    static int curFavorite = -1;
+
+    static final FavoriteInfo defFav_Purple = new FavoriteInfo("Purple", FAVTYPE_BASIC, 0, "");
+    static final FavoriteInfo defFav_Rainbow = new FavoriteInfo(advPatternNames[0], FAVTYPE_ADV, 0, "90 50 1 0 0 0 50");
+
+    static void AddDefaultFavorites()
+    {
+        listFavorites[0] = defFav_Purple;
+        listFavorites[1] = defFav_Rainbow;
+        numFavorites = 2;
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
     // used to determine which patterns are allowed on which segments
     static boolean segBasicOnly[] = new boolean[maxNumSegs];
     static boolean haveBasicSegs = false;       // true if some segments too small for advanced patterns
     static boolean useAdvPatterns = true;       // false if limited flash space to receive commands
+    static boolean haveAdvPatterns;             // true if current pattern selection includes advanced
 
     // assigned for custom device patterns
     static String[] devPatternNames_Custom;
@@ -271,24 +454,6 @@ public class Main extends Application
     static String[] devPatternCmds;
     static int[] devPatternBits;
 
-    static int[] numsFavorites = {0, 4, 6, 8, 10, 11};
-    static int curFavorite = -1;
-
-    static String devName;
-    static Bluetooth ble;
-
-    static MyPager masterPager;
-    static int numFragments, pageFavorites, pageControls, pageDetails, pageCurrent;
-
-    private static final String LOGNAME = "Main";
-
-    static Context appContext;
-    @Override public void onCreate()
-    {
-        super.onCreate();
-        appContext = getApplicationContext();
-    }
-
     static void InitVarsForDevice()
     {
         if ((numSegments == 1) || multiStrands) // not supported for logical segments
@@ -298,6 +463,8 @@ public class Main extends Application
             //FIXME pageDetails = 2;
             pageDetails = -1;
             numFragments = 2;
+
+            AddDefaultFavorites();
         }
         else
         {
@@ -310,26 +477,7 @@ public class Main extends Application
         pageCurrent = 0;
 
         if (haveBasicSegs) CreateListArrays_Basic(); // some segments use only basic patterns
-        if (useAdvPatterns)
-        {
-            CreateListArrays_Adv();  // are allowed to use advanced patterns
-
-            mapIndexToPattern   = mapIndexToPattern_All;
-            mapPatternToIndex   = mapPatternToIndex_All;
-            devPatternNames     = devPatternNames_All;
-            devPatternHelp      = devPatternHelp_All;
-            devPatternCmds      = devPatternCmds_All;
-            devPatternBits      = devPatternBits_All;
-        }
-        else
-        {
-            mapIndexToPattern   = mapIndexToPattern_Basic;
-            mapPatternToIndex   = mapPatternToIndex_Basic;
-            devPatternNames     = devPatternNames_Basic;
-            devPatternHelp      = devPatternHelp_Basic;
-            devPatternCmds      = devPatternCmds_Basic;
-            devPatternBits      = devPatternBits_Basic;
-        }
+        if (useAdvPatterns) CreateListArrays_Adv();  // are allowed to use advanced patterns
 
         curSegment = 0; // always start with first segment
     }
@@ -341,7 +489,7 @@ public class Main extends Application
         int j = 0;
         int k = 0;
         int extra = 1;
-        if (customPatterns > 0) ++extra;
+        if (devicePatterns > 0) ++extra;
 
         listNames_Basic = new String[numPatterns + extra];
         listEnables_Basic = new boolean[numPatterns + extra];
@@ -352,14 +500,14 @@ public class Main extends Application
         devPatternCmds_Basic = new String[numPatterns];
         devPatternBits_Basic = new int[numPatterns];
 
-        if (customPatterns > 0)
+        if (devicePatterns > 0)
         {
             listNames_Basic[j] = "Custom Patterns";
             listEnables_Basic[j] = false;
             mapIndexToPattern_Basic[j] = 0;
             ++j;
 
-            for (int i = 0; i < customPatterns; ++i)
+            for (int i = 0; i < devicePatterns; ++i)
             {
                 Log.v(LOGNAME, "Adding custom pattern i=" + i + " j=" + j + " => " + devPatternNames_Custom[i]);
 
@@ -407,7 +555,7 @@ public class Main extends Application
         int j = 0;
         int k = 0;
         int extra = 2;
-        if (customPatterns > 0) ++extra;
+        if (devicePatterns > 0) ++extra;
 
         listNames_All = new String[numPatterns + extra];
         listEnables_All = new boolean[numPatterns + extra];
@@ -418,14 +566,14 @@ public class Main extends Application
         devPatternCmds_All = new String[numPatterns];
         devPatternBits_All = new int[numPatterns];
 
-        if (customPatterns > 0)
+        if (devicePatterns > 0)
         {
             listNames_All[j] = "Custom Patterns";
             listEnables_All[j] = false;
             mapIndexToPattern_All[j] = 0;
             ++j;
 
-            for (int i = 0; i < customPatterns; ++i)
+            for (int i = 0; i < devicePatterns; ++i)
             {
                 Log.v(LOGNAME, "Adding custom pattern j=" + j + " k=" + k + " => " + devPatternNames_Custom[i]);
 
