@@ -16,12 +16,11 @@ import android.widget.TextView;
 import static android.view.View.GONE;
 import static android.view.View.VISIBLE;
 import static com.devicenut.pixelnutctrl.Main.appContext;
-import static com.devicenut.pixelnutctrl.Main.curSegment;
-import static com.devicenut.pixelnutctrl.Main.devPatternNames;
-import static com.devicenut.pixelnutctrl.Main.listFavorites;
-import static com.devicenut.pixelnutctrl.Main.curFavorite;
 import static com.devicenut.pixelnutctrl.Main.numSegments;
-import static com.devicenut.pixelnutctrl.Main.segPatterns;
+import static com.devicenut.pixelnutctrl.Main.curSegment;
+import static com.devicenut.pixelnutctrl.Main.numFavorites;
+import static com.devicenut.pixelnutctrl.Main.curFavorite;
+import static com.devicenut.pixelnutctrl.Main.listFavorites;
 
 public class FragFavs extends Fragment
 {
@@ -44,9 +43,9 @@ public class FragFavs extends Fragment
 
     interface FavoriteSelectInterface
     {
-        void onFavoriteSelect(int favnum);
+        void onFavoriteSelect(int seg, int pnum, String vals);
     }
-    private FavoriteSelectInterface mListener;
+    private FavoriteSelectInterface listenFavoriteSelect;
 
     public FragFavs() {}
     public static FragFavs newInstance() { return new FragFavs(); }
@@ -67,13 +66,15 @@ public class FragFavs extends Fragment
         helpPage    = (ScrollView)   v.findViewById(R.id.ll_HelpPage_Favs);
         helpText    = (TextView)     v.findViewById(R.id.view_HelpText_Favs);
 
-        objsButton = new Button[idsButton.length];
-        for (int i = 0; i < idsButton.length; ++i)
+        objsButton = new Button[numFavorites];
+        for (int i = 0; i < numFavorites; ++i)
         {
+            if (i >= idsButton.length) break; // insure button is in the layout
             Log.w(LOGNAME, "Setting favorite: " + listFavorites[i].getPatternName());
             Button b = (Button)v.findViewById(idsButton[i]);
             b.setText(listFavorites[i].getPatternName());
             b.setOnClickListener(mClicker);
+            b.setVisibility(VISIBLE);
             objsButton[i] = b;
         }
 
@@ -94,14 +95,14 @@ public class FragFavs extends Fragment
     {
         Log.d(LOGNAME, ">>onAttach");
         super.onAttach(context);
-        mListener = (FavoriteSelectInterface)getActivity();
+        listenFavoriteSelect = (FavoriteSelectInterface)getActivity();
     }
 
     @Override public void onDetach()
     {
         Log.d(LOGNAME, ">>onDetach");
         super.onDetach();
-        mListener = null;
+        listenFavoriteSelect = null;
     }
 
     public void setHelpMode(boolean enable)
@@ -127,58 +128,53 @@ public class FragFavs extends Fragment
         @Override public void onClick(View v)
         {
             int id = v.getId();
-            for (int i = 0; i < idsButton.length; ++i)
+            for (int i = 0; i < numFavorites; ++i)
             {
                 if (id == idsButton[i])
                 {
-                    if (curFavorite == i) break;
-
-                    for (int j = 0; j < numSegments; ++j)
-                    {
-                        segPatterns[j] = listFavorites[i].getPatternNum(j);
-                        if (j == curSegment)
-                        {
-                            if (mListener != null)
-                                mListener.onFavoriteSelect(segPatterns[j]);
-                        }
-                    }
-
-                    ChangeSelection(i);
+                    if (curFavorite != i)
+                        if (listenFavoriteSelect != null)
+                            for (int j = 0; j < numSegments; ++j)
+                                listenFavoriteSelect.onFavoriteSelect(j,
+                                    listFavorites[i].getPatternNum(j),
+                                    listFavorites[i].getPatternVals(j));
                     break;
                 }
             }
         }
     };
 
-    private void ChangeSelection(int index)
+    private void DeselectChoice()
     {
-        Log.d(LOGNAME, "FavSelect index=" + index);
         if (curFavorite >= 0)
         {
             objsButton[curFavorite].setText(listFavorites[curFavorite].getPatternName());
             objsButton[curFavorite].setTextColor(ContextCompat.getColor(appContext, R.color.UserChoice));
+            curFavorite = -1;
         }
-
-        if (index >= 0)
-        {
-            objsButton[index].setText(">>> " + listFavorites[index].getPatternName() + " <<<");
-            objsButton[index].setTextColor(ContextCompat.getColor(appContext, R.color.HighLight));
-        }
-
-        curFavorite = index;
     }
 
     public void onPatternSelect(int pnum)
     {
-        for (int i = 0; i < listFavorites.length; ++i)
+        Log.d(LOGNAME, "onPatternSelect pnum=" + pnum);
+
+        if (pnum >= 0) for (int i = 0; i < numFavorites; ++i)
         {
             if (listFavorites[i].getPatternNum(curSegment) == pnum)
             {
-                ChangeSelection(i);
+                DeselectChoice();
+
+                if (i >= 0)
+                {
+                    objsButton[i].setText(">>> " + listFavorites[i].getPatternName() + " <<<");
+                    objsButton[i].setTextColor(ContextCompat.getColor(appContext, R.color.HighLight));
+                }
+
+                curFavorite = i;
                 return;
             }
         }
 
-        ChangeSelection(-1); // deselect current choice
+        DeselectChoice(); // deselect current choice
     }
 }

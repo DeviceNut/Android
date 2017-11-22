@@ -91,7 +91,7 @@ public class Main extends Application
 
     static final String[] basicPatternCmds =
             {
-                    "E0 H270 Q3 T G",
+                    "E0 H258 Q3 T G",
                     "E10 D60 Q7 T G",
                     "E51 H232 D10 Q7 T G",
                     "E50 W80 D10 Q3 T G",
@@ -227,8 +227,9 @@ public class Main extends Application
     static int rangeDelay = MINVAL_DELAYRANGE;  // default range of delay offsets
 
     static final int maxNumSegs = 5;            // limited because of layout
-    static int curDelay[]           = new int[maxNumSegs];
+    static int segPatterns[]        = new int[maxNumSegs];   // current pattern for each segment (index from 0)
     static int curBright[]          = new int[maxNumSegs];
+    static int curDelay[]           = new int[maxNumSegs];
     static boolean segXmodeEnb[]    = new boolean[maxNumSegs];
     static int segXmodeHue[]        = new int[maxNumSegs];
     static int segXmodeWht[]        = new int[maxNumSegs];
@@ -237,13 +238,12 @@ public class Main extends Application
     static int segPixels[]          = new int[maxNumSegs];
     static int segTracks[]          = new int[maxNumSegs];
     static int segLayers[]          = new int[maxNumSegs];
-    static int segPatterns[]        = new int[maxNumSegs];   // current pattern for each segment (index from 0)
 
     // only used for multiple segments on the same physical strand:
     static int segPosStart[]        = new int[maxNumSegs];  // starting positions for each segment
     static int segPosCount[]        = new int[maxNumSegs];  // number of pixels for each segment
 
-    static boolean doUpdate = true;             // false if device output is pause mode
+    static boolean doUpdate = true;             // false if device output is in pause mode
     static boolean initPatterns = false;        // true if must initialize device with patterns at startup
     static boolean multiStrands = false;        // true if device has multiple physical pixel strands
                                                 // false means all segment info must be sent when changing patterns
@@ -291,6 +291,7 @@ public class Main extends Application
             if ((i >= segs) || !TestTypePnum(t, p))
                 return false;
 
+            data[i] = new FavPatternData();
             data[i].type = t;
             data[i].index = p;
             data[i].values = v;
@@ -319,7 +320,7 @@ public class Main extends Application
                     return false;
 
                 data[i].values = "";
-                for (int j = 0; j < 7; ++j)
+                for (int j = 0; j < 6; ++j)
                     data[i].values += strs[j + 2] + " ";
             }
 
@@ -402,8 +403,8 @@ public class Main extends Application
     static int numFavorites = 0;
     static int curFavorite = -1;
 
-    static final FavoriteInfo defFav_Purple = new FavoriteInfo("Purple", FAVTYPE_BASIC, 0, "");
-    static final FavoriteInfo defFav_Rainbow = new FavoriteInfo(advPatternNames[0], FAVTYPE_ADV, 0, "90 50 1 0 0 0 50");
+    static final FavoriteInfo defFav_Purple = new FavoriteInfo("Purple", FAVTYPE_BASIC, 0, "60 0 0 0 0 0 0");
+    static final FavoriteInfo defFav_Rainbow = new FavoriteInfo(advPatternNames[0], FAVTYPE_ADV, 0, "90 0 1 0 0 0 500");
 
     static void AddDefaultFavorites()
     {

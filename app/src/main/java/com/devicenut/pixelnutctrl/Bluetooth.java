@@ -262,7 +262,7 @@ class Bluetooth
                                     Log.v(LOGNAME, "Skipping=\"" + cmd1 + "\" (\"" + cmd2 + "\")");
                                     cmd1 = writeQueue.get();
                                 }
-                                Log.v(LOGNAME, "Command=\"" + cmd1 + "\"");
+                                Log.d(LOGNAME, "Command=\"" + cmd1 + "\"");
 
                                 writeChunks = cmd1.split("\\s+"); // remove ALL spaces
                                 nextChunk = 0;
@@ -406,7 +406,7 @@ class Bluetooth
             {
                 if (nextChunk >= writeChunks.length)
                 {
-                    Log.d(LOGNAME, "Write string completed");
+                    Log.v(LOGNAME, "Write string completed");
                     writeChunks = null;
                     nextChunk = 0;
                     bleCB.onWrite(BLESTAT_SUCCESS);

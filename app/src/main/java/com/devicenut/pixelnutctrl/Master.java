@@ -37,7 +37,7 @@ import static com.devicenut.pixelnutctrl.Main.masterPageHeight;
 
 public class Master extends AppCompatActivity implements FragFavs.FavoriteSelectInterface,
                                                          FragCtrls.DeviceCommandInterface,
-                                                         FragCtrls.PatternSelectionInterface,
+                                                         FragCtrls.PatternSelectInterface,
                                                          Bluetooth.BleCallbacks
 {
     private final String LOGNAME = "Master";
@@ -45,6 +45,7 @@ public class Master extends AppCompatActivity implements FragFavs.FavoriteSelect
 
     private boolean isConnected = false;
     private boolean isEditing = false;
+    private boolean isPaused = false;
     private boolean helpActive = false;
     private String devNameSaved = "";
 
@@ -57,26 +58,40 @@ public class Master extends AppCompatActivity implements FragFavs.FavoriteSelect
     private FragmentPagerAdapter adapterViewPager;
     private boolean inLandscape;
 
-    public void onFavoriteSelect(int pnum)
+    public void onFavoriteSelect(int seg, int pnum, String vals)
     {
-        Log.d(LOGNAME, "FragFavs says: " + pnum);
-        FragmentPagerAdapter fa = (FragmentPagerAdapter)masterPager.getAdapter();
-        FragCtrls f = (FragCtrls)fa.getItem(pageControls);
-        f.ChangePattern(pnum);
+        ((FragCtrls)myFragments[pageControls]).ChangePattern(seg, pnum, vals);
     }
 
     public void onPatternSelect(int pnum)
     {
-        Log.d(LOGNAME, "FragCtrls says: " + pnum);
-        FragmentPagerAdapter fa = (FragmentPagerAdapter)masterPager.getAdapter();
-        FragFavs f = (FragFavs)fa.getItem(pageFavorites);
-        f.onPatternSelect(pnum);
+        ((FragFavs)myFragments[pageFavorites]).onPatternSelect(pnum);
     }
 
     public void onDeviceCommand(String str)
     {
-        Log.d(LOGNAME, "FragCtrls says: " + str);
-        SendString(str);
+        if (str.equals(CMD_PAUSE))
+        {
+            if (doUpdate)
+            {
+                // don't change text
+                SendString(CMD_PAUSE);
+                doUpdate = false;
+            }
+            // else already paused
+        }
+        else if (str.equals(CMD_RESUME))
+        {
+            if (!doUpdate)
+            {
+                // resuming, but user had paused, so change the text
+                pauseButton.setText(getResources().getString(R.string.name_pause));
+                SendString(CMD_RESUME);
+                doUpdate = true;
+            }
+            // else already resumed
+        }
+        else SendString(str);
     }
 
     @Override protected void onCreate(Bundle savedInstanceState)
@@ -197,15 +212,12 @@ public class Master extends AppCompatActivity implements FragFavs.FavoriteSelect
 
     private void ToggleHelp()
     {
-        FragmentPagerAdapter fa = (FragmentPagerAdapter)masterPager.getAdapter();
-        FragFavs favs = (FragFavs)fa.getItem(pageFavorites);
-        FragCtrls ctrls = (FragCtrls)fa.getItem(pageControls);
         // TODO: show help for Details page
 
         if (helpActive) // turn controls help off
         {
-            favs.setHelpMode(false);
-            ctrls.setHelpMode(false);
+            ((FragFavs)myFragments[pageFavorites]).setHelpMode(false);
+            ((FragCtrls)myFragments[pageControls]).setHelpMode(false);
 
             helpButton.setText(getResources().getString(R.string.name_help));
             helpActive = false;
@@ -218,8 +230,8 @@ public class Master extends AppCompatActivity implements FragFavs.FavoriteSelect
             leftText.setVisibility(GONE);
             rightText.setVisibility(GONE);
 
-            favs.setHelpMode(true);
-            ctrls.setHelpMode(true);
+            ((FragFavs)myFragments[pageFavorites]).setHelpMode(true);
+            ((FragCtrls)myFragments[pageControls]).setHelpMode(true);
 
             helpButton.setText(getResources().getString(R.string.name_action));
             helpActive = true;

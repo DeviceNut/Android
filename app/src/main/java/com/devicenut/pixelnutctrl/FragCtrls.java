@@ -25,11 +25,14 @@ import static android.view.View.VISIBLE;
 import static com.devicenut.pixelnutctrl.Main.CMD_BRIGHT;
 import static com.devicenut.pixelnutctrl.Main.CMD_DELAY;
 import static com.devicenut.pixelnutctrl.Main.CMD_EXTMODE;
+import static com.devicenut.pixelnutctrl.Main.CMD_PAUSE;
 import static com.devicenut.pixelnutctrl.Main.CMD_POP_PATTERN;
 import static com.devicenut.pixelnutctrl.Main.CMD_PROPVALS;
+import static com.devicenut.pixelnutctrl.Main.CMD_RESUME;
 import static com.devicenut.pixelnutctrl.Main.CMD_SEGS_ENABLE;
 import static com.devicenut.pixelnutctrl.Main.CMD_START_END;
 import static com.devicenut.pixelnutctrl.Main.CMD_TRIGGER;
+import static com.devicenut.pixelnutctrl.Main.MAXVAL_FORCE;
 import static com.devicenut.pixelnutctrl.Main.MAXVAL_HUE;
 import static com.devicenut.pixelnutctrl.Main.MAXVAL_PERCENT;
 import static com.devicenut.pixelnutctrl.Main.MAXVAL_WHT;
@@ -89,6 +92,7 @@ public class FragCtrls extends Fragment implements SeekBar.OnSeekBarChangeListen
 
     private static int helpMode = 0;
     private static boolean changePattern = true;
+    private static boolean changeControls = false;
 
     private static LinearLayout llPatternHelp, llDelayControl;
     private static LinearLayout llProperties, llAutoControls;
@@ -121,13 +125,13 @@ public class FragCtrls extends Fragment implements SeekBar.OnSeekBarChangeListen
     {
         void onDeviceCommand(String s);
     }
-    private DeviceCommandInterface listenSendCommand;
+    private DeviceCommandInterface listenDeviceCommand;
 
-    interface PatternSelectionInterface
+    interface PatternSelectInterface
     {
         void onPatternSelect(int pnum);
     }
-    private PatternSelectionInterface listenPatternSelect;
+    private PatternSelectInterface listenPatternSelect;
 
     public FragCtrls() {}
     public static FragCtrls newInstance() { return new FragCtrls(); }
@@ -247,15 +251,15 @@ public class FragCtrls extends Fragment implements SeekBar.OnSeekBarChangeListen
     {
         Log.d(LOGNAME, ">>onAttach");
         super.onAttach(context);
-        listenSendCommand = (DeviceCommandInterface)getActivity();
-        listenPatternSelect = (PatternSelectionInterface)getActivity();
+        listenDeviceCommand = (DeviceCommandInterface)getActivity();
+        listenPatternSelect = (PatternSelectInterface)getActivity();
     }
 
     @Override public void onDetach()
     {
         Log.d(LOGNAME, ">>onDetach");
         super.onDetach();
-        listenSendCommand = null;
+        listenDeviceCommand = null;
         listenPatternSelect = null;
     }
 
@@ -358,98 +362,134 @@ public class FragCtrls extends Fragment implements SeekBar.OnSeekBarChangeListen
             if (initPatterns || changePattern)
             {
                 Log.d(LOGNAME, "Pattern choice: " + parent.getItemAtPosition(position));
-
-                int curPattern = mapIndexToPattern[position];
-                segPatterns[curSegment] = curPattern;
-
-                if (curPattern < devicePatterns)
-                {
-                    int num = curPattern+1; // device pattern numbers start at 1
-                    SendString("" + num);   // store current pattern number
-                }
-                else if (numSegments == 1)
-                {
-                    SendString(CMD_START_END);; // start sequence
-                    SendString(CMD_POP_PATTERN);
-                    SendString(devPatternCmds[curPattern]);
-                    SendString(CMD_START_END);; // end sequence
-
-                    int num = curPattern+1; // device pattern numbers start at 1
-                    SendString("" + num);   // store current pattern number
-                }
-                else if (!multiStrands) // must send all segment patterns at once
-                {
-                    SendString(CMD_START_END);; // start sequence
-                    SendString(CMD_POP_PATTERN);
-
-                    for (int i = 0; i < numSegments; ++i)
-                    {
-                        if (i == curSegment) segPatterns[i] = curPattern;
-
-                        SendString("X" + segPosStart[i] + " Y" + segPosCount[i]);
-                        SendString(devPatternCmds[ segPatterns[i] ]);
-                    }
-
-                    SendString(CMD_START_END);; // end sequence
-
-                    int num = curPattern+1; // device pattern numbers start at 1
-                    SendString("" + num);   // store current pattern number
-                }
-
-                // else physically separate segments, so can treat them as such
-                else if (initPatterns || useSegEnables)
-                {
-                    for (int i = 0; i < numSegments; ++i)
-                    {
-                        if (segEnables[i])
-                        {
-                            int seg = i+1;
-                            SendString(CMD_SEGS_ENABLE + seg);
-                            SendString(CMD_START_END);; // start sequence
-                            SendString(CMD_POP_PATTERN);
-                            segPatterns[i] = curPattern;
-                            SendString(devPatternCmds[ segPatterns[i] ]);
-                            SendString(CMD_START_END);; // end sequence
-
-                            int num = curPattern+1; // device pattern numbers start at 1
-                            SendString("" + num);   // store current pattern number
-                        }
-                    }
-
-                    int seg = curSegment+1;
-                    SendString(CMD_SEGS_ENABLE + seg);
-                }
-                else
-                {
-                    SendString(CMD_START_END);; // start sequence
-                    SendString(CMD_POP_PATTERN);
-                    SendString(devPatternCmds[ segPatterns[ curSegment ] ]);
-                    SendString(CMD_START_END);; // end sequence
-
-                    int num = curPattern+1; // device pattern numbers start at 1
-                    SendString("" + num);   // store current pattern number
-                }
-
-                SetControlPositions(); // set control positions without sending commands
-
-                // change text for new pattern if pattern help is active, but keep it active
-                if (helpMode > 0) SetPatternHelp(false, curPattern);
-
+                SelectPattern( mapIndexToPattern[position] );
                 initPatterns = false; // end of one-time initialization
-
-                if (listenPatternSelect != null)
-                    listenPatternSelect.onPatternSelect(curPattern);
             }
             else changePattern = true; // reset for next time
         }
     };
 
-    public void ChangePattern(int num)
+    private void SelectPattern(int pnum)
     {
-        segPatterns[curSegment] = num;
-        Log.v(LOGNAME, "SelectPattern=" + selectPattern);
-        selectPattern.setSelection(mapPatternToIndex[segPatterns[curSegment]], false);
+        segPatterns[curSegment] = pnum;
+
+        if (pnum < devicePatterns)
+        {
+            int num = pnum+1; // device pattern numbers start at 1
+            SendString("" + num);   // store current pattern number
+        }
+        else if (numSegments == 1)
+        {
+            SendString(CMD_START_END);; // start sequence
+            SendString(CMD_POP_PATTERN);
+            SendString(devPatternCmds[pnum]);
+            SendString(CMD_START_END);; // end sequence
+
+            int num = pnum+1; // device pattern numbers start at 1
+            SendString("" + num);   // store current pattern number
+        }
+        else if (!multiStrands) // must send all segment patterns at once
+        {
+            SendString(CMD_START_END);; // start sequence
+            SendString(CMD_POP_PATTERN);
+
+            for (int i = 0; i < numSegments; ++i)
+            {
+                if (i == curSegment) segPatterns[i] = pnum;
+
+                SendString("X" + segPosStart[i] + " Y" + segPosCount[i]);
+                SendString(devPatternCmds[ segPatterns[i] ]);
+            }
+
+            SendString(CMD_START_END);; // end sequence
+
+            int num = pnum+1; // device pattern numbers start at 1
+            SendString("" + num);   // store current pattern number
+        }
+
+        // else physically separate segments, so can treat them as such
+        else if (initPatterns || useSegEnables)
+        {
+            for (int i = 0; i < numSegments; ++i)
+            {
+                if (segEnables[i])
+                {
+                    int seg = i+1;
+                    SendString(CMD_SEGS_ENABLE + seg);
+                    SendString(CMD_START_END);; // start sequence
+                    SendString(CMD_POP_PATTERN);
+                    segPatterns[i] = pnum;
+                    SendString(devPatternCmds[ segPatterns[i] ]);
+                    SendString(CMD_START_END);; // end sequence
+
+                    int num = pnum+1;       // device pattern numbers start at 1
+                    SendString("" + num);   // store current pattern number
+                }
+            }
+
+            int seg = curSegment+1;
+            SendString(CMD_SEGS_ENABLE + seg);
+        }
+        else
+        {
+            SendString(CMD_START_END);; // start sequence
+            SendString(CMD_POP_PATTERN);
+            SendString(devPatternCmds[ segPatterns[ curSegment ] ]);
+            SendString(CMD_START_END);; // end sequence
+
+            int num = pnum+1;       // device pattern numbers start at 1
+            SendString("" + num);   // store current pattern number
+        }
+
+        //FIXME? SetControlPositions(); // set control positions without sending commands
+
+        // change text for new pattern if pattern help is active, but keep it active
+        if (helpMode > 0) SetPatternHelp(false, pnum);
+
+        listenPatternSelect.onPatternSelect(pnum);
     }
+
+    public void ChangePattern(int seg, int pnum, String vals)
+    {
+        Log.d(LOGNAME, "SelectPattern: seg=" + seg + " pnum=" + pnum + " vals=" + vals);
+
+        String[] strs = vals.split("\\s+");
+        if (strs.length < 7) return;
+
+        curBright[   seg] = Integer.parseInt(strs[0]);
+        curDelay[    seg] = Integer.parseInt(strs[1]);
+        segXmodeEnb[ seg] = Integer.parseInt(strs[2]) != 0;
+        segXmodeHue[ seg] = Integer.parseInt(strs[3]);
+        segXmodeWht[ seg] = Integer.parseInt(strs[4]);
+        segXmodeCnt[ seg] = Integer.parseInt(strs[5]);
+        segTrigForce[seg] = Integer.parseInt(strs[6]);
+
+        if (seg == curSegment)
+        {
+            SendString(CMD_PAUSE);
+
+            if (segXmodeEnb[seg])
+                 SendString(CMD_EXTMODE + "1");
+            else SendString(CMD_EXTMODE + "0");
+
+            if (segPatterns[curSegment] != pnum)
+            {
+                segPatterns[curSegment] = pnum;
+                selectPattern.setSelection(mapPatternToIndex[segPatterns[curSegment]], false);
+            }
+            else SelectPattern(pnum); // selection already on this, will not trigger callback
+
+            changeControls = true; // need to resend control values
+            SetControlPositions();
+            selectPattern.post(new Runnable() { @Override public void run()
+            {
+                changeControls = false;
+                SendString(CMD_RESUME);
+            }});
+        }
+        else segPatterns[seg] = pnum;
+    }
+
     private void SetPatternNameOnly()
     {
         changePattern = false; // don't need to resend the pattern
@@ -460,14 +500,12 @@ public class FragCtrls extends Fragment implements SeekBar.OnSeekBarChangeListen
         // which of course assumes that the post will execute after the selection
         selectPattern.post(new Runnable() { @Override public void run()
         {
-            //Log.v(LOGNAME, "Resetting 'changePattern' here, value=" + changePattern);
             changePattern = true;
         }});
     }
 
     private void SetPatternHelp(boolean toggle, int pattern)
     {
-        //Log.d(LOGNAME, "PatternHelp: toggle=" + toggle + " pattern=" + pattern);
         if ((helpMode > 0) && toggle)
         {
             helpButton.setText("?");
@@ -515,6 +553,8 @@ public class FragCtrls extends Fragment implements SeekBar.OnSeekBarChangeListen
 
     private void SetControlPositions()
     {
+        Log.d(LOGNAME, "SetControlPositions...");
+
         int index = multiStrands ? curSegment : 0;
         seekBright.setProgress(curBright[index]);
         seekDelay.setProgress(((rangeDelay - curDelay[index]) * MAXVAL_PERCENT) / (rangeDelay + rangeDelay));
@@ -525,6 +565,7 @@ public class FragCtrls extends Fragment implements SeekBar.OnSeekBarChangeListen
             // always have the property controls displayed
 
             manualButton.setVisibility(GONE);
+            llAutoControls.setVisibility(VISIBLE);
 
             if (!segXmodeEnb[curSegment])
             {
@@ -573,7 +614,7 @@ public class FragCtrls extends Fragment implements SeekBar.OnSeekBarChangeListen
                 if ((bits & 0x20) != 0) // enable force control
                 {
                     llTrigForce.setVisibility(VISIBLE);
-                    seekTrigForce.setProgress(segTrigForce[curSegment] / 10);
+                    seekTrigForce.setProgress((segTrigForce[curSegment] * MAXVAL_PERCENT) / MAXVAL_FORCE);
                     textTrigger.setText(appContext.getResources().getString(R.string.title_trigforce));
                 }
                 else
@@ -673,8 +714,8 @@ public class FragCtrls extends Fragment implements SeekBar.OnSeekBarChangeListen
 
     private void SendString(String str)
     {
-        if (listenSendCommand != null)
-            listenSendCommand.onDeviceCommand(str);
+        if (listenDeviceCommand != null)
+            listenDeviceCommand.onDeviceCommand(str);
     }
 
     private final View.OnClickListener mClicker = new View.OnClickListener()
@@ -738,6 +779,7 @@ public class FragCtrls extends Fragment implements SeekBar.OnSeekBarChangeListen
                                 if (enable)
                                      SendString(CMD_EXTMODE + "1");
                                 else SendString(CMD_EXTMODE + "0");
+                                SendString(CMD_PROPVALS + segXmodeHue[i] + " " + segXmodeWht[i] + " " + segXmodeCnt[i]);
                             }
                         }
 
@@ -750,9 +792,12 @@ public class FragCtrls extends Fragment implements SeekBar.OnSeekBarChangeListen
                         if (enable)
                              SendString(CMD_EXTMODE + "1");
                         else SendString(CMD_EXTMODE + "0");
+                        SendString(CMD_PROPVALS + segXmodeHue[curSegment] + " " + segXmodeWht[curSegment] + " " + segXmodeCnt[curSegment]);
                     }
 
                     SetControlPositions(); // set control positions without sending commands
+
+                    listenPatternSelect.onPatternSelect(-1); // deselect any favorite currently selected
                     break;
                 }
                 case R.id.button_TrigAction:
@@ -784,175 +829,168 @@ public class FragCtrls extends Fragment implements SeekBar.OnSeekBarChangeListen
         }
     };
 
-    @Override public void onStartTrackingTouch(SeekBar seekBar)
-    {
-        /*
-        Log.v(LOGNAME, "Disable swiping...");
-        ViewParent parent = (ViewParent)masterPager;
-        parent.requestDisallowInterceptTouchEvent(true);
-        */
-    }
-    @Override public void onStopTrackingTouch(SeekBar seekBar)
-    {
-        /*
-        Log.v(LOGNAME, "Enable swiping...");
-        ViewParent parent = (ViewParent)masterPager;
-        parent.requestDisallowInterceptTouchEvent(false);
-        */
-    }
-
     @Override public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser)
     {
-        if (fromUser) switch (seekBar.getId()) // ignore when setting initial values
+        Log.v(LOGNAME, "SeekBar: val=" + progress + " user=" + fromUser + " dochange=" + changeControls);
+
+        if (fromUser || changeControls)
         {
-            case R.id.seek_Bright:
+            switch (seekBar.getId()) // ignore when setting initial values
             {
-                if (useSegEnables)
+                case R.id.seek_Bright:
                 {
-                    for (int i = 0; i < numSegments; ++i)
+                    if (useSegEnables)
                     {
-                        if (segEnables[i])
+                        for (int i = 0; i < numSegments; ++i)
                         {
-                            int seg = i+1;
-                            SendString(CMD_SEGS_ENABLE + seg);
+                            if (segEnables[i])
+                            {
+                                int seg = i+1;
+                                SendString(CMD_SEGS_ENABLE + seg);
 
-                            curBright[i] = progress;
-                            SendString(CMD_BRIGHT + curBright[i]);
+                                curBright[i] = progress;
+                                SendString(CMD_BRIGHT + curBright[i]);
+                            }
+                        }
+
+                        int seg = curSegment+1;
+                        SendString(CMD_SEGS_ENABLE + seg);
+                    }
+                    else
+                    {
+                        int index = multiStrands ? curSegment : 0;
+                        curBright[index] = progress;
+                        SendString(CMD_BRIGHT + curBright[index]);
+                    }
+                    break;
+                }
+                case R.id.seek_Delay:
+                {
+                    if (useSegEnables)
+                    {
+                        for (int i = 0; i < numSegments; ++i)
+                        {
+                            if (segEnables[i])
+                            {
+                                int seg = i+1;
+                                SendString(CMD_SEGS_ENABLE + seg);
+
+                                curDelay[i] = rangeDelay - (progress * 2 * rangeDelay)/100;
+                                SendString(CMD_DELAY + curDelay[i]);
+                            }
+                        }
+
+                        int seg = curSegment+1;
+                        SendString(CMD_SEGS_ENABLE + seg);
+                    }
+                    else
+                    {
+                        int index = multiStrands ? curSegment : 0;
+                        curDelay[index] = rangeDelay - (progress * 2 * rangeDelay)/100;
+                        SendString(CMD_DELAY + curDelay[index]);
+                    }
+                    break;
+                }
+                case R.id.seek_PropColor:
+                {
+                    if (useSegEnables)
+                    {
+                        for (int i = 0; i < numSegments; ++i)
+                        {
+                            if (segEnables[i])
+                            {
+                                int seg = i+1;
+                                SendString(CMD_SEGS_ENABLE + seg);
+
+                                segXmodeHue[i] = (progress * MAXVAL_HUE) / MAXVAL_PERCENT;
+                                SendString(CMD_PROPVALS + segXmodeHue[i] + " " + segXmodeWht[i] + " " + segXmodeCnt[i]);
+                            }
+                        }
+
+                        int seg = curSegment+1;
+                        SendString(CMD_SEGS_ENABLE + seg);
+                    }
+                    else
+                    {
+                        Log.v(LOGNAME, "PropColor!");
+                        segXmodeHue[curSegment] = (progress * MAXVAL_HUE) / MAXVAL_PERCENT;
+                        SendString(CMD_PROPVALS + segXmodeHue[curSegment] + " " + segXmodeWht[curSegment] + " " + segXmodeCnt[curSegment]);
+                    }
+                    break;
+                }
+                case R.id.seek_PropWhite:
+                {
+                    if (useSegEnables)
+                    {
+                        for (int i = 0; i < numSegments; ++i)
+                        {
+                            if (segEnables[i])
+                            {
+                                int seg = i+1;
+                                SendString(CMD_SEGS_ENABLE + seg);
+
+                                segXmodeWht[i] = (progress * MAXVAL_WHT) / MAXVAL_PERCENT;
+                                SendString(CMD_PROPVALS + segXmodeHue[i] + " " + segXmodeWht[i] + " " + segXmodeCnt[i]);
+                            }
+                        }
+
+                        int seg = curSegment+1;
+                        SendString(CMD_SEGS_ENABLE + seg);
+                    }
+                    else
+                    {
+                        Log.v(LOGNAME, "PropWhite!");
+                        segXmodeWht[curSegment] = (progress * MAXVAL_WHT) / MAXVAL_PERCENT;
+                        SendString(CMD_PROPVALS + segXmodeHue[curSegment] + " " + segXmodeWht[curSegment] + " " + segXmodeCnt[curSegment]);
+                    }
+                    break;
+                }
+                case R.id.seek_PropCount:
+                {
+                    if (useSegEnables)
+                    {
+                        for (int i = 0; i < numSegments; ++i)
+                        {
+                            if (segEnables[i])
+                            {
+                                int seg = i+1;
+                                SendString(CMD_SEGS_ENABLE + seg);
+
+                                segXmodeCnt[i] = progress;
+                                SendString(CMD_PROPVALS + segXmodeHue[i] + " " + segXmodeWht[i] + " " + segXmodeCnt[i]);
+                            }
+                        }
+
+                        int seg = curSegment+1;
+                        SendString(CMD_SEGS_ENABLE + seg);
+                    }
+                    else
+                    {
+                        Log.v(LOGNAME, "PropCount!");
+                        segXmodeCnt[curSegment] = progress;
+                        SendString(CMD_PROPVALS + segXmodeHue[curSegment] + " " + segXmodeWht[curSegment] + " " + segXmodeCnt[curSegment]);
+                    }
+                    break;
+                }
+                case R.id.seek_TrigForce:
+                {
+                    int val = ((progress * MAXVAL_FORCE) / MAXVAL_PERCENT);
+                    if (useSegEnables)
+                    {
+                        for (int i = 0; i < numSegments; ++i)
+                        {
+                            if (segEnables[i]) segTrigForce[i] = val;
                         }
                     }
-
-                    int seg = curSegment+1;
-                    SendString(CMD_SEGS_ENABLE + seg);
+                    else segTrigForce[curSegment] = val;
+                    break;
                 }
-                else
-                {
-                    int index = multiStrands ? curSegment : 0;
-                    curBright[index] = progress;
-                    SendString(CMD_BRIGHT + curBright[index]);
-                }
-                break;
             }
-            case R.id.seek_Delay:
-            {
-                if (useSegEnables)
-                {
-                    for (int i = 0; i < numSegments; ++i)
-                    {
-                        if (segEnables[i])
-                        {
-                            int seg = i+1;
-                            SendString(CMD_SEGS_ENABLE + seg);
 
-                            curDelay[i] = rangeDelay - (progress * 2 * rangeDelay)/100;
-                            SendString(CMD_DELAY + curDelay[i]);
-                        }
-                    }
-
-                    int seg = curSegment+1;
-                    SendString(CMD_SEGS_ENABLE + seg);
-                }
-                else
-                {
-                    int index = multiStrands ? curSegment : 0;
-                    curDelay[index] = rangeDelay - (progress * 2 * rangeDelay)/100;
-                    SendString(CMD_DELAY + curDelay[index]);
-                }
-                break;
-            }
-            case R.id.seek_PropColor:
-            {
-                if (useSegEnables)
-                {
-                    for (int i = 0; i < numSegments; ++i)
-                    {
-                        if (segEnables[i])
-                        {
-                            int seg = i+1;
-                            SendString(CMD_SEGS_ENABLE + seg);
-
-                            segXmodeHue[i] = (progress * MAXVAL_HUE) / MAXVAL_PERCENT;
-                            SendString(CMD_PROPVALS + segXmodeHue[i] + " " + segXmodeWht[i] + " " + segXmodeCnt[i]);
-                        }
-                    }
-
-                    int seg = curSegment+1;
-                    SendString(CMD_SEGS_ENABLE + seg);
-                }
-                else
-                {
-                    Log.v(LOGNAME, "PropColor!");
-                    segXmodeHue[curSegment] = (progress * MAXVAL_HUE) / MAXVAL_PERCENT;
-                    SendString(CMD_PROPVALS + segXmodeHue[curSegment] + " " + segXmodeWht[curSegment] + " " + segXmodeCnt[curSegment]);
-                }
-                break;
-            }
-            case R.id.seek_PropWhite:
-            {
-                if (useSegEnables)
-                {
-                    for (int i = 0; i < numSegments; ++i)
-                    {
-                        if (segEnables[i])
-                        {
-                            int seg = i+1;
-                            SendString(CMD_SEGS_ENABLE + seg);
-
-                            segXmodeWht[i] = (progress * MAXVAL_WHT) / MAXVAL_PERCENT;
-                            SendString(CMD_PROPVALS + segXmodeHue[i] + " " + segXmodeWht[i] + " " + segXmodeCnt[i]);
-                        }
-                    }
-
-                    int seg = curSegment+1;
-                    SendString(CMD_SEGS_ENABLE + seg);
-                }
-                else
-                {
-                    Log.v(LOGNAME, "PropWhite!");
-                    segXmodeWht[curSegment] = (progress * MAXVAL_WHT) / MAXVAL_PERCENT;
-                    SendString(CMD_PROPVALS + segXmodeHue[curSegment] + " " + segXmodeWht[curSegment] + " " + segXmodeCnt[curSegment]);
-                }
-                break;
-            }
-            case R.id.seek_PropCount:
-            {
-                if (useSegEnables)
-                {
-                    for (int i = 0; i < numSegments; ++i)
-                    {
-                        if (segEnables[i])
-                        {
-                            int seg = i+1;
-                            SendString(CMD_SEGS_ENABLE + seg);
-
-                            segXmodeCnt[i] = progress;
-                            SendString(CMD_PROPVALS + segXmodeHue[i] + " " + segXmodeWht[i] + " " + segXmodeCnt[i]);
-                        }
-                    }
-
-                    int seg = curSegment+1;
-                    SendString(CMD_SEGS_ENABLE + seg);
-                }
-                else
-                {
-                    Log.v(LOGNAME, "PropCount!");
-                    segXmodeCnt[curSegment] = progress;
-                    SendString(CMD_PROPVALS + segXmodeHue[curSegment] + " " + segXmodeWht[curSegment] + " " + segXmodeCnt[curSegment]);
-                }
-                break;
-            }
-            case R.id.seek_TrigForce:
-            {
-                int val = (10 * progress);
-                if (useSegEnables)
-                {
-                    for (int i = 0; i < numSegments; ++i)
-                    {
-                        if (segEnables[i]) segTrigForce[i] = val;
-                    }
-                }
-                else segTrigForce[curSegment] = val;
-                break;
-            }
+            if (fromUser) listenPatternSelect.onPatternSelect(-1); // deselect any favorite currently selected
         }
     }
+
+    @Override public void onStartTrackingTouch(SeekBar seekBar) {}
+    @Override public void onStopTrackingTouch(SeekBar seekBar) {}
 }
