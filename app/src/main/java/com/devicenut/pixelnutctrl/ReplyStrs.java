@@ -15,10 +15,10 @@ import static com.devicenut.pixelnutctrl.Main.MINLEN_SEGLEN_FORADV;
 import static com.devicenut.pixelnutctrl.Main.TITLE_PIXELNUT;
 import static com.devicenut.pixelnutctrl.Main.advPatternsCount;
 import static com.devicenut.pixelnutctrl.Main.basicPatternsCount;
-import static com.devicenut.pixelnutctrl.Main.devPatternBits_Custom;
-import static com.devicenut.pixelnutctrl.Main.devPatternCmds_Custom;
-import static com.devicenut.pixelnutctrl.Main.devPatternHelp_Custom;
-import static com.devicenut.pixelnutctrl.Main.devPatternNames_Custom;
+import static com.devicenut.pixelnutctrl.Main.devPatternBits_Device;
+import static com.devicenut.pixelnutctrl.Main.devPatternCmds_Device;
+import static com.devicenut.pixelnutctrl.Main.devPatternHelp_Device;
+import static com.devicenut.pixelnutctrl.Main.devPatternNames_Device;
 import static com.devicenut.pixelnutctrl.Main.haveBasicSegs;
 import static com.devicenut.pixelnutctrl.Main.segBasicOnly;
 import static com.devicenut.pixelnutctrl.Main.curBright;
@@ -224,12 +224,12 @@ class ReplyStrs
             {
                 int line = ((replyState-1) % 3);
 
-                     if (line == 0) devPatternNames_Custom[index] = reply;
-                else if (line == 1) devPatternHelp_Custom[index] = reply.replace('\t', '\n');
+                     if (line == 0) devPatternNames_Device[index] = reply;
+                else if (line == 1) devPatternHelp_Device[index] = reply.replace('\t', '\n');
                 else
                 {
-                    devPatternCmds_Custom[index] = reply;
-                    devPatternBits_Custom[index] = 0;
+                    devPatternCmds_Device[index] = reply;
+                    devPatternBits_Device[index] = 0;
 
                     boolean haveforce = false;
                     String[] strs = reply.split("\\s+"); // remove ALL spaces
@@ -241,15 +241,15 @@ class ReplyStrs
                         if ((strs[i].charAt(0) == 'Q') && (strs[i].length() > 1))
                         {
                             int val = Integer.parseInt(strs[i].substring(1));
-                            devPatternBits_Custom[index] |= val;
+                            devPatternBits_Device[index] |= val;
                         }
                         else if ((strs[i].charAt(0) == 'F') && (strs[i].length() > 1) && (strs[i].charAt(1) != '0')) // ignore zero-force setting
                             haveforce = true;
 
                         else if (strs[i].charAt(0) == 'I')
                         {
-                            devPatternBits_Custom[index] |= 0x10;
-                            if (haveforce) devPatternBits_Custom[index] |= 0x20;
+                            devPatternBits_Device[index] |= 0x10;
+                            if (haveforce) devPatternBits_Device[index] |= 0x20;
                         }
                     }
                 }

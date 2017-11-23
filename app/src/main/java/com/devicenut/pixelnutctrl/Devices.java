@@ -35,7 +35,6 @@ import static com.devicenut.pixelnutctrl.Main.URL_PIXELNUT;
 import static com.devicenut.pixelnutctrl.Main.pixelDensity;
 import static com.devicenut.pixelnutctrl.Main.pixelHeight;
 import static com.devicenut.pixelnutctrl.Main.pixelWidth;
-import static com.devicenut.pixelnutctrl.Main.masterPageHeight;
 
 import static com.devicenut.pixelnutctrl.Main.ble;
 import static com.devicenut.pixelnutctrl.Main.devName;
@@ -116,7 +115,6 @@ public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
         getWindowManager().getDefaultDisplay().getMetrics(metrics);
         pixelHeight = metrics.heightPixels;
         pixelWidth = metrics.widthPixels;
-        masterPageHeight = pixelHeight - (int)(125 * ((float)metrics.densityDpi / DisplayMetrics.DENSITY_DEFAULT));
 
         DisplayMetrics dm = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(dm);

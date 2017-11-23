@@ -17,7 +17,6 @@ import static android.view.View.GONE;
 import static android.view.View.VISIBLE;
 import static com.devicenut.pixelnutctrl.Main.appContext;
 import static com.devicenut.pixelnutctrl.Main.numSegments;
-import static com.devicenut.pixelnutctrl.Main.curSegment;
 import static com.devicenut.pixelnutctrl.Main.numFavorites;
 import static com.devicenut.pixelnutctrl.Main.curFavorite;
 import static com.devicenut.pixelnutctrl.Main.listFavorites;
@@ -26,20 +25,41 @@ public class FragFavs extends Fragment
 {
     private static final String LOGNAME = "Favorites";
 
-    private static LinearLayout view_Favs;
+    private static LinearLayout llViewFavs;
     private static ScrollView helpPage;
     private static TextView helpText;
 
-    private final int[] idsButton =
+    private final int[] idsLayout =
             {
-                    R.id.button_Pattern1,
-                    R.id.button_Pattern2,
-                    R.id.button_Pattern3,
-                    R.id.button_Pattern4,
-                    R.id.button_Pattern5,
-                    R.id.button_Pattern6,
+                    R.id.ll_Favorite1,
+                    R.id.ll_Favorite2,
+                    R.id.ll_Favorite3,
+                    R.id.ll_Favorite4,
+                    R.id.ll_Favorite5,
+                    R.id.ll_Favorite6,
             };
-    private static Button[] objsButton;
+    private static LinearLayout[] objsLayout;
+
+    private final int[] idsChoose =
+            {
+                    R.id.button_Favorite1,
+                    R.id.button_Favorite2,
+                    R.id.button_Favorite3,
+                    R.id.button_Favorite4,
+                    R.id.button_Favorite5,
+                    R.id.button_Favorite6,
+            };
+    private static Button[] objsChoose;
+
+    private final int[] idsCancel =
+            {
+                    R.id.button_Favorite1,
+                    R.id.button_Favorite2,
+                    R.id.button_Favorite3,
+                    R.id.button_Favorite4,
+                    R.id.button_Favorite5,
+                    R.id.button_Favorite6,
+            };
 
     interface FavoriteSelectInterface
     {
@@ -62,20 +82,29 @@ public class FragFavs extends Fragment
 
         View v = inflater.inflate(R.layout.fragment_favs, container, false);
 
-        view_Favs   = (LinearLayout) v.findViewById(R.id.ll_Favorites);
+        llViewFavs  = (LinearLayout) v.findViewById(R.id.ll_Favorites);
         helpPage    = (ScrollView)   v.findViewById(R.id.ll_HelpPage_Favs);
         helpText    = (TextView)     v.findViewById(R.id.view_HelpText_Favs);
 
-        objsButton = new Button[numFavorites];
+        objsChoose = new Button[numFavorites];
+        objsLayout = new LinearLayout[numFavorites];
+
         for (int i = 0; i < numFavorites; ++i)
         {
-            if (i >= idsButton.length) break; // insure button is in the layout
+            if (i >= idsChoose.length) break; // insure button is in the layout
             Log.w(LOGNAME, "Setting favorite: " + listFavorites[i].getPatternName());
-            Button b = (Button)v.findViewById(idsButton[i]);
+
+            Button b = (Button)v.findViewById(idsChoose[i]);
             b.setText(listFavorites[i].getPatternName());
             b.setOnClickListener(mClicker);
-            b.setVisibility(VISIBLE);
-            objsButton[i] = b;
+            objsChoose[i] = b;
+
+            b = (Button)v.findViewById(idsCancel[i]);
+            b.setOnClickListener(mClicker);
+
+            LinearLayout ll = (LinearLayout)v.findViewById(idsLayout[i]);
+            ll.setVisibility(VISIBLE);
+            objsLayout[i] = ll;
         }
 
         return v;
@@ -86,7 +115,7 @@ public class FragFavs extends Fragment
         Log.d(LOGNAME, ">>onDestroyView");
         super.onDestroyView();
 
-        view_Favs = null;
+        llViewFavs = null;
         helpPage = null;
         helpText = null;
     }
@@ -109,7 +138,7 @@ public class FragFavs extends Fragment
     {
         if (enable)
         {
-            view_Favs.setVisibility(GONE);
+            llViewFavs.setVisibility(GONE);
             helpPage.setVisibility(VISIBLE);
 
             String str = appContext.getResources().getString(R.string.text_help_head);
@@ -119,7 +148,7 @@ public class FragFavs extends Fragment
         else
         {
             helpPage.setVisibility(GONE);
-            view_Favs.setVisibility(VISIBLE);
+            llViewFavs.setVisibility(VISIBLE);
         }
     }
 
@@ -130,14 +159,24 @@ public class FragFavs extends Fragment
             int id = v.getId();
             for (int i = 0; i < numFavorites; ++i)
             {
-                if (id == idsButton[i])
+                if (id == idsChoose[i])
                 {
+                    DeselectChoice();
                     if (curFavorite != i)
-                        if (listenFavoriteSelect != null)
-                            for (int j = 0; j < numSegments; ++j)
-                                listenFavoriteSelect.onFavoriteSelect(j,
-                                    listFavorites[i].getPatternNum(j),
-                                    listFavorites[i].getPatternVals(j));
+                    {
+                        for (int j = 0; j < numSegments; ++j)
+                            listenFavoriteSelect.onFavoriteSelect(j,
+                                listFavorites[i].getPatternNum(j),
+                                listFavorites[i].getPatternVals(j));
+
+                        objsChoose[i].setText(">>> " + listFavorites[i].getPatternName() + " <<<");
+                        objsChoose[i].setTextColor(ContextCompat.getColor(appContext, R.color.HighLight));
+                        curFavorite = i;
+                    }
+                    break;
+                }
+                else if (id == idsCancel[i])
+                {
                     break;
                 }
             }
@@ -148,33 +187,14 @@ public class FragFavs extends Fragment
     {
         if (curFavorite >= 0)
         {
-            objsButton[curFavorite].setText(listFavorites[curFavorite].getPatternName());
-            objsButton[curFavorite].setTextColor(ContextCompat.getColor(appContext, R.color.UserChoice));
+            objsChoose[curFavorite].setText(listFavorites[curFavorite].getPatternName());
+            objsChoose[curFavorite].setTextColor(ContextCompat.getColor(appContext, R.color.UserChoice));
             curFavorite = -1;
         }
     }
 
-    public void onPatternSelect(int pnum)
+    public void onPatternSelect()
     {
-        Log.d(LOGNAME, "onPatternSelect pnum=" + pnum);
-
-        if (pnum >= 0) for (int i = 0; i < numFavorites; ++i)
-        {
-            if (listFavorites[i].getPatternNum(curSegment) == pnum)
-            {
-                DeselectChoice();
-
-                if (i >= 0)
-                {
-                    objsButton[i].setText(">>> " + listFavorites[i].getPatternName() + " <<<");
-                    objsButton[i].setTextColor(ContextCompat.getColor(appContext, R.color.HighLight));
-                }
-
-                curFavorite = i;
-                return;
-            }
-        }
-
         DeselectChoice(); // deselect current choice
     }
 }

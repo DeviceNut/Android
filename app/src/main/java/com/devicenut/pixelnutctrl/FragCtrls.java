@@ -129,7 +129,7 @@ public class FragCtrls extends Fragment implements SeekBar.OnSeekBarChangeListen
 
     interface PatternSelectInterface
     {
-        void onPatternSelect(int pnum);
+        void onPatternSelect();
     }
     private PatternSelectInterface listenPatternSelect;
 
@@ -441,12 +441,12 @@ public class FragCtrls extends Fragment implements SeekBar.OnSeekBarChangeListen
             SendString("" + num);   // store current pattern number
         }
 
-        //FIXME? SetControlPositions(); // set control positions without sending commands
+        SetControlPositions(); // set control positions without sending commands
 
         // change text for new pattern if pattern help is active, but keep it active
         if (helpMode > 0) SetPatternHelp(false, pnum);
 
-        listenPatternSelect.onPatternSelect(pnum);
+        listenPatternSelect.onPatternSelect(); // deselects current pattern
     }
 
     public void ChangePattern(int seg, int pnum, String vals)
@@ -731,6 +731,11 @@ public class FragCtrls extends Fragment implements SeekBar.OnSeekBarChangeListen
                     if (!useSegEnables) ClearSegEnables();
                     break;
                 }
+                case R.id.button_Favorite:
+                {
+
+                    break;
+                }
                 case R.id.radio_1:
                 {
                     SetSegment(0);
@@ -797,7 +802,7 @@ public class FragCtrls extends Fragment implements SeekBar.OnSeekBarChangeListen
 
                     SetControlPositions(); // set control positions without sending commands
 
-                    listenPatternSelect.onPatternSelect(-1); // deselect any favorite currently selected
+                    listenPatternSelect.onPatternSelect(); // deselect any favorite currently selected
                     break;
                 }
                 case R.id.button_TrigAction:
@@ -987,7 +992,7 @@ public class FragCtrls extends Fragment implements SeekBar.OnSeekBarChangeListen
                 }
             }
 
-            if (fromUser) listenPatternSelect.onPatternSelect(-1); // deselect any favorite currently selected
+            if (fromUser) listenPatternSelect.onPatternSelect(); // deselect any favorite currently selected
         }
     }
 

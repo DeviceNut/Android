@@ -4,10 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:paddingLeft="0dp"
-    android:paddingRight="0dp"
-    android:paddingTop="0dp"
-    android:paddingBottom="0dp"
+    android:padding="0dp"
     android:background="@color/Background"
     android:orientation="vertical"
     tools:context=".Master">
@@ -89,7 +86,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:id="@+id/ll_ViewPages">
+            android:id="@+id/ll_FragPages">
 
             <com.devicenut.pixelnutctrl.MyPager
                 android:id="@+id/myViewPager"
@@ -101,9 +98,10 @@
 
     <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="33dp"
+        android:layout_height="35dp"
         android:layout_alignParentBottom="true"
-        android:orientation="horizontal">
+        android:orientation="horizontal"
+        android:id="@+id/ll_GoToText">
 
         <TextView
             android:layout_width="wrap_content"

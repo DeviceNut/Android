@@ -10,11 +10,13 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -33,7 +35,8 @@ import static com.devicenut.pixelnutctrl.Main.pageDetails;
 import static com.devicenut.pixelnutctrl.Main.pageFavorites;
 import static com.devicenut.pixelnutctrl.Main.pageCurrent;
 import static com.devicenut.pixelnutctrl.Main.masterPager;
-import static com.devicenut.pixelnutctrl.Main.masterPageHeight;
+import static com.devicenut.pixelnutctrl.Main.pixelDensity;
+import static com.devicenut.pixelnutctrl.Main.pixelHeight;
 
 public class Master extends AppCompatActivity implements FragFavs.FavoriteSelectInterface,
                                                          FragCtrls.DeviceCommandInterface,
@@ -45,17 +48,16 @@ public class Master extends AppCompatActivity implements FragFavs.FavoriteSelect
 
     private boolean isConnected = false;
     private boolean isEditing = false;
-    private boolean isPaused = false;
     private boolean helpActive = false;
     private String devNameSaved = "";
 
     private LinearLayout llFragPages;
+    private RelativeLayout llGoToText;
     private Button pauseButton, helpButton;
     private TextView nameText;
     private TextView leftText, rightText;
 
     private Fragment[] myFragments = new Fragment[numFragments];
-    private FragmentPagerAdapter adapterViewPager;
     private boolean inLandscape;
 
     public void onFavoriteSelect(int seg, int pnum, String vals)
@@ -63,9 +65,9 @@ public class Master extends AppCompatActivity implements FragFavs.FavoriteSelect
         ((FragCtrls)myFragments[pageControls]).ChangePattern(seg, pnum, vals);
     }
 
-    public void onPatternSelect(int pnum)
+    public void onPatternSelect()
     {
-        ((FragFavs)myFragments[pageFavorites]).onPatternSelect(pnum);
+        ((FragFavs)myFragments[pageFavorites]).onPatternSelect();
     }
 
     public void onDeviceCommand(String str)
@@ -109,26 +111,37 @@ public class Master extends AppCompatActivity implements FragFavs.FavoriteSelect
             setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
 
         masterPager = (MyPager)findViewById(R.id.myViewPager);
-        adapterViewPager = new MasterAdapter(getSupportFragmentManager());
+        FragmentPagerAdapter adapterViewPager = new MasterAdapter(getSupportFragmentManager());
         masterPager.setAdapter(adapterViewPager);
         //masterPager.setOffscreenPageLimit(3);
 
-        llFragPages     = (LinearLayout) findViewById(R.id.ll_ViewPages);
-        pauseButton     = (Button)       findViewById(R.id.button_Pause);
-        helpButton      = (Button)       findViewById(R.id.button_HelpPage);
-        nameText        = (TextView)     findViewById(R.id.text_Devname);
-        leftText        = (TextView)     findViewById(R.id.text_GoLeft);
-        rightText       = (TextView)     findViewById(R.id.text_GoRight);
+        llFragPages = (LinearLayout)findViewById(R.id.ll_FragPages);
+        llGoToText  = (RelativeLayout)findViewById(R.id.ll_GoToText);
+
+        pauseButton = (Button)  findViewById(R.id.button_Pause);
+        helpButton  = (Button)  findViewById(R.id.button_HelpPage);
+        nameText    = (TextView)findViewById(R.id.text_Devname);
+        leftText    = (TextView)findViewById(R.id.text_GoLeft);
+        rightText   = (TextView)findViewById(R.id.text_GoRight);
+
+        SetFragViewPageHeight(false);
+        SetupGoToText();
+    }
+
+    private void SetFragViewPageHeight(boolean inhelp)
+    {
+        int margin = (inhelp ? 85 : 120); // must be at least 85 to get above bottom part of screen
+        int h = pixelHeight - (int)(margin * ((float)pixelDensity / DisplayMetrics.DENSITY_DEFAULT));
 
         ViewGroup.LayoutParams params = llFragPages.getLayoutParams();
-        params.height = masterPageHeight;
+        params.height = h;
         llFragPages.setLayoutParams(params);
-
-        SetupGoToText();
     }
 
     private void SetupGoToText()
     {
+        //Log.d(LOGNAME, "SetupGoToText: curpage=" + pageCurrent);
+
         if (pageCurrent == pageDetails)
         {
             leftText.setVisibility(VISIBLE);
@@ -222,13 +235,14 @@ public class Master extends AppCompatActivity implements FragFavs.FavoriteSelect
             helpButton.setText(getResources().getString(R.string.name_help));
             helpActive = false;
 
-            leftText.setVisibility(VISIBLE);
-            rightText.setVisibility(VISIBLE);
+            llGoToText.setVisibility(VISIBLE);
+            SetFragViewPageHeight(false);
+            SetupGoToText();
         }
         else
         {
-            leftText.setVisibility(GONE);
-            rightText.setVisibility(GONE);
+            SetFragViewPageHeight(true);
+            llGoToText.setVisibility(GONE);
 
             ((FragFavs)myFragments[pageFavorites]).setHelpMode(true);
             ((FragCtrls)myFragments[pageControls]).setHelpMode(true);

@@ -215,7 +215,6 @@ public class Main extends Application
     static int pixelWidth = 0;
     static int pixelHeight = 0;
     static int pixelDensity = 0;
-    static int masterPageHeight;
 
     // read from device during configuration
     static int curSegment = 0;                  // index from 0
@@ -421,11 +420,11 @@ public class Main extends Application
     static boolean useAdvPatterns = true;       // false if limited flash space to receive commands
     static boolean haveAdvPatterns;             // true if current pattern selection includes advanced
 
-    // assigned for custom device patterns
-    static String[] devPatternNames_Custom;
-    static String[] devPatternHelp_Custom;
-    static String[] devPatternCmds_Custom;
-    static int[] devPatternBits_Custom;
+    // assigned for device specific patterns
+    static String[] devPatternNames_Device;
+    static String[] devPatternHelp_Device;
+    static String[] devPatternCmds_Device;
+    static int[] devPatternBits_Device;
 
     // assigned for basic patterns
     static String[] listNames_Basic;
@@ -510,16 +509,16 @@ public class Main extends Application
 
             for (int i = 0; i < devicePatterns; ++i)
             {
-                Log.v(LOGNAME, "Adding custom pattern i=" + i + " j=" + j + " => " + devPatternNames_Custom[i]);
+                Log.v(LOGNAME, "Adding custom pattern i=" + i + " j=" + j + " => " + devPatternNames_Device[i]);
 
-                listNames_Basic[j] = devPatternNames_Custom[i];
+                listNames_Basic[j] = devPatternNames_Device[i];
                 listEnables_Basic[j] = true;
                 mapIndexToPattern_Basic[j] = k;
                 mapPatternToIndex_Basic[k] = j;
-                devPatternNames_Basic[k] = devPatternNames_Custom[i];
-                devPatternHelp_Basic[k] = devPatternHelp_Custom[i];
-                devPatternCmds_Basic[k] = devPatternCmds_Custom[i];
-                devPatternBits_Basic[k] = devPatternBits_Custom[i];
+                devPatternNames_Basic[k] = devPatternNames_Device[i];
+                devPatternHelp_Basic[k] = devPatternHelp_Device[i];
+                devPatternCmds_Basic[k] = devPatternCmds_Device[i];
+                devPatternBits_Basic[k] = devPatternBits_Device[i];
 
                 ++j;
                 ++k;
@@ -576,16 +575,16 @@ public class Main extends Application
 
             for (int i = 0; i < devicePatterns; ++i)
             {
-                Log.v(LOGNAME, "Adding custom pattern j=" + j + " k=" + k + " => " + devPatternNames_Custom[i]);
+                Log.v(LOGNAME, "Adding custom pattern j=" + j + " k=" + k + " => " + devPatternNames_Device[i]);
 
-                listNames_All[j] = devPatternNames_Custom[i];
+                listNames_All[j] = devPatternNames_Device[i];
                 listEnables_All[j] = true;
                 mapIndexToPattern_All[j] = k;
                 mapPatternToIndex_All[k] = j;
-                devPatternNames_All[k] = devPatternNames_Custom[i];
-                devPatternHelp_All[k] = devPatternHelp_Custom[i];
-                devPatternCmds_All[k] = devPatternCmds_Custom[i];
-                devPatternBits_All[k] = devPatternBits_Custom[i];
+                devPatternNames_All[k] = devPatternNames_Device[i];
+                devPatternHelp_All[k] = devPatternHelp_Device[i];
+                devPatternCmds_All[k] = devPatternCmds_Device[i];
+                devPatternBits_All[k] = devPatternBits_Device[i];
 
                 ++j;
                 ++k;

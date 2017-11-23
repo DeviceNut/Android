@@ -4,10 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
-    android:paddingLeft="0dp"
-    android:paddingRight="0dp"
-    android:paddingTop="0dp"
-    android:paddingBottom="0dp"
+    android:padding="0dp"
     android:background="@color/Background"
     android:orientation="vertical"
     tools:context=".FragCtrls">
@@ -20,7 +17,6 @@
         android:layout_marginTop="10dp"
         android:layout_marginLeft="@dimen/activity_horizontal_margin"
         android:layout_marginRight="@dimen/activity_horizontal_margin"
-        android:layout_marginBottom="16dp"
         android:id="@+id/ll_HelpPage_Ctrls">
 
         <LinearLayout
@@ -165,7 +161,7 @@
                     android:textStyle="italic"
                     android:text="@string/title_pattern"/>
 
-                <LinearLayout
+                <RelativeLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal">
@@ -176,6 +172,7 @@
                         android:layout_marginTop="10dp"
                         android:layout_marginBottom="8dp"
                         android:layout_marginRight="15dp"
+                        android:layout_alignParentStart="true"
                         android:textColor="@color/UserChoice"
                         android:background="@drawable/roundbutton"
                         android:text="\?"
@@ -184,15 +181,32 @@
                         android:onClick="onClick"
                         android:id="@+id/button_PatternHelp"/>
 
+                    <Button
+                        android:layout_width="35dp"
+                        android:layout_height="35dp"
+                        android:layout_marginTop="10dp"
+                        android:layout_marginBottom="8dp"
+                        android:layout_marginLeft="15dp"
+                        android:layout_alignParentEnd="true"
+                        android:textColor="@color/UserChoice"
+                        android:background="@drawable/roundbutton"
+                        android:text="F"
+                        android:textStyle="bold"
+                        android:textSize="22sp"
+                        android:onClick="onClick"
+                        android:id="@+id/button_Favorite"/>
+
                     <Spinner
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:dropDownWidth="wrap_content"
                         android:layout_marginTop="10dp"
+                        android:layout_toRightOf="@id/button_PatternHelp"
+                        android:layout_toLeftOf="@id/button_Favorite"
                         android:focusable="true"
                         android:id="@+id/spinner_Pattern"/>
 
-                </LinearLayout>
+                </RelativeLayout>
 
             </LinearLayout>
 
