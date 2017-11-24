@@ -41,6 +41,7 @@ import static com.devicenut.pixelnutctrl.Main.pixelHeight;
 public class Master extends AppCompatActivity implements FragFavs.FavoriteSelectInterface,
                                                          FragCtrls.FavoriteDeselectInterface,
                                                          FragCtrls.FavoriteCreateInterface,
+                                                         FragCtrls.PatternSelectInterface,
                                                          FragCtrls.DeviceCommandInterface,
                                                          Bluetooth.BleCallbacks
 {
@@ -74,6 +75,11 @@ public class Master extends AppCompatActivity implements FragFavs.FavoriteSelect
     public void onFavoriteCreate(String name, int seg, int pnum, String vals)
     {
         ((FragFavs)myFragments[pageFavorites]).FavoriteCreate(name, seg, pnum, vals);
+    }
+
+    public boolean onPatternSelect(String name, int seg, int pnum, String vals)
+    {
+        return ((FragFavs)myFragments[pageFavorites]).IsFavoritePattern(name, seg, pnum, vals);
     }
 
     public void onDeviceCommand(String str)

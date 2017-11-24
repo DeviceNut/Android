@@ -1,6 +1,7 @@
 package com.devicenut.pixelnutctrl;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
@@ -17,6 +18,7 @@ import static android.view.View.GONE;
 import static android.view.View.VISIBLE;
 import static com.devicenut.pixelnutctrl.Main.FAVTYPE_ADV;
 import static com.devicenut.pixelnutctrl.Main.FAVTYPE_BASIC;
+import static com.devicenut.pixelnutctrl.Main.MAXNUM_FAVORITIES;
 import static com.devicenut.pixelnutctrl.Main.advPatternsCount;
 import static com.devicenut.pixelnutctrl.Main.appContext;
 import static com.devicenut.pixelnutctrl.Main.basicPatternsCount;
@@ -33,6 +35,9 @@ public class FragFavs extends Fragment
     private static LinearLayout llViewFavs;
     private static ScrollView helpPage;
     private static TextView helpText;
+
+    private static SharedPreferences mySettings = null;
+    private static final String prefBaseName = "Favorite";
 
     private final int[] idsLayout =
             {
@@ -78,6 +83,8 @@ public class FragFavs extends Fragment
     {
         Log.d(LOGNAME, ">>onCreate");
         super.onCreate(savedInstanceState);
+
+        mySettings = appContext.getSharedPreferences(getString(R.string.app_name), 0);
     }
 
     @Override public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
@@ -90,6 +97,7 @@ public class FragFavs extends Fragment
         helpPage    = (ScrollView)   masterView.findViewById(R.id.ll_HelpPage_Favs);
         helpText    = (TextView)     masterView.findViewById(R.id.view_HelpText_Favs);
 
+        ReadAllFavorites();
         CreateList();
         return masterView;
     }
@@ -128,7 +136,7 @@ public class FragFavs extends Fragment
 
             if (i < numFavorites)
             {
-                Log.w(LOGNAME, "Setting favorite: " + listFavorites[i].getPatternName());
+                Log.d(LOGNAME, "Listing favorite: " + listFavorites[i].getPatternName());
 
                 Button b = (Button)masterView.findViewById(idsChoose[i]);
                 b.setTextColor(ContextCompat.getColor(appContext, R.color.UserChoice));
@@ -145,14 +153,46 @@ public class FragFavs extends Fragment
         }
     }
 
-    private void ReadList()
+    private static void SaveString(int index, String value)
     {
-
+        SharedPreferences.Editor editor = mySettings.edit();
+        editor.putString(prefBaseName + index, value);
+        editor.apply();
     }
 
-    private void WriteList()
+    private void ReadAllFavorites()
     {
+        for (int i = 0; i < MAXNUM_FAVORITIES; ++i)
+        {
+            String s = mySettings.getString(prefBaseName + i, null);
+            Main.FavoriteInfo f = new Main.FavoriteInfo(s);
+            if (f.data != null)
+            {
+                Log.d(LOGNAME, "Add favorite: name=" + f.name);
+                FavoriteInsert(f);
+            }
+            else if (s != null) // remove invalid string
+            {
+                Log.w(LOGNAME, "Removing favorite #" + i + " str=" + s);
+                SharedPreferences.Editor editor = mySettings.edit();
+                editor.clear();
+                editor.apply();
+            }
+        }
+    }
 
+    private void WriteAllFavorites()
+    {
+        for (int i = 0; i < MAXNUM_FAVORITIES; ++i)
+        {
+            Main.FavoriteInfo f = listFavorites[i];
+            if ((f != null) && !f.builtin)
+            {
+                Log.d(LOGNAME, "Save favorite: name=" + f.name);
+                SaveString(i, f.makeString());
+            }
+            else SaveString(i, null);
+        }
     }
 
     public void setHelpMode(boolean enable)
@@ -206,6 +246,7 @@ public class FragFavs extends Fragment
                     --numFavorites;
                     CreateList();
                     FavoriteSelect(curFavorite);
+                    WriteAllFavorites();
                     break;
                 }
             }
@@ -216,7 +257,7 @@ public class FragFavs extends Fragment
     {
         if (index >= 0)
         {
-            Log.d(LOGNAME, "Select Favorite #" + index);
+            Log.d(LOGNAME, "Select favorite #" + index);
             objsChoose[index].setText(">>> " + listFavorites[index].getPatternName() + " <<<");
             objsChoose[index].setTextColor(ContextCompat.getColor(appContext, R.color.HighLight));
             curFavorite = index;
@@ -228,24 +269,36 @@ public class FragFavs extends Fragment
     {
         if (curFavorite >= 0)
         {
-            Log.d(LOGNAME, "Deselect Favorite #" + curFavorite);
+            Log.d(LOGNAME, "Deselect favorite #" + curFavorite);
             objsChoose[curFavorite].setText(listFavorites[curFavorite].getPatternName());
             objsChoose[curFavorite].setTextColor(ContextCompat.getColor(appContext, R.color.UserChoice));
             curFavorite = -1;
         }
     }
 
-    // insert new choice into favorites
-    public void FavoriteCreate(String name, int seg, int pnum, String vals)
+    private void FavoriteInsert(Main.FavoriteInfo f)
     {
-        if (name != null) // first time only
-        {
-            // insert choice into list of favorites
-            for (int i = numFavorites; i > 0; --i)
-                listFavorites[i] = listFavorites[i-1];
+        // insert choice into list of favorites
+        for (int i = numFavorites; i > 0; --i)
+            listFavorites[i] = listFavorites[i-1];
 
-            Log.d(LOGNAME, "Create Favorite: name=" + name);
-            listFavorites[0] = new Main.FavoriteInfo(name, numSegments);
+        listFavorites[0] = f;
+        ++numFavorites;
+    }
+
+    private static String saveFstr;
+    private static int saveSegcount;
+
+    // check if newly selected pattern is the same as one of the favorites
+    // if so, then select that favorite, otherwise deselect the current one
+    // return false if failed to match any of the current favorites
+    public boolean IsFavoritePattern(String name, int seg, int pnum, String vals)
+    {
+        Log.d(LOGNAME, "IsFavoritePattern: name=" + name + " seg=" + seg + " pnm=" + pnum + " vals=" + vals);
+        if (name != null)
+        {
+            saveFstr = name + "\n";
+            saveSegcount = seg;
         }
         else
         {
@@ -258,15 +311,58 @@ public class FragFavs extends Fragment
             else if (pnum >= basicPatternsCount)
                 throw new NullPointerException("Invalid pattern number=" + pnum);
 
-            Log.d(LOGNAME, "Update Favorite: seg=" + seg + " type.pnum=" + type + "." + pnum + " vals=" + vals);
+            saveFstr += type + " " + pnum + " " + vals;
+
+            if (seg == saveSegcount-1)
+            {
+                for (int i = 0; i < numFavorites; ++i)
+                {
+                    String str = listFavorites[i].makeString();
+                    Log.d(LOGNAME, "Matching str=" + saveFstr + " with fav=" + str);
+                    if (str.equals(saveFstr))
+                    {
+                        FavoriteSelect(i);
+                        return true;
+                    }
+                }
+
+                FavoriteDeselect();
+                return false;
+            }
+            else saveFstr += "\n";
+        }
+
+        return true;
+    }
+
+    // insert new choice into favorites
+    public void FavoriteCreate(String name, int seg, int pnum, String vals)
+    {
+        if (name != null) // first time only
+        {
+            Log.d(LOGNAME, "Create favorite: name=" + name);
+            Main.FavoriteInfo f = new Main.FavoriteInfo(name, numSegments);
+            FavoriteInsert(f);
+        }
+        else
+        {
+            int type = FAVTYPE_BASIC;
+            if (pnum < (basicPatternsCount + advPatternsCount))
+            {
+                type = FAVTYPE_ADV;
+                pnum -= basicPatternsCount;
+            }
+            else if (pnum >= basicPatternsCount)
+                throw new NullPointerException("Invalid pattern number=" + pnum);
+
+            Log.d(LOGNAME, "Update favorite: seg=" + seg + " type.pnum=" + type + "." + pnum + " vals=" + vals);
             listFavorites[0].addValue(seg, type, pnum, vals);
 
             if (seg == numSegments-1) // last one
             {
-                ++numFavorites;
                 CreateList();
                 FavoriteSelect(0);
-                WriteList();
+                WriteAllFavorites();
             }
         }
     }

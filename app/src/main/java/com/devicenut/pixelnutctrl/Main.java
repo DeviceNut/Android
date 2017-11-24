@@ -253,6 +253,8 @@ public class Main extends Application
     static final int FAVTYPE_BASIC = 0;
     static final int FAVTYPE_ADV = 1;
     static final int FAVTYPE_STORED = 2;
+    static final int NUM_FAVSTR_VALS = 7; // number of values in vals string
+    // bright, delay, auto/manual, color, white, count, trigger
 
     static class FavoriteInfo
     {
@@ -262,9 +264,11 @@ public class Main extends Application
             int index;
             String values;
         }
+
         String name;
         FavPatternData[] data;
         int segs; // number of segments
+        boolean builtin;
 
         // used for static initialization of single segment
         FavoriteInfo(String n, int t, int p, String v)
@@ -272,6 +276,7 @@ public class Main extends Application
             name = n;
             data = new FavPatternData[1];
             segs = 1;
+            builtin = true;
             if (!addValue(0, t, p, v)) data = null;
         }
 
@@ -281,6 +286,7 @@ public class Main extends Application
             name = n;
             segs = c;
             data = new FavPatternData[segs];
+            builtin = false;
         }
 
         boolean addValue(int i, int t, int p, String v)
@@ -297,31 +303,40 @@ public class Main extends Application
         }
 
         // creates instance from single string
-        boolean FavoriteInfo(String s)
+        FavoriteInfo(String s)
         {
+            data = null;
+            if (s == null) return;
             String[] lines = s.split("\n"); // break into lines
-            if (lines.length < 2) return false;
+            if (lines.length < 2) return;
 
             name = lines[0];
             segs = lines.length-1;
             data = new FavPatternData[segs];
+            builtin = false;
 
-            for (int i = 1; i < segs; ++i)
+            for (int i = 0; i < segs; ++i)
             {
-                String[] strs = lines[i].split("\\s+"); // remove ALL spaces
-                if (strs.length < 9) return false;
+                String[] strs = lines[i+1].split("\\s+"); // remove ALL spaces
+                if (strs.length < NUM_FAVSTR_VALS + 2) // name, type, then vals
+                {
+                    data = null;
+                    return;
+                }
 
+                data[i] = new FavPatternData();
                 data[i].type = Integer.parseInt(strs[0]);
                 data[i].index = Integer.parseInt(strs[1]);
                 if (!TestTypePnum(data[i].type, data[i].index))
-                    return false;
+                {
+                    data = null;
+                    return;
+                }
 
                 data[i].values = "";
-                for (int j = 0; j < 6; ++j)
+                for (int j = 0; j < NUM_FAVSTR_VALS; ++j)
                     data[i].values += strs[j + 2] + " ";
             }
-
-            return true;
         }
 
         // creates string from instance
@@ -354,18 +369,19 @@ public class Main extends Application
                     if (p >= basicPatternsCount) return false;
                     break;
                 }
-                default: return false;
+                default:
+                    return false;
             }
             return true;
         }
 
-        String getPatternName()
-        {
-            return name;
-        }
+        String getPatternName() { return name; }
 
         int getPatternNum(int seg)
         {
+            if (data == null) return 0;
+            if (seg >= segs) seg = segs-1;
+
             int pnum = data[seg].index;
 
             switch (data[seg].type)
@@ -392,6 +408,8 @@ public class Main extends Application
 
         String getPatternVals(int seg)
         {
+            if (data == null) return "";
+            if (seg >= segs) seg = segs-1;
             return data[seg].values;
         }
     }
