@@ -256,8 +256,6 @@ public class Main extends Application
 
     static class FavoriteInfo
     {
-        private static final String LOGNAME = "FavInfo";
-
         static class FavPatternData
         {
             int type;

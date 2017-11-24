@@ -83,7 +83,6 @@
                         android:layout_alignParentStart="true"
                         android:layout_marginRight="8dp"
                         android:visibility="gone"
-                        android:onClick="onClick"
                         android:id="@+id/radio_1"
                         android:text="1"/>
 
@@ -93,7 +92,6 @@
                         android:layout_toRightOf="@id/radio_1"
                         android:layout_marginRight="8dp"
                         android:visibility="gone"
-                        android:onClick="onClick"
                         android:id="@+id/radio_2"
                         android:text="2"/>
 
@@ -103,7 +101,6 @@
                         android:layout_toRightOf="@id/radio_2"
                         android:layout_marginRight="8dp"
                         android:visibility="gone"
-                        android:onClick="onClick"
                         android:id="@+id/radio_3"
                         android:text="3"/>
 
@@ -113,7 +110,6 @@
                         android:layout_toRightOf="@id/radio_3"
                         android:layout_marginRight="8dp"
                         android:visibility="gone"
-                        android:onClick="onClick"
                         android:id="@+id/radio_4"
                         android:text="4"/>
 
@@ -123,7 +119,6 @@
                         android:layout_toRightOf="@id/radio_4"
                         android:layout_marginRight="8dp"
                         android:visibility="gone"
-                        android:onClick="onClick"
                         android:id="@+id/radio_5"
                         android:text="5"/>
 
@@ -137,7 +132,6 @@
                         android:text="&amp;"
                         android:textStyle="bold"
                         android:textSize="22sp"
-                        android:onClick="onClick"
                         android:visibility="gone"
                         android:id="@+id/button_SegAdd"/>
 
@@ -178,7 +172,6 @@
                         android:text="\?"
                         android:textStyle="bold"
                         android:textSize="22sp"
-                        android:onClick="onClick"
                         android:id="@+id/button_PatternHelp"/>
 
                     <Button
@@ -193,7 +186,6 @@
                         android:text="F"
                         android:textStyle="bold"
                         android:textSize="22sp"
-                        android:onClick="onClick"
                         android:id="@+id/button_Favorite"/>
 
                     <Spinner
@@ -339,7 +331,6 @@
                             android:layout_height="40dp"
                             android:layout_marginStart="10dp"
                             android:textAlignment="center"
-                            android:onClick="onClick"
                             android:id="@+id/button_AutoProp"
                             android:text="@string/name_disable"
                             android:textColorLink="@color/UserChoice"/>
@@ -469,7 +460,6 @@
                         android:layout_marginTop="12dp"
                         android:textColorLink="@color/UserChoice"
                         android:text="@string/name_trigger"
-                        android:onClick="onClick"
                         android:id="@+id/button_TrigAction"/>
 
                 </LinearLayout>

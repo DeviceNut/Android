@@ -39,8 +39,9 @@ import static com.devicenut.pixelnutctrl.Main.pixelDensity;
 import static com.devicenut.pixelnutctrl.Main.pixelHeight;
 
 public class Master extends AppCompatActivity implements FragFavs.FavoriteSelectInterface,
+                                                         FragCtrls.FavoriteDeselectInterface,
+                                                         FragCtrls.FavoriteCreateInterface,
                                                          FragCtrls.DeviceCommandInterface,
-                                                         FragCtrls.PatternSelectInterface,
                                                          Bluetooth.BleCallbacks
 {
     private final String LOGNAME = "Master";
@@ -65,9 +66,14 @@ public class Master extends AppCompatActivity implements FragFavs.FavoriteSelect
         ((FragCtrls)myFragments[pageControls]).ChangePattern(seg, pnum, vals);
     }
 
-    public void onPatternSelect()
+    public void onFavoriteDeselect()
     {
-        ((FragFavs)myFragments[pageFavorites]).onPatternSelect();
+        ((FragFavs)myFragments[pageFavorites]).FavoriteDeselect();
+    }
+
+    public void onFavoriteCreate(String name, int seg, int pnum, String vals)
+    {
+        ((FragFavs)myFragments[pageFavorites]).FavoriteCreate(name, seg, pnum, vals);
     }
 
     public void onDeviceCommand(String str)

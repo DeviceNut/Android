@@ -99,7 +99,7 @@
                         android:text="X"
                         android:textStyle="bold"
                         android:textSize="20sp"
-                        android:onClick="onClick"/>
+                        android:id="@+id/button_FavCancel1"/>
 
                 </LinearLayout>
 
@@ -130,7 +130,7 @@
                         android:text="X"
                         android:textStyle="bold"
                         android:textSize="20sp"
-                        android:onClick="onClick"/>
+                        android:id="@+id/button_FavCancel2"/>
 
                 </LinearLayout>
 
@@ -161,7 +161,7 @@
                         android:text="X"
                         android:textStyle="bold"
                         android:textSize="20sp"
-                        android:onClick="onClick"/>
+                        android:id="@+id/button_FavCancel3"/>
 
                 </LinearLayout>
 
@@ -192,7 +192,7 @@
                         android:text="X"
                         android:textStyle="bold"
                         android:textSize="20sp"
-                        android:onClick="onClick"/>
+                        android:id="@+id/button_FavCancel4"/>
 
                 </LinearLayout>
 
@@ -223,7 +223,7 @@
                         android:text="X"
                         android:textStyle="bold"
                         android:textSize="20sp"
-                        android:onClick="onClick"/>
+                        android:id="@+id/button_FavCancel5"/>
 
                 </LinearLayout>
 
@@ -254,7 +254,7 @@
                         android:text="X"
                         android:textStyle="bold"
                         android:textSize="20sp"
-                        android:onClick="onClick"/>
+                        android:id="@+id/button_FavCancel6"/>
 
                 </LinearLayout>
             </LinearLayout>

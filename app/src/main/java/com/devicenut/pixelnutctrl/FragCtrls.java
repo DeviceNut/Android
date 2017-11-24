@@ -21,6 +21,7 @@ import android.widget.Spinner;
 import android.widget.TextView;
 
 import static android.view.View.GONE;
+import static android.view.View.INVISIBLE;
 import static android.view.View.VISIBLE;
 import static com.devicenut.pixelnutctrl.Main.CMD_BRIGHT;
 import static com.devicenut.pixelnutctrl.Main.CMD_DELAY;
@@ -86,7 +87,7 @@ public class FragCtrls extends Fragment implements SeekBar.OnSeekBarChangeListen
 {
     private static final String LOGNAME = "Controls";
 
-    private static ScrollView view_Ctrls;
+    private static ScrollView viewCtrls;
     private static ScrollView helpPage;
     private static TextView helpText;
 
@@ -99,7 +100,7 @@ public class FragCtrls extends Fragment implements SeekBar.OnSeekBarChangeListen
     private static LinearLayout llPropColor, llPropWhite, llPropCount;
     private static LinearLayout llTrigControls, llTrigForce;
 
-    private static Button segAddButton, helpButton, manualButton;
+    private static Button segAddButton, favButton, helpButton, manualButton;
     private static TextView helpText2, textTrigger;
     private static Spinner selectPattern;
 
@@ -127,11 +128,17 @@ public class FragCtrls extends Fragment implements SeekBar.OnSeekBarChangeListen
     }
     private DeviceCommandInterface listenDeviceCommand;
 
-    interface PatternSelectInterface
+    interface FavoriteDeselectInterface
     {
-        void onPatternSelect();
+        void onFavoriteDeselect();
     }
-    private PatternSelectInterface listenPatternSelect;
+    private FavoriteDeselectInterface listenFavoriteDeselect;
+
+    interface FavoriteCreateInterface
+    {
+        void onFavoriteCreate(String name, int seg, int pnum, String vals);
+    }
+    private FavoriteCreateInterface listenFavoriteCreate;
 
     public FragCtrls() {}
     public static FragCtrls newInstance() { return new FragCtrls(); }
@@ -142,7 +149,7 @@ public class FragCtrls extends Fragment implements SeekBar.OnSeekBarChangeListen
 
         View v = inflater.inflate(R.layout.fragment_ctrls, container, false);
 
-        view_Ctrls     = (ScrollView) v.findViewById(R.id.scroll_Controls);
+        viewCtrls      = (ScrollView) v.findViewById(R.id.scroll_Controls);
         helpPage       = (ScrollView) v.findViewById(R.id.ll_HelpPage_Ctrls);
         helpText       = (TextView)   v.findViewById(R.id.view_HelpText_Ctrls);
 
@@ -174,6 +181,10 @@ public class FragCtrls extends Fragment implements SeekBar.OnSeekBarChangeListen
         seekPropCount.setOnSeekBarChangeListener(this);
         seekTrigForce.setOnSeekBarChangeListener(this);
 
+        favButton = (Button)v.findViewById(R.id.button_Favorite);
+        favButton.setOnClickListener(mClicker);
+        favButton.setVisibility(VISIBLE);
+
         manualButton = (Button)v.findViewById(R.id.button_AutoProp);
         manualButton.setOnClickListener(mClicker);
 
@@ -203,6 +214,7 @@ public class FragCtrls extends Fragment implements SeekBar.OnSeekBarChangeListen
                 b.setEnabled(true);
                 b.setFocusable(true);
                 b.setClickable(true);
+                b.setOnClickListener(mClicker);
 
                 if (i == curSegment)
                 {
@@ -242,32 +254,50 @@ public class FragCtrls extends Fragment implements SeekBar.OnSeekBarChangeListen
         Log.d(LOGNAME, ">>onDestroyView");
         super.onDestroyView();
 
-        view_Ctrls = null;
+        viewCtrls = null;
         helpPage = null;
         helpText = null;
+
+        llPatternHelp = llDelayControl = null;
+        llProperties = llAutoControls = null;
+        llPropColor = llPropWhite = llPropCount = null;
+        llTrigControls = llTrigForce = null;
+
+        segAddButton = favButton = null;
+        helpButton = manualButton = null;
+        helpText2 = textTrigger = null;
+        selectPattern = null;
+
+        seekBright = seekDelay = seekTrigForce = null;
+        seekPropColor = seekPropWhite = seekPropCount = null;
+        
     }
 
     @Override public void onAttach(Context context)
     {
         Log.d(LOGNAME, ">>onAttach");
         super.onAttach(context);
+
         listenDeviceCommand = (DeviceCommandInterface)getActivity();
-        listenPatternSelect = (PatternSelectInterface)getActivity();
+        listenFavoriteCreate = (FavoriteCreateInterface)getActivity();
+        listenFavoriteDeselect = (FavoriteDeselectInterface)getActivity();
     }
 
     @Override public void onDetach()
     {
         Log.d(LOGNAME, ">>onDetach");
         super.onDetach();
+
         listenDeviceCommand = null;
-        listenPatternSelect = null;
+        listenFavoriteCreate = null;
+        listenFavoriteDeselect = null;
     }
 
     public void setHelpMode(boolean enable)
     {
         if (enable)
         {
-            view_Ctrls.setVisibility(GONE);
+            viewCtrls.setVisibility(GONE);
             helpPage.setVisibility(VISIBLE);
 
             String str = appContext.getResources().getString(R.string.text_help_head);
@@ -285,7 +315,7 @@ public class FragCtrls extends Fragment implements SeekBar.OnSeekBarChangeListen
         else
         {
             helpPage.setVisibility(GONE);
-            view_Ctrls.setVisibility(VISIBLE);
+            viewCtrls.setVisibility(VISIBLE);
         }
     }
 
@@ -362,14 +392,14 @@ public class FragCtrls extends Fragment implements SeekBar.OnSeekBarChangeListen
             if (initPatterns || changePattern)
             {
                 Log.d(LOGNAME, "Pattern choice: " + parent.getItemAtPosition(position));
-                SelectPattern( mapIndexToPattern[position] );
+                SelectPattern(mapIndexToPattern[position], true);
                 initPatterns = false; // end of one-time initialization
             }
             else changePattern = true; // reset for next time
         }
     };
 
-    private void SelectPattern(int pnum)
+    private void SelectPattern(int pnum, boolean deselect)
     {
         segPatterns[curSegment] = pnum;
 
@@ -446,7 +476,8 @@ public class FragCtrls extends Fragment implements SeekBar.OnSeekBarChangeListen
         // change text for new pattern if pattern help is active, but keep it active
         if (helpMode > 0) SetPatternHelp(false, pnum);
 
-        listenPatternSelect.onPatternSelect(); // deselects current pattern
+        favButton.setVisibility(VISIBLE);
+        if (deselect) listenFavoriteDeselect.onFavoriteDeselect(); // deselects current pattern
     }
 
     public void ChangePattern(int seg, int pnum, String vals)
@@ -472,12 +503,9 @@ public class FragCtrls extends Fragment implements SeekBar.OnSeekBarChangeListen
                  SendString(CMD_EXTMODE + "1");
             else SendString(CMD_EXTMODE + "0");
 
-            if (segPatterns[curSegment] != pnum)
-            {
-                segPatterns[curSegment] = pnum;
-                selectPattern.setSelection(mapPatternToIndex[segPatterns[curSegment]], false);
-            }
-            else SelectPattern(pnum); // selection already on this, will not trigger callback
+            segPatterns[curSegment] = pnum;
+            SelectPattern(pnum, false);
+            SetPatternNameOnly();
 
             changeControls = true; // need to resend control values
             SetControlPositions();
@@ -733,7 +761,24 @@ public class FragCtrls extends Fragment implements SeekBar.OnSeekBarChangeListen
                 }
                 case R.id.button_Favorite:
                 {
+                    String name = devPatternNames[segPatterns[curSegment]];
+                    listenFavoriteCreate.onFavoriteCreate(name, 0,0, null);
 
+                    for (int i = 0; i < numSegments; ++i)
+                    {
+                        String vals = "";
+
+                        vals += curBright[multiStrands ? i : 0] + " ";
+                        vals += curDelay[ multiStrands ? i : 0] + " ";
+                        vals += (segXmodeEnb[i] ? "1 " : "0 ");
+                        vals += segXmodeHue[ i] + " ";
+                        vals += segXmodeWht[ i] + " ";
+                        vals += segXmodeCnt[ i] + " ";
+                        vals += segTrigForce[i] + " ";
+
+                        favButton.setVisibility(INVISIBLE);
+                        listenFavoriteCreate.onFavoriteCreate(null, i, segPatterns[i], vals);
+                    }
                     break;
                 }
                 case R.id.radio_1:
@@ -802,7 +847,8 @@ public class FragCtrls extends Fragment implements SeekBar.OnSeekBarChangeListen
 
                     SetControlPositions(); // set control positions without sending commands
 
-                    listenPatternSelect.onPatternSelect(); // deselect any favorite currently selected
+                    favButton.setVisibility(VISIBLE);
+                    listenFavoriteDeselect.onFavoriteDeselect(); // deselects current pattern
                     break;
                 }
                 case R.id.button_TrigAction:
@@ -992,7 +1038,11 @@ public class FragCtrls extends Fragment implements SeekBar.OnSeekBarChangeListen
                 }
             }
 
-            if (fromUser) listenPatternSelect.onPatternSelect(); // deselect any favorite currently selected
+            if (fromUser)
+            {
+                favButton.setVisibility(VISIBLE);
+                listenFavoriteDeselect.onFavoriteDeselect(); // deselects current pattern
+            }
         }
     }
 

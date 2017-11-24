@@ -25,10 +25,6 @@ import static com.devicenut.pixelnutctrl.Main.curBright;
 import static com.devicenut.pixelnutctrl.Main.curDelay;
 import static com.devicenut.pixelnutctrl.Main.devicePatterns;
 import static com.devicenut.pixelnutctrl.Main.customPlugins;
-import static com.devicenut.pixelnutctrl.Main.devPatternBits;
-import static com.devicenut.pixelnutctrl.Main.devPatternCmds;
-import static com.devicenut.pixelnutctrl.Main.devPatternHelp;
-import static com.devicenut.pixelnutctrl.Main.devPatternNames;
 import static com.devicenut.pixelnutctrl.Main.initPatterns;
 import static com.devicenut.pixelnutctrl.Main.multiStrands;
 import static com.devicenut.pixelnutctrl.Main.useAdvPatterns;
@@ -373,11 +369,6 @@ class ReplyStrs
                             segPatterns[0] = 0;
                             Log.v(LOGNAME, "Resetting current pattern=0");
                         }
-
-                        devPatternNames = new String[numPatterns];
-                        devPatternHelp  = new String[numPatterns];
-                        devPatternBits  = new int[numPatterns];
-                        devPatternCmds  = new String[numPatterns];
                     }
                 }
                 else
