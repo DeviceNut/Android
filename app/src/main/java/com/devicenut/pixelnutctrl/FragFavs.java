@@ -16,12 +16,8 @@ import android.widget.TextView;
 
 import static android.view.View.GONE;
 import static android.view.View.VISIBLE;
-import static com.devicenut.pixelnutctrl.Main.FAVTYPE_ADV;
-import static com.devicenut.pixelnutctrl.Main.FAVTYPE_BASIC;
 import static com.devicenut.pixelnutctrl.Main.MAXNUM_FAVORITIES;
-import static com.devicenut.pixelnutctrl.Main.advPatternsCount;
 import static com.devicenut.pixelnutctrl.Main.appContext;
-import static com.devicenut.pixelnutctrl.Main.basicPatternsCount;
 import static com.devicenut.pixelnutctrl.Main.numSegments;
 import static com.devicenut.pixelnutctrl.Main.numFavorites;
 import static com.devicenut.pixelnutctrl.Main.curFavorite;
@@ -97,6 +93,8 @@ public class FragFavs extends Fragment
         helpPage    = (ScrollView)   masterView.findViewById(R.id.ll_HelpPage_Favs);
         helpText    = (TextView)     masterView.findViewById(R.id.view_HelpText_Favs);
 
+        curFavorite = -1; // clear current choice
+
         ReadAllFavorites();
         CreateList();
         return masterView;
@@ -146,6 +144,9 @@ public class FragFavs extends Fragment
 
                 b = (Button)masterView.findViewById(idsCancel[i]);
                 b.setOnClickListener(mClicker);
+                if (listFavorites[i].userCreated())
+                     b.setVisibility(VISIBLE);
+                else b.setVisibility(GONE);
 
                 ll.setVisibility(VISIBLE);
             }
@@ -162,7 +163,7 @@ public class FragFavs extends Fragment
 
     private void ReadAllFavorites()
     {
-        for (int i = 0; i < MAXNUM_FAVORITIES; ++i)
+        for (int i = MAXNUM_FAVORITIES-1; i >= 0 ; --i)
         {
             String s = mySettings.getString(prefBaseName + i, null);
             Main.FavoriteInfo f = new Main.FavoriteInfo(s);
@@ -286,8 +287,7 @@ public class FragFavs extends Fragment
         ++numFavorites;
     }
 
-    private static String saveFstr;
-    private static int saveSegcount;
+    static Main.FavoriteInfo savedFavorite;
 
     // check if newly selected pattern is the same as one of the favorites
     // if so, then select that favorite, otherwise deselect the current one
@@ -295,31 +295,21 @@ public class FragFavs extends Fragment
     public boolean IsFavoritePattern(String name, int seg, int pnum, String vals)
     {
         Log.d(LOGNAME, "IsFavoritePattern: name=" + name + " seg=" + seg + " pnm=" + pnum + " vals=" + vals);
-        if (name != null)
-        {
-            saveFstr = name + "\n";
-            saveSegcount = seg;
-        }
+
+        if (name != null) savedFavorite = new Main.FavoriteInfo(name, seg);
         else
         {
-            int type = FAVTYPE_BASIC;
-            if (pnum < (basicPatternsCount + advPatternsCount))
-            {
-                type = FAVTYPE_ADV;
-                pnum -= basicPatternsCount;
-            }
-            else if (pnum >= basicPatternsCount)
-                throw new NullPointerException("Invalid pattern number=" + pnum);
+            if (!savedFavorite.addValue(seg, pnum, vals))
+                throw new NullPointerException("Favorite Check Failed");
 
-            saveFstr += type + " " + pnum + " " + vals;
-
-            if (seg == saveSegcount-1)
+            if (seg == numSegments-1)
             {
+                String str1 = savedFavorite.makeString();
                 for (int i = 0; i < numFavorites; ++i)
                 {
-                    String str = listFavorites[i].makeString();
-                    Log.d(LOGNAME, "Matching str=" + saveFstr + " with fav=" + str);
-                    if (str.equals(saveFstr))
+                    String str2 = listFavorites[i].makeString();
+                    Log.v(LOGNAME, "Matching str=" + str1 + "\nWith fav=" + str2);
+                    if (str1.equals(str2))
                     {
                         FavoriteSelect(i);
                         return true;
@@ -329,7 +319,6 @@ public class FragFavs extends Fragment
                 FavoriteDeselect();
                 return false;
             }
-            else saveFstr += "\n";
         }
 
         return true;
@@ -346,17 +335,10 @@ public class FragFavs extends Fragment
         }
         else
         {
-            int type = FAVTYPE_BASIC;
-            if (pnum < (basicPatternsCount + advPatternsCount))
-            {
-                type = FAVTYPE_ADV;
-                pnum -= basicPatternsCount;
-            }
-            else if (pnum >= basicPatternsCount)
-                throw new NullPointerException("Invalid pattern number=" + pnum);
+            Log.d(LOGNAME, "Update favorite: seg=" + seg + " pnum=" + pnum + " vals=" + vals);
 
-            Log.d(LOGNAME, "Update favorite: seg=" + seg + " type.pnum=" + type + "." + pnum + " vals=" + vals);
-            listFavorites[0].addValue(seg, type, pnum, vals);
+            if (!listFavorites[0].addValue(seg, pnum, vals))
+                throw new NullPointerException("Favorite Create Failed");
 
             if (seg == numSegments-1) // last one
             {

@@ -94,7 +94,6 @@ public class FragCtrls extends Fragment implements SeekBar.OnSeekBarChangeListen
 
     private static int helpMode = 0;
     private static boolean changePattern = true;
-    private static boolean changeControls = false;
 
     private static LinearLayout llPatternHelp, llDelayControl;
     private static LinearLayout llProperties, llAutoControls;
@@ -110,7 +109,7 @@ public class FragCtrls extends Fragment implements SeekBar.OnSeekBarChangeListen
     private static SeekBar seekTrigForce;
 
     private static boolean useSegEnables = false;
-    private static final boolean segEnables[] = { false, false, false, false, false };
+    private static final boolean segEnables[] = {false, false, false, false, false};
 
     private static final int segRadioIds[] =
             {
@@ -127,55 +126,61 @@ public class FragCtrls extends Fragment implements SeekBar.OnSeekBarChangeListen
     {
         void onDeviceCommand(String s);
     }
+
     private DeviceCommandInterface listenDeviceCommand;
 
     interface FavoriteDeselectInterface
     {
         void onFavoriteDeselect();
     }
+
     private FavoriteDeselectInterface listenFavoriteDeselect;
 
     interface FavoriteCreateInterface
     {
         void onFavoriteCreate(String name, int seg, int pnum, String vals);
     }
+
     private FavoriteCreateInterface listenFavoriteCreate;
 
     interface PatternSelectInterface
     {
         boolean onPatternSelect(String name, int seg, int pnum, String vals);
     }
+
     private PatternSelectInterface listenPatternSelect;
 
     public FragCtrls() {}
+
     public static FragCtrls newInstance() { return new FragCtrls(); }
 
-    @Override public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
     {
         Log.d(LOGNAME, ">>onCreateView");
 
         View v = inflater.inflate(R.layout.fragment_ctrls, container, false);
 
-        viewCtrls      = (ScrollView) v.findViewById(R.id.scroll_Controls);
-        helpPage       = (ScrollView) v.findViewById(R.id.ll_HelpPage_Ctrls);
-        helpText       = (TextView)   v.findViewById(R.id.view_HelpText_Ctrls);
+        viewCtrls = (ScrollView) v.findViewById(R.id.scroll_Controls);
+        helpPage = (ScrollView) v.findViewById(R.id.ll_HelpPage_Ctrls);
+        helpText = (TextView) v.findViewById(R.id.view_HelpText_Ctrls);
 
-        llPatternHelp  = (LinearLayout) v.findViewById(R.id.ll_PatternHelp);
+        llPatternHelp = (LinearLayout) v.findViewById(R.id.ll_PatternHelp);
         llDelayControl = (LinearLayout) v.findViewById(R.id.ll_DelayControl);
-        llProperties   = (LinearLayout) v.findViewById(R.id.ll_Properties);
+        llProperties = (LinearLayout) v.findViewById(R.id.ll_Properties);
         llAutoControls = (LinearLayout) v.findViewById(R.id.ll_AutoControls);
-        llPropColor    = (LinearLayout) v.findViewById(R.id.ll_PropColor);
-        llPropWhite    = (LinearLayout) v.findViewById(R.id.ll_PropWhite);
-        llPropCount    = (LinearLayout) v.findViewById(R.id.ll_PropCount);
+        llPropColor = (LinearLayout) v.findViewById(R.id.ll_PropColor);
+        llPropWhite = (LinearLayout) v.findViewById(R.id.ll_PropWhite);
+        llPropCount = (LinearLayout) v.findViewById(R.id.ll_PropCount);
         llTrigControls = (LinearLayout) v.findViewById(R.id.ll_TrigControls);
-        llTrigForce    = (LinearLayout) v.findViewById(R.id.ll_TrigForce);
+        llTrigForce = (LinearLayout) v.findViewById(R.id.ll_TrigForce);
 
-        selectPattern = (Spinner)  v.findViewById(R.id.spinner_Pattern);
-        textTrigger   = (TextView) v.findViewById(R.id.text_Trigger);
-        helpText2     = (TextView) v.findViewById(R.id.text_PatternHelp);
+        selectPattern = (Spinner) v.findViewById(R.id.spinner_Pattern);
+        textTrigger = (TextView) v.findViewById(R.id.text_Trigger);
+        helpText2 = (TextView) v.findViewById(R.id.text_PatternHelp);
 
-        seekBright    = (SeekBar) v.findViewById(R.id.seek_Bright);
-        seekDelay     = (SeekBar) v.findViewById(R.id.seek_Delay);
+        seekBright = (SeekBar) v.findViewById(R.id.seek_Bright);
+        seekDelay = (SeekBar) v.findViewById(R.id.seek_Delay);
         seekPropColor = (SeekBar) v.findViewById(R.id.seek_PropColor);
         seekPropWhite = (SeekBar) v.findViewById(R.id.seek_PropWhite);
         seekPropCount = (SeekBar) v.findViewById(R.id.seek_PropCount);
@@ -188,25 +193,24 @@ public class FragCtrls extends Fragment implements SeekBar.OnSeekBarChangeListen
         seekPropCount.setOnSeekBarChangeListener(this);
         seekTrigForce.setOnSeekBarChangeListener(this);
 
-        favButton = (Button)v.findViewById(R.id.button_Favorite);
+        favButton = (Button) v.findViewById(R.id.button_Favorite);
         favButton.setOnClickListener(mClicker);
-        favButton.setVisibility(VISIBLE);
 
-        manualButton = (Button)v.findViewById(R.id.button_AutoProp);
+        manualButton = (Button) v.findViewById(R.id.button_AutoProp);
         manualButton.setOnClickListener(mClicker);
 
-        segAddButton = (Button)v.findViewById(R.id.button_SegAdd);
+        segAddButton = (Button) v.findViewById(R.id.button_SegAdd);
         segAddButton.setOnClickListener(mClicker);
 
-        helpButton = (Button)v.findViewById(R.id.button_PatternHelp);
+        helpButton = (Button) v.findViewById(R.id.button_PatternHelp);
         helpButton.setOnClickListener(mClicker);
 
-        Button triggerButton = (Button)v.findViewById(R.id.button_TrigAction);
+        Button triggerButton = (Button) v.findViewById(R.id.button_TrigAction);
         triggerButton.setOnClickListener(mClicker);
 
-        segRadioButtons = new RadioButton[ segRadioIds.length ];
+        segRadioButtons = new RadioButton[segRadioIds.length];
         for (int i = 0; i < segRadioIds.length; ++i)
-            segRadioButtons[i] = (RadioButton)v.findViewById(segRadioIds[i]);
+            segRadioButtons[i] = (RadioButton) v.findViewById(segRadioIds[i]);
 
         LinearLayout llSelectSegs = (LinearLayout) v.findViewById(R.id.ll_SelectSegments);
         if (numSegments > 1)
@@ -246,7 +250,7 @@ public class FragCtrls extends Fragment implements SeekBar.OnSeekBarChangeListen
         CreateSpinnerAdapterAll();
 
         if (segBasicOnly[curSegment])
-             selectPattern.setAdapter(spinnerArrayAdapter_Basic);
+            selectPattern.setAdapter(spinnerArrayAdapter_Basic);
         else selectPattern.setAdapter(spinnerArrayAdapter_All);
         selectPattern.setOnItemSelectedListener(patternListener);
 
@@ -257,7 +261,8 @@ public class FragCtrls extends Fragment implements SeekBar.OnSeekBarChangeListen
         return v;
     }
 
-    @Override public void onDestroyView()
+    @Override
+    public void onDestroyView()
     {
         Log.d(LOGNAME, ">>onDestroyView");
         super.onDestroyView();
@@ -278,21 +283,23 @@ public class FragCtrls extends Fragment implements SeekBar.OnSeekBarChangeListen
 
         seekBright = seekDelay = seekTrigForce = null;
         seekPropColor = seekPropWhite = seekPropCount = null;
-        
+
     }
 
-    @Override public void onAttach(Context context)
+    @Override
+    public void onAttach(Context context)
     {
         Log.d(LOGNAME, ">>onAttach");
         super.onAttach(context);
 
-        listenDeviceCommand = (DeviceCommandInterface)getActivity();
-        listenFavoriteDeselect = (FavoriteDeselectInterface)getActivity();
-        listenFavoriteCreate = (FavoriteCreateInterface)getActivity();
-        listenPatternSelect = (PatternSelectInterface)getActivity();
+        listenDeviceCommand = (DeviceCommandInterface) getActivity();
+        listenFavoriteDeselect = (FavoriteDeselectInterface) getActivity();
+        listenFavoriteCreate = (FavoriteCreateInterface) getActivity();
+        listenPatternSelect = (PatternSelectInterface) getActivity();
     }
 
-    @Override public void onDetach()
+    @Override
+    public void onDetach()
     {
         Log.d(LOGNAME, ">>onDetach");
         super.onDetach();
@@ -304,15 +311,19 @@ public class FragCtrls extends Fragment implements SeekBar.OnSeekBarChangeListen
     }
 
     private ArrayAdapter<String> spinnerArrayAdapter_Basic;
+
     private void CreateSpinnerAdapterBasic()
     {
         spinnerArrayAdapter_Basic = new ArrayAdapter<String>(appContext, R.layout.layout_spinner, listNames_Basic)
         {
-            @Override public boolean areAllItemsEnabled() { return false; }
+            @Override
+            public boolean areAllItemsEnabled() { return false; }
 
-            @Override public boolean isEnabled(int position) { return listEnables_Basic[position]; }
+            @Override
+            public boolean isEnabled(int position) { return listEnables_Basic[position]; }
 
-            @Override public View getDropDownView(int position, View convertView, @NonNull ViewGroup parent)
+            @Override
+            public View getDropDownView(int position, View convertView, @NonNull ViewGroup parent)
             {
                 View v = convertView;
                 if (v == null)
@@ -334,15 +345,19 @@ public class FragCtrls extends Fragment implements SeekBar.OnSeekBarChangeListen
     }
 
     private ArrayAdapter<String> spinnerArrayAdapter_All;
+
     private void CreateSpinnerAdapterAll()
     {
         spinnerArrayAdapter_All = new ArrayAdapter<String>(appContext, R.layout.layout_spinner, listNames_All)
         {
-            @Override public boolean areAllItemsEnabled() { return false; }
+            @Override
+            public boolean areAllItemsEnabled() { return false; }
 
-            @Override public boolean isEnabled(int position) { return listEnables_All[position]; }
+            @Override
+            public boolean isEnabled(int position) { return listEnables_All[position]; }
 
-            @Override public View getDropDownView(int position, View convertView, @NonNull ViewGroup parent)
+            @Override
+            public View getDropDownView(int position, View convertView, @NonNull ViewGroup parent)
             {
                 View v = convertView;
                 if (v == null)
@@ -365,59 +380,71 @@ public class FragCtrls extends Fragment implements SeekBar.OnSeekBarChangeListen
 
     private AdapterView.OnItemSelectedListener patternListener = new AdapterView.OnItemSelectedListener()
     {
-        @Override public void onNothingSelected(AdapterView<?> parent) {}
+        @Override
+        public void onNothingSelected(AdapterView<?> parent) {}
 
-        @Override public void onItemSelected(AdapterView<?> parent, View view, int position, long id)
+        @Override
+        public void onItemSelected(AdapterView<?> parent, View view, int position, long id)
         {
-            TextView v = (TextView)view;
+            TextView v = (TextView) view;
             v.setTextColor(ContextCompat.getColor(appContext, R.color.UserChoice));
             v.setTextSize(18);
 
             if (initPatterns || changePattern)
             {
                 Log.d(LOGNAME, "Pattern choice: " + parent.getItemAtPosition(position));
-                SelectPattern(mapIndexToPattern[position], true);
+
+                int pnum = mapIndexToPattern[position];
+                segPatterns[curSegment] = pnum;
+
+                SelectPattern(pnum);    // send pattern commands
+                SetControlPositions();  // set control positions without sending commands
+                CheckForFavorite();     // check if this pattern is one of the favorites
+
+                // change text for new pattern if pattern help is active, but keep it active
+                if (helpMode > 0) SetPatternHelp(false, pnum);
+
                 initPatterns = false; // end of one-time initialization
             }
             else changePattern = true; // reset for next time
         }
     };
 
-    private void SelectPattern(int pnum, boolean checkfavorite)
+    private void SelectPattern(int pnum)
     {
-        segPatterns[curSegment] = pnum;
-
         if (pnum < devicePatterns)
         {
-            int num = pnum+1; // device pattern numbers start at 1
+            int num = pnum + 1;       // device pattern numbers start at 1
             SendString("" + num);   // store current pattern number
         }
         else if (numSegments == 1)
         {
-            SendString(CMD_START_END);; // start sequence
+            SendString(CMD_START_END);
+            ; // start sequence
             SendString(CMD_POP_PATTERN);
             SendString(devPatternCmds[pnum]);
-            SendString(CMD_START_END);; // end sequence
+            SendString(CMD_START_END);
+            ; // end sequence
 
-            int num = pnum+1; // device pattern numbers start at 1
+            int num = pnum + 1;       // device pattern numbers start at 1
             SendString("" + num);   // store current pattern number
         }
         else if (!multiStrands) // must send all segment patterns at once
         {
-            SendString(CMD_START_END);; // start sequence
+            SendString(CMD_START_END);
+            ; // start sequence
             SendString(CMD_POP_PATTERN);
 
             for (int i = 0; i < numSegments; ++i)
             {
-                if (i == curSegment) segPatterns[i] = pnum;
-
                 SendString("X" + segPosStart[i] + " Y" + segPosCount[i]);
-                SendString(devPatternCmds[ segPatterns[i] ]);
+                SendString(devPatternCmds[segPatterns[i]]);
             }
 
-            SendString(CMD_START_END);; // end sequence
+            SendString(CMD_START_END);
+            ; // end sequence
 
-            int num = pnum+1; // device pattern numbers start at 1
+            int num = pnum + 1;       // device pattern numbers start at 1
             SendString("" + num);   // store current pattern number
         }
 
@@ -428,40 +455,36 @@ public class FragCtrls extends Fragment implements SeekBar.OnSeekBarChangeListen
             {
                 if (segEnables[i])
                 {
-                    int seg = i+1;
+                    int seg = i + 1;
                     SendString(CMD_SEGS_ENABLE + seg);
-                    SendString(CMD_START_END);; // start sequence
+                    SendString(CMD_START_END);
+                    ; // start sequence
                     SendString(CMD_POP_PATTERN);
                     segPatterns[i] = pnum;
-                    SendString(devPatternCmds[ segPatterns[i] ]);
-                    SendString(CMD_START_END);; // end sequence
+                    SendString(devPatternCmds[segPatterns[i]]);
+                    SendString(CMD_START_END);
+                    ; // end sequence
 
-                    int num = pnum+1;       // device pattern numbers start at 1
+                    int num = pnum + 1;       // device pattern numbers start at 1
                     SendString("" + num);   // store current pattern number
                 }
             }
 
-            int seg = curSegment+1;
+            int seg = curSegment + 1;
             SendString(CMD_SEGS_ENABLE + seg);
         }
         else
         {
-            SendString(CMD_START_END);; // start sequence
+            SendString(CMD_START_END);
+            ; // start sequence
             SendString(CMD_POP_PATTERN);
-            SendString(devPatternCmds[ segPatterns[ curSegment ] ]);
-            SendString(CMD_START_END);; // end sequence
+            SendString(devPatternCmds[pnum]);
+            SendString(CMD_START_END);
+            ; // end sequence
 
-            int num = pnum+1;       // device pattern numbers start at 1
+            int num = pnum + 1;       // device pattern numbers start at 1
             SendString("" + num);   // store current pattern number
         }
-
-        SetControlPositions(); // set control positions without sending commands
-
-        // change text for new pattern if pattern help is active, but keep it active
-        if (helpMode > 0) SetPatternHelp(false, pnum);
-
-        favButton.setVisibility(VISIBLE);
-        if (checkfavorite) CheckForFavorite();
     }
 
     public void ChangePattern(int seg, int pnum, String vals)
@@ -478,28 +501,43 @@ public class FragCtrls extends Fragment implements SeekBar.OnSeekBarChangeListen
         segXmodeWht[ seg] = Integer.parseInt(strs[4]);
         segXmodeCnt[ seg] = Integer.parseInt(strs[5]);
         segTrigForce[seg] = Integer.parseInt(strs[6]);
+        segPatterns[ seg] = pnum;
 
-        if (seg == curSegment)
+        if (seg == 0)
         {
+            // disable pattern help if currently displayed
+            if (helpMode > 0) SetPatternHelp(true, 0);
+
+            useSegEnables = false; // setting favorite disables segment grouping
+            SetupSegEnable();
+
             SendString(CMD_PAUSE);
-
-            if (segXmodeEnb[seg])
-                 SendString(CMD_EXTMODE + "1");
-            else SendString(CMD_EXTMODE + "0");
-
-            segPatterns[curSegment] = pnum;
-            SelectPattern(pnum, false);
-            SetPatternNameOnly();
-
-            changeControls = true; // need to resend control values
-            SetControlPositions();
-            selectPattern.post(new Runnable() { @Override public void run()
-            {
-                changeControls = false;
-                SendString(CMD_RESUME);
-            }});
         }
-        else segPatterns[seg] = pnum;
+
+        if (segXmodeEnb[seg])
+             SendString(CMD_EXTMODE + "1");
+        else SendString(CMD_EXTMODE + "0");
+        SendString(CMD_PROPVALS + segXmodeHue[curSegment] + " " + segXmodeWht[curSegment] + " " + segXmodeCnt[curSegment]);
+
+        if (numSegments > 1)
+        {
+            int devseg = seg + 1;
+            SendString(CMD_SEGS_ENABLE + devseg);
+        }
+
+        SendString(CMD_BRIGHT + curBright[seg]);
+        SendString(CMD_DELAY + curDelay[seg]);
+
+        SelectPattern(pnum);
+
+        if (seg == numSegments-1)
+        {
+            SetPatternNameOnly();   // select the pattern name to be displayed
+            SetControlPositions();  // set controls display without sending commands
+
+            SendString(CMD_RESUME);
+            SendString(CMD_SEGS_ENABLE + "1");
+        }
     }
 
     private void SetPatternNameOnly()
@@ -536,9 +574,13 @@ public class FragCtrls extends Fragment implements SeekBar.OnSeekBarChangeListen
                 favButton.setVisibility(INVISIBLE);
 
                 if (!listenPatternSelect.onPatternSelect(null, i, segPatterns[i], vals))
-                    break;
+                {
+                    favButton.setVisibility(VISIBLE);
+                    return;
+                }
             }
         }
+        favButton.setVisibility(GONE); // is a favorite already
     }
 
     public void setHelpMode(boolean enable)
@@ -644,6 +686,7 @@ public class FragCtrls extends Fragment implements SeekBar.OnSeekBarChangeListen
             manualButton.setVisibility(VISIBLE);
 
             int bits = devPatternBits[segPatterns[curSegment]];
+            Log.v(LOGNAME, "ControlBits=" + Integer.toHexString(bits));
 
             if ((bits & 0x07) != 0) // enable properties
             {
@@ -651,6 +694,8 @@ public class FragCtrls extends Fragment implements SeekBar.OnSeekBarChangeListen
 
                 if (segXmodeEnb[curSegment])
                 {
+                    Log.v(LOGNAME, "XmodeEnable=1");
+
                     llAutoControls.setVisibility(VISIBLE);
                     manualButton.setText(appContext.getResources().getString(R.string.name_disable));
 
@@ -781,6 +826,11 @@ public class FragCtrls extends Fragment implements SeekBar.OnSeekBarChangeListen
             listenDeviceCommand.onDeviceCommand(str);
     }
 
+    private void SetupSegEnable()
+    {
+        segAddButton.setText(useSegEnables ? "X" : "&");
+        if (!useSegEnables) ClearSegEnables();
+    }
     private final View.OnClickListener mClicker = new View.OnClickListener()
     {
         @Override public void onClick(View v)
@@ -790,8 +840,7 @@ public class FragCtrls extends Fragment implements SeekBar.OnSeekBarChangeListen
                 case R.id.button_SegAdd:
                 {
                     useSegEnables = !useSegEnables;
-                    segAddButton.setText(useSegEnables ? "X" : "&");
-                    if (!useSegEnables) ClearSegEnables();
+                    SetupSegEnable();
                     break;
                 }
                 case R.id.button_Favorite:
@@ -917,9 +966,9 @@ public class FragCtrls extends Fragment implements SeekBar.OnSeekBarChangeListen
 
     @Override public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser)
     {
-        Log.v(LOGNAME, "SeekBar: val=" + progress + " user=" + fromUser + " dochange=" + changeControls);
+        Log.v(LOGNAME, "SeekBar: val=" + progress + " user=" + fromUser);
 
-        if (fromUser || changeControls)
+        if (fromUser)
         {
             switch (seekBar.getId()) // ignore when setting initial values
             {

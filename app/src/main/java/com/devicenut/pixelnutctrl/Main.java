@@ -258,6 +258,8 @@ public class Main extends Application
 
     static class FavoriteInfo
     {
+        private static final String LOGNAME = "FavInfo";
+
         static class FavPatternData
         {
             int type;
@@ -271,13 +273,16 @@ public class Main extends Application
         boolean builtin;
 
         // used for static initialization of single segment
-        FavoriteInfo(String n, int t, int p, String v)
+        FavoriteInfo(String n, int t, int i, String v)
         {
             name = n;
-            data = new FavPatternData[1];
             segs = 1;
             builtin = true;
-            if (!addValue(0, t, p, v)) data = null;
+            data = new FavPatternData[1];
+            data[0] = new FavPatternData();
+            data[0].type = t;
+            data[0].index = i;
+            data[0].values = v;
         }
 
         // used along with addValue to add multiple segments
@@ -289,15 +294,35 @@ public class Main extends Application
             builtin = false;
         }
 
-        boolean addValue(int i, int t, int p, String v)
+        boolean addValue(int s, int p, String v)
         {
-            if ((i >= segs) || !TestTypePnum(t, p))
-                return false;
+            if (s >= segs)
+            {
+                Log.w(LOGNAME, "AddValue: invalid seg=" + s);
+                data = null;
+                return false; // invalid segment number
+            }
 
-            data[i] = new FavPatternData();
-            data[i].type = t;
-            data[i].index = p;
-            data[i].values = v;
+            int t = FAVTYPE_BASIC;
+            int i;
+
+            if ((p >= basicPatternsCount) && (p < (basicPatternsCount + advPatternsCount)))
+            {
+                t = FAVTYPE_ADV;
+                i = p - basicPatternsCount;
+            }
+            else if ((p >= 0) || (p < basicPatternsCount)) i = p;
+            else
+            {
+                Log.w(LOGNAME, "AddValue: invalid pnum=" + p);
+                data = null;
+                return false; // invalid pattern number
+            }
+
+            data[s] = new FavPatternData();
+            data[s].type = t;
+            data[s].index = i;
+            data[s].values = v;
 
             return true;
         }
@@ -320,6 +345,7 @@ public class Main extends Application
                 String[] strs = lines[i+1].split("\\s+"); // remove ALL spaces
                 if (strs.length < NUM_FAVSTR_VALS + 2) // name, type, then vals
                 {
+                    Log.w(LOGNAME, "CreateInstance: strlen=" + strs.length);
                     data = null;
                     return;
                 }
@@ -329,6 +355,7 @@ public class Main extends Application
                 data[i].index = Integer.parseInt(strs[1]);
                 if (!TestTypePnum(data[i].type, data[i].index))
                 {
+                    Log.w(LOGNAME, "CreateInstance: invalid type.index=" + data[i].type + "." + data[i].index);
                     data = null;
                     return;
                 }
@@ -347,30 +374,29 @@ public class Main extends Application
             String s = name + "\n";
             for (int i = 0; i < segs; ++i)
             {
-                FavPatternData fd = data[i];
-                s += fd.type + " " + fd.index + " " + fd.values;
+                s += data[i].type + " " + data[i].index + " " + data[i].values;
                 if (i < (segs-1)) s += "\n";
             }
 
             return s;
         }
 
-        private boolean TestTypePnum(int t, int p)
+        private boolean TestTypePnum(int t, int i)
         {
+            if (i < 0) return false;
             switch (t)
             {
                 case FAVTYPE_BASIC:
                 {
-                    if (p >= advPatternsCount) return false;
+                    if (i >= advPatternsCount) return false;
                     break;
                 }
                 case FAVTYPE_ADV:
                 {
-                    if (p >= basicPatternsCount) return false;
+                    if (i >= advPatternsCount) return false;
                     break;
                 }
-                default:
-                    return false;
+                default: return false;
             }
             return true;
         }
@@ -412,6 +438,8 @@ public class Main extends Application
             if (seg >= segs) seg = segs-1;
             return data[seg].values;
         }
+
+        boolean userCreated() { return !builtin; }
     }
 
     static final FavoriteInfo[] listFavorites = new FavoriteInfo[MAXNUM_FAVORITIES];
