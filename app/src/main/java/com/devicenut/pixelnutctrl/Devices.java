@@ -203,12 +203,18 @@ public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
                 {
                     if (isConnecting)
                     {
-                        Log.d(LOGNAME, "Canceling connection...");
+                        Log.d(LOGNAME, "Cancel connecting...");
                         DoDisconnect();
                         StartScanning();
                     }
                     else if (isScanning) StopScanning();
                     else StartScanning();
+                }
+                else if (isConnecting)
+                {
+                    Log.d(LOGNAME, "Cancel connection...");
+                    DoDisconnect();
+                    StartScanning();
                 }
                 break;
             }
