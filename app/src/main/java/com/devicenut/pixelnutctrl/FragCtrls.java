@@ -62,24 +62,24 @@ import static com.devicenut.pixelnutctrl.Main.listNames_All;
 import static com.devicenut.pixelnutctrl.Main.listNames_Basic;
 import static com.devicenut.pixelnutctrl.Main.listEnables_All;
 import static com.devicenut.pixelnutctrl.Main.listEnables_Basic;
-import static com.devicenut.pixelnutctrl.Main.devPatternNames_All;
-import static com.devicenut.pixelnutctrl.Main.devPatternNames_Basic;
-import static com.devicenut.pixelnutctrl.Main.devPatternHelp_All;
-import static com.devicenut.pixelnutctrl.Main.devPatternHelp_Basic;
-import static com.devicenut.pixelnutctrl.Main.devPatternCmds_All;
-import static com.devicenut.pixelnutctrl.Main.devPatternCmds_Basic;
-import static com.devicenut.pixelnutctrl.Main.devPatternBits_All;
-import static com.devicenut.pixelnutctrl.Main.devPatternBits_Basic;
+import static com.devicenut.pixelnutctrl.Main.patternNames_All;
+import static com.devicenut.pixelnutctrl.Main.patternNames_Basic;
+import static com.devicenut.pixelnutctrl.Main.patternHelp_All;
+import static com.devicenut.pixelnutctrl.Main.patternHelp_Basic;
+import static com.devicenut.pixelnutctrl.Main.patternCmds_All;
+import static com.devicenut.pixelnutctrl.Main.patternCmds_Basic;
+import static com.devicenut.pixelnutctrl.Main.patternBits_All;
+import static com.devicenut.pixelnutctrl.Main.patternBits_Basic;
 import static com.devicenut.pixelnutctrl.Main.mapIndexToPattern_All;
 import static com.devicenut.pixelnutctrl.Main.mapIndexToPattern_Basic;
 import static com.devicenut.pixelnutctrl.Main.mapPatternToIndex_All;
 import static com.devicenut.pixelnutctrl.Main.mapPatternToIndex_Basic;
 import static com.devicenut.pixelnutctrl.Main.mapIndexToPattern;
 import static com.devicenut.pixelnutctrl.Main.mapPatternToIndex;
-import static com.devicenut.pixelnutctrl.Main.devPatternNames;
-import static com.devicenut.pixelnutctrl.Main.devPatternHelp;
-import static com.devicenut.pixelnutctrl.Main.devPatternCmds;
-import static com.devicenut.pixelnutctrl.Main.devPatternBits;
+import static com.devicenut.pixelnutctrl.Main.patternNames;
+import static com.devicenut.pixelnutctrl.Main.patternHelp;
+import static com.devicenut.pixelnutctrl.Main.patternCmds;
+import static com.devicenut.pixelnutctrl.Main.patternBits;
 
 import static com.devicenut.pixelnutctrl.Main.haveBasicSegs;
 import static com.devicenut.pixelnutctrl.Main.haveAdvPatterns;
@@ -243,14 +243,14 @@ public class FragCtrls extends Fragment implements SeekBar.OnSeekBarChangeListen
         }
         else llSelectSegs.setVisibility(GONE);
 
-        SetupPatternArraysForSegment(curSegment);
+        SetupPatternArraysForSegment(curSegment, true);
 
         // cannot create these until have context
         if (haveBasicSegs) CreateSpinnerAdapterBasic();
         CreateSpinnerAdapterAll();
 
         if (segBasicOnly[curSegment])
-            selectPattern.setAdapter(spinnerArrayAdapter_Basic);
+             selectPattern.setAdapter(spinnerArrayAdapter_Basic);
         else selectPattern.setAdapter(spinnerArrayAdapter_All);
         selectPattern.setOnItemSelectedListener(patternListener);
 
@@ -414,37 +414,35 @@ public class FragCtrls extends Fragment implements SeekBar.OnSeekBarChangeListen
     {
         if (pnum < devicePatterns)
         {
-            int num = pnum + 1;       // device pattern numbers start at 1
+            int num = pnum+1;       // device pattern numbers start at 1
             SendString("" + num);   // store current pattern number
         }
         else if (numSegments == 1)
         {
             SendString(CMD_START_END);
-            ; // start sequence
             SendString(CMD_POP_PATTERN);
-            SendString(devPatternCmds[pnum]);
+            SendString(patternCmds[pnum]);
             SendString(CMD_START_END);
-            ; // end sequence
 
-            int num = pnum + 1;       // device pattern numbers start at 1
+            int num = pnum+1;       // device pattern numbers start at 1
             SendString("" + num);   // store current pattern number
         }
         else if (!multiStrands) // must send all segment patterns at once
         {
             SendString(CMD_START_END);
-            ; // start sequence
             SendString(CMD_POP_PATTERN);
 
             for (int i = 0; i < numSegments; ++i)
             {
                 SendString("X" + segPosStart[i] + " Y" + segPosCount[i]);
-                SendString(devPatternCmds[segPatterns[i]]);
+                SetupPatternArraysForSegment(i, false);
+                SendString(patternCmds[segPatterns[i]]);
             }
+            SetupPatternArraysForSegment(curSegment, false);
 
             SendString(CMD_START_END);
-            ; // end sequence
 
-            int num = pnum + 1;       // device pattern numbers start at 1
+            int num = pnum+1;       // device pattern numbers start at 1
             SendString("" + num);   // store current pattern number
         }
 
@@ -455,34 +453,32 @@ public class FragCtrls extends Fragment implements SeekBar.OnSeekBarChangeListen
             {
                 if (segEnables[i])
                 {
-                    int seg = i + 1;
+                    int seg = i+1;
                     SendString(CMD_SEGS_ENABLE + seg);
                     SendString(CMD_START_END);
-                    ; // start sequence
                     SendString(CMD_POP_PATTERN);
                     segPatterns[i] = pnum;
-                    SendString(devPatternCmds[segPatterns[i]]);
+                    SetupPatternArraysForSegment(i, false);
+                    SendString(patternCmds[segPatterns[i]]);
                     SendString(CMD_START_END);
-                    ; // end sequence
 
-                    int num = pnum + 1;       // device pattern numbers start at 1
+                    int num = pnum+1;       // device pattern numbers start at 1
                     SendString("" + num);   // store current pattern number
                 }
             }
+            SetupPatternArraysForSegment(curSegment, false);
 
-            int seg = curSegment + 1;
+            int seg = curSegment+1;
             SendString(CMD_SEGS_ENABLE + seg);
         }
         else
         {
             SendString(CMD_START_END);
-            ; // start sequence
             SendString(CMD_POP_PATTERN);
-            SendString(devPatternCmds[pnum]);
+            SendString(patternCmds[pnum]);
             SendString(CMD_START_END);
-            ; // end sequence
 
-            int num = pnum + 1;       // device pattern numbers start at 1
+            int num = pnum+1;       // device pattern numbers start at 1
             SendString("" + num);   // store current pattern number
         }
     }
@@ -521,7 +517,7 @@ public class FragCtrls extends Fragment implements SeekBar.OnSeekBarChangeListen
 
         if (numSegments > 1)
         {
-            int devseg = seg + 1;
+            int devseg = seg+1;
             SendString(CMD_SEGS_ENABLE + devseg);
         }
 
@@ -556,31 +552,35 @@ public class FragCtrls extends Fragment implements SeekBar.OnSeekBarChangeListen
 
     private void CheckForFavorite()
     {
-        String name = devPatternNames[segPatterns[curSegment]];
-        if (listenPatternSelect.onPatternSelect(name, numSegments, 0, null))
+        int pnum = segPatterns[curSegment];
+        if (pnum >= devicePatterns)
         {
-            for (int i = 0; i < numSegments; ++i)
+            String name = patternNames[pnum];
+            if (listenPatternSelect.onPatternSelect(name, numSegments, 0, null))
             {
-                String vals = "";
-
-                vals += curBright[multiStrands ? i : 0] + " ";
-                vals += curDelay[ multiStrands ? i : 0] + " ";
-                vals += (segXmodeEnb[i] ? "1 " : "0 ");
-                vals += segXmodeHue[ i] + " ";
-                vals += segXmodeWht[ i] + " ";
-                vals += segXmodeCnt[ i] + " ";
-                vals += segTrigForce[i] + " ";
-
-                favButton.setVisibility(INVISIBLE);
-
-                if (!listenPatternSelect.onPatternSelect(null, i, segPatterns[i], vals))
+                for (int i = 0; i < numSegments; ++i)
                 {
-                    favButton.setVisibility(VISIBLE);
-                    return;
+                    String vals = "";
+
+                    vals += curBright[multiStrands ? i : 0] + " ";
+                    vals += curDelay[ multiStrands ? i : 0] + " ";
+                    vals += (segXmodeEnb[i] ? "1 " : "0 ");
+                    vals += segXmodeHue[ i] + " ";
+                    vals += segXmodeWht[ i] + " ";
+                    vals += segXmodeCnt[ i] + " ";
+                    vals += segTrigForce[i] + " ";
+
+                    favButton.setVisibility(INVISIBLE);
+
+                    if (!listenPatternSelect.onPatternSelect(null, i, segPatterns[i], vals))
+                    {
+                        favButton.setVisibility(VISIBLE);
+                        return;
+                    }
                 }
             }
         }
-        favButton.setVisibility(GONE); // is a favorite already
+        favButton.setVisibility(GONE); // a device pattern, or is a favorite already
     }
 
     public void setHelpMode(boolean enable)
@@ -621,48 +621,51 @@ public class FragCtrls extends Fragment implements SeekBar.OnSeekBarChangeListen
         {
             llPatternHelp.setVisibility(VISIBLE);
             helpButton.setText("x");
-            helpText2.setText( devPatternHelp[pattern]);
+            helpText2.setText( patternHelp[pattern]);
             helpMode = pattern+1;
         }
     }
 
-    private void SetupPatternArraysForSegment(int seg)
+    private void SetupPatternArraysForSegment(int seg, boolean doselect)
     {
         if (segBasicOnly[seg])
         {
             haveAdvPatterns = false;
 
-            mapIndexToPattern   = mapIndexToPattern_Basic;
-            mapPatternToIndex   = mapPatternToIndex_Basic;
-            devPatternNames     = devPatternNames_Basic;
-            devPatternHelp      = devPatternHelp_Basic;
-            devPatternCmds      = devPatternCmds_Basic;
-            devPatternBits      = devPatternBits_Basic;
+            mapIndexToPattern = mapIndexToPattern_Basic;
+            mapPatternToIndex = mapPatternToIndex_Basic;
+            patternNames      = patternNames_Basic;
+            patternHelp       = patternHelp_Basic;
+            patternCmds       = patternCmds_Basic;
+            patternBits       = patternBits_Basic;
 
-            selectPattern.setAdapter(spinnerArrayAdapter_Basic);
+            if (doselect) selectPattern.setAdapter(spinnerArrayAdapter_Basic);
         }
         else
         {
             haveAdvPatterns = true;
 
-            mapIndexToPattern   = mapIndexToPattern_All;
-            mapPatternToIndex   = mapPatternToIndex_All;
-            devPatternNames     = devPatternNames_All;
-            devPatternHelp      = devPatternHelp_All;
-            devPatternCmds      = devPatternCmds_All;
-            devPatternBits      = devPatternBits_All;
+            mapIndexToPattern = mapIndexToPattern_All;
+            mapPatternToIndex = mapPatternToIndex_All;
+            patternNames      = patternNames_All;
+            patternHelp       = patternHelp_All;
+            patternCmds       = patternCmds_All;
+            patternBits       = patternBits_All;
 
-            selectPattern.setAdapter(spinnerArrayAdapter_All);
+            if (doselect) selectPattern.setAdapter(spinnerArrayAdapter_All);
         }
     }
 
     private void SetControlPositions()
     {
-        Log.d(LOGNAME, "SetControlPositions...");
+        int bits = patternBits[segPatterns[curSegment]];
+        Log.d(LOGNAME, "SetControlPositions: bits=" + Integer.toHexString(bits));
 
         int index = multiStrands ? curSegment : 0;
         seekBright.setProgress(curBright[index]);
         seekDelay.setProgress(((rangeDelay - curDelay[index]) * MAXVAL_PERCENT) / (rangeDelay + rangeDelay));
+
+        llDelayControl.setVisibility(((bits & 0x80) == 0) ? VISIBLE : GONE);
 
         if (segBasicOnly[curSegment])
         {
@@ -670,71 +673,57 @@ public class FragCtrls extends Fragment implements SeekBar.OnSeekBarChangeListen
             // always have the property controls displayed
 
             manualButton.setVisibility(GONE);
-            llAutoControls.setVisibility(VISIBLE);
 
             if (!segXmodeEnb[curSegment])
             {
-                Log.d(LOGNAME, "Enabling Properties:");
-                int seg = curSegment + 1;
                 segXmodeEnb[curSegment] = true;
-                SendString(CMD_SEGS_ENABLE + seg);
                 SendString(CMD_EXTMODE + "1");
             }
         }
-        else
+        else manualButton.setVisibility(VISIBLE);
+
+        if ((bits & 0x07) != 0) // enable properties
         {
-            manualButton.setVisibility(VISIBLE);
+            llProperties.setVisibility(VISIBLE);
 
-            int bits = devPatternBits[segPatterns[curSegment]];
-            Log.v(LOGNAME, "ControlBits=" + Integer.toHexString(bits));
-
-            if ((bits & 0x07) != 0) // enable properties
+            if (segXmodeEnb[curSegment])
             {
-                llProperties.setVisibility(VISIBLE);
+                llAutoControls.setVisibility(VISIBLE);
+                manualButton.setText(appContext.getResources().getString(R.string.name_disable));
 
-                if (segXmodeEnb[curSegment])
-                {
-                    Log.v(LOGNAME, "XmodeEnable=1");
+                llPropColor.setVisibility(((bits & 1) != 0) ? VISIBLE : GONE);
+                llPropWhite.setVisibility(((bits & 2) != 0) ? VISIBLE : GONE);
+                llPropCount.setVisibility(((bits & 4) != 0) ? VISIBLE : GONE);
 
-                    llAutoControls.setVisibility(VISIBLE);
-                    manualButton.setText(appContext.getResources().getString(R.string.name_disable));
-
-                    llPropColor.setVisibility(((bits & 1) != 0) ? VISIBLE : GONE);
-                    llPropWhite.setVisibility(((bits & 2) != 0) ? VISIBLE : GONE);
-                    llPropCount.setVisibility(((bits & 4) != 0) ? VISIBLE : GONE);
-
-                    seekPropColor.setProgress(((segXmodeHue[ curSegment] * MAXVAL_PERCENT) / MAXVAL_HUE));
-                    seekPropWhite.setProgress(((segXmodeWht[ curSegment] * MAXVAL_PERCENT) / MAXVAL_WHT));
-                    seekPropCount.setProgress(  segXmodeCnt[ curSegment]);
-                }
-                else
-                {
-                    manualButton.setText(appContext.getResources().getString(R.string.name_enable));
-                    llAutoControls.setVisibility(GONE);
-                }
+                seekPropColor.setProgress(((segXmodeHue[ curSegment] * MAXVAL_PERCENT) / MAXVAL_HUE));
+                seekPropWhite.setProgress(((segXmodeWht[ curSegment] * MAXVAL_PERCENT) / MAXVAL_WHT));
+                seekPropCount.setProgress(  segXmodeCnt[ curSegment]);
             }
-            else llProperties.setVisibility(GONE);
-
-            if ((bits & 0x10) != 0) // enable triggering
+            else
             {
-                llTrigControls.setVisibility(VISIBLE);
-
-                if ((bits & 0x20) != 0) // enable force control
-                {
-                    llTrigForce.setVisibility(VISIBLE);
-                    seekTrigForce.setProgress((segTrigForce[curSegment] * MAXVAL_PERCENT) / MAXVAL_FORCE);
-                    textTrigger.setText(appContext.getResources().getString(R.string.title_trigforce));
-                }
-                else
-                {
-                    llTrigForce.setVisibility(GONE);
-                    textTrigger.setText(appContext.getResources().getString(R.string.title_dotrigger));
-                }
+                manualButton.setText(appContext.getResources().getString(R.string.name_enable));
+                llAutoControls.setVisibility(GONE);
             }
-            else llTrigControls.setVisibility(GONE);
-
-            llDelayControl.setVisibility(((bits & 0x80) == 0) ? VISIBLE : GONE);
         }
+        else llProperties.setVisibility(GONE);
+
+        if ((bits & 0x10) != 0) // enable triggering
+        {
+            llTrigControls.setVisibility(VISIBLE);
+
+            if ((bits & 0x20) != 0) // enable force control
+            {
+                llTrigForce.setVisibility(VISIBLE);
+                seekTrigForce.setProgress((segTrigForce[curSegment] * MAXVAL_PERCENT) / MAXVAL_FORCE);
+                textTrigger.setText(appContext.getResources().getString(R.string.title_trigforce));
+            }
+            else
+            {
+                llTrigForce.setVisibility(GONE);
+                textTrigger.setText(appContext.getResources().getString(R.string.title_dotrigger));
+            }
+        }
+        else llTrigControls.setVisibility(GONE);
     }
 
     private void SetSegment(int index)
@@ -745,7 +734,7 @@ public class FragCtrls extends Fragment implements SeekBar.OnSeekBarChangeListen
             return;
         }
 
-        SetupPatternArraysForSegment(index);
+        SetupPatternArraysForSegment(index, true);
 
         boolean enable = segRadioButtons[index].isChecked();
 
@@ -773,7 +762,7 @@ public class FragCtrls extends Fragment implements SeekBar.OnSeekBarChangeListen
                 SendString(CMD_SEGS_ENABLE + seg);
                 SendString(CMD_START_END);; // start sequence
                 SendString(CMD_POP_PATTERN);
-                SendString(devPatternCmds[ segPatterns[index] ]);
+                SendString(patternCmds[ segPatterns[index] ]);
                 SendString(CMD_START_END);; // end sequence
                 SendString("" + pnum); // store pattern number
 
@@ -845,7 +834,7 @@ public class FragCtrls extends Fragment implements SeekBar.OnSeekBarChangeListen
                 }
                 case R.id.button_Favorite:
                 {
-                    String name = devPatternNames[segPatterns[curSegment]];
+                    String name = patternNames[segPatterns[curSegment]];
                     listenFavoriteCreate.onFavoriteCreate(name, numSegments, 0, null);
 
                     for (int i = 0; i < numSegments; ++i)
@@ -946,7 +935,7 @@ public class FragCtrls extends Fragment implements SeekBar.OnSeekBarChangeListen
                                 int seg = i+1;
                                 SendString(CMD_SEGS_ENABLE + seg);
 
-                                if ((devPatternBits[segPatterns[i]] & 0x20) != 0)
+                                if ((patternBits[segPatterns[i]] & 0x20) != 0)
                                      SendString(CMD_TRIGGER + segTrigForce[i]);
                                 else SendString(CMD_TRIGGER + 0);
                             }
@@ -955,7 +944,7 @@ public class FragCtrls extends Fragment implements SeekBar.OnSeekBarChangeListen
                         int seg = curSegment+1;
                         SendString(CMD_SEGS_ENABLE + seg);
                     }
-                    else if ((devPatternBits[segPatterns[curSegment]] & 0x20) != 0)
+                    else if ((patternBits[segPatterns[curSegment]] & 0x20) != 0)
                          SendString(CMD_TRIGGER + segTrigForce[curSegment]);
                     else SendString(CMD_TRIGGER + 0);
                     break;
@@ -1113,9 +1102,8 @@ public class FragCtrls extends Fragment implements SeekBar.OnSeekBarChangeListen
                     if (useSegEnables)
                     {
                         for (int i = 0; i < numSegments; ++i)
-                        {
-                            if (segEnables[i]) segTrigForce[i] = val;
-                        }
+                            if (segEnables[i])
+                                segTrigForce[i] = val;
                     }
                     else segTrigForce[curSegment] = val;
                     break;

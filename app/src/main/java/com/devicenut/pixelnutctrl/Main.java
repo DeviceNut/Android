@@ -388,7 +388,7 @@ public class Main extends Application
             {
                 case FAVTYPE_BASIC:
                 {
-                    if (i >= advPatternsCount) return false;
+                    if (i >= basicPatternsCount) return false;
                     break;
                 }
                 case FAVTYPE_ADV:
@@ -465,42 +465,42 @@ public class Main extends Application
     static boolean haveAdvPatterns;             // true if current pattern selection includes advanced
 
     // assigned for device specific patterns
-    static String[] devPatternNames_Device;
-    static String[] devPatternHelp_Device;
-    static String[] devPatternCmds_Device;
-    static int[] devPatternBits_Device;
+    static String[] patternNames_Device;
+    static String[] patternHelp_Device;
+    static String[] patternCmds_Device;
+    static int[] patternBits_Device;
 
     // assigned for basic patterns
     static String[] listNames_Basic;
     static boolean[] listEnables_Basic;
     static int[] mapIndexToPattern_Basic;
     static int[] mapPatternToIndex_Basic;
-    static String[] devPatternNames_Basic;
-    static String[] devPatternHelp_Basic;
-    static String[] devPatternCmds_Basic;
-    static int[] devPatternBits_Basic;
+    static String[] patternNames_Basic;
+    static String[] patternHelp_Basic;
+    static String[] patternCmds_Basic;
+    static int[] patternBits_Basic;
 
     // assigned for both basic and advanced patterns
     static String[] listNames_All;
     static boolean[] listEnables_All;
     static int[] mapIndexToPattern_All;
     static int[] mapPatternToIndex_All;
-    static String[] devPatternNames_All;
-    static String[] devPatternHelp_All;
-    static String[] devPatternCmds_All;
-    static int[] devPatternBits_All;
+    static String[] patternNames_All;
+    static String[] patternHelp_All;
+    static String[] patternCmds_All;
+    static int[] patternBits_All;
 
     // set to either _Basic or _All vars when change segments
     static int[] mapIndexToPattern;
     static int[] mapPatternToIndex;
-    static String[] devPatternNames;
-    static String[] devPatternHelp;
-    static String[] devPatternCmds;
-    static int[] devPatternBits;
+    static String[] patternNames;
+    static String[] patternHelp;
+    static String[] patternCmds;
+    static int[] patternBits;
 
     static void InitVarsForDevice()
     {
-        if ((numSegments == 1) || multiStrands) // not supported for logical segments
+        //if ((numSegments == 1) || multiStrands) // not supported for logical segments
         {
             pageFavorites = 0;
             pageControls = 1;
@@ -510,6 +510,7 @@ public class Main extends Application
 
             AddDefaultFavorites();
         }
+        /*
         else
         {
             pageFavorites = -1;
@@ -518,6 +519,7 @@ public class Main extends Application
             pageDetails = -1;
             numFragments = 1;
         }
+        */
         pageCurrent = 0;
 
         if (haveBasicSegs) CreateListArrays_Basic(); // some segments use only basic patterns
@@ -534,15 +536,16 @@ public class Main extends Application
         int k = 0;
         int extra = 1;
         if (devicePatterns > 0) ++extra;
+        int n = devicePatterns + basicPatternsCount;
 
-        listNames_Basic = new String[numPatterns + extra];
-        listEnables_Basic = new boolean[numPatterns + extra];
-        mapIndexToPattern_Basic = new int[numPatterns + extra];
-        mapPatternToIndex_Basic = new int[numPatterns];
-        devPatternNames_Basic = new String[numPatterns];
-        devPatternHelp_Basic = new String[numPatterns];
-        devPatternCmds_Basic = new String[numPatterns];
-        devPatternBits_Basic = new int[numPatterns];
+        listNames_Basic = new String[n + extra];
+        listEnables_Basic = new boolean[n + extra];
+        mapIndexToPattern_Basic = new int[n + extra];
+        mapPatternToIndex_Basic = new int[n];
+        patternNames_Basic = new String[n];
+        patternHelp_Basic = new String[n];
+        patternCmds_Basic = new String[n];
+        patternBits_Basic = new int[n];
 
         if (devicePatterns > 0)
         {
@@ -553,16 +556,16 @@ public class Main extends Application
 
             for (int i = 0; i < devicePatterns; ++i)
             {
-                Log.v(LOGNAME, "Adding custom pattern i=" + i + " j=" + j + " => " + devPatternNames_Device[i]);
+                Log.v(LOGNAME, "Adding custom pattern i=" + i + " j=" + j + " => " + patternNames_Device[i]);
 
-                listNames_Basic[j] = devPatternNames_Device[i];
+                listNames_Basic[j] = patternNames_Device[i];
                 listEnables_Basic[j] = true;
                 mapIndexToPattern_Basic[j] = k;
                 mapPatternToIndex_Basic[k] = j;
-                devPatternNames_Basic[k] = devPatternNames_Device[i];
-                devPatternHelp_Basic[k] = devPatternHelp_Device[i];
-                devPatternCmds_Basic[k] = devPatternCmds_Device[i];
-                devPatternBits_Basic[k] = devPatternBits_Device[i];
+                patternNames_Basic[k] = patternNames_Device[i];
+                patternHelp_Basic[k] = patternHelp_Device[i];
+                patternCmds_Basic[k] = patternCmds_Device[i];
+                patternBits_Basic[k] = patternBits_Device[i];
 
                 ++j;
                 ++k;
@@ -582,10 +585,10 @@ public class Main extends Application
             listEnables_Basic[j] = true;
             mapIndexToPattern_Basic[j] = k;
             mapPatternToIndex_Basic[k] = j;
-            devPatternNames_Basic[k] = basicPatternNames[i];
-            devPatternHelp_Basic[k] = basicPatternHelp[i];
-            devPatternCmds_Basic[k] = basicPatternCmds[i];
-            devPatternBits_Basic[k] = basicPatternBits[i];
+            patternNames_Basic[k] = basicPatternNames[i];
+            patternHelp_Basic[k] = basicPatternHelp[i];
+            patternCmds_Basic[k] = basicPatternCmds[i];
+            patternBits_Basic[k] = basicPatternBits[i];
 
             ++j;
             ++k;
@@ -600,15 +603,16 @@ public class Main extends Application
         int k = 0;
         int extra = 2;
         if (devicePatterns > 0) ++extra;
+        int n = devicePatterns + basicPatternsCount + advPatternsCount;
 
-        listNames_All = new String[numPatterns + extra];
-        listEnables_All = new boolean[numPatterns + extra];
-        mapIndexToPattern_All = new int[numPatterns + extra];
-        mapPatternToIndex_All = new int[numPatterns];
-        devPatternNames_All = new String[numPatterns];
-        devPatternHelp_All = new String[numPatterns];
-        devPatternCmds_All = new String[numPatterns];
-        devPatternBits_All = new int[numPatterns];
+        listNames_All = new String[n + extra];
+        listEnables_All = new boolean[n + extra];
+        mapIndexToPattern_All = new int[n + extra];
+        mapPatternToIndex_All = new int[n];
+        patternNames_All = new String[n];
+        patternHelp_All = new String[n];
+        patternCmds_All = new String[n];
+        patternBits_All = new int[n];
 
         if (devicePatterns > 0)
         {
@@ -619,16 +623,16 @@ public class Main extends Application
 
             for (int i = 0; i < devicePatterns; ++i)
             {
-                Log.v(LOGNAME, "Adding custom pattern j=" + j + " k=" + k + " => " + devPatternNames_Device[i]);
+                Log.v(LOGNAME, "Adding custom pattern j=" + j + " k=" + k + " => " + patternNames_Device[i]);
 
-                listNames_All[j] = devPatternNames_Device[i];
+                listNames_All[j] = patternNames_Device[i];
                 listEnables_All[j] = true;
                 mapIndexToPattern_All[j] = k;
                 mapPatternToIndex_All[k] = j;
-                devPatternNames_All[k] = devPatternNames_Device[i];
-                devPatternHelp_All[k] = devPatternHelp_Device[i];
-                devPatternCmds_All[k] = devPatternCmds_Device[i];
-                devPatternBits_All[k] = devPatternBits_Device[i];
+                patternNames_All[k] = patternNames_Device[i];
+                patternHelp_All[k] = patternHelp_Device[i];
+                patternCmds_All[k] = patternCmds_Device[i];
+                patternBits_All[k] = patternBits_Device[i];
 
                 ++j;
                 ++k;
@@ -648,10 +652,10 @@ public class Main extends Application
             listEnables_All[j] = true;
             mapIndexToPattern_All[j] = k;
             mapPatternToIndex_All[k] = j;
-            devPatternNames_All[k] = basicPatternNames[i];
-            devPatternHelp_All[k] = basicPatternHelp[i];
-            devPatternCmds_All[k] = basicPatternCmds[i];
-            devPatternBits_All[k] = basicPatternBits[i];
+            patternNames_All[k] = basicPatternNames[i];
+            patternHelp_All[k] = basicPatternHelp[i];
+            patternCmds_All[k] = basicPatternCmds[i];
+            patternBits_All[k] = basicPatternBits[i];
 
             ++j;
             ++k;
@@ -670,10 +674,10 @@ public class Main extends Application
             listEnables_All[j] = true;
             mapIndexToPattern_All[j] = k;
             mapPatternToIndex_All[k] = j;
-            devPatternNames_All[k] = advPatternNames[i];
-            devPatternHelp_All[k] = advPatternHelp[i];
-            devPatternCmds_All[k] = advPatternCmds[i];
-            devPatternBits_All[k] = advPatternBits[i];
+            patternNames_All[k] = advPatternNames[i];
+            patternHelp_All[k] = advPatternHelp[i];
+            patternCmds_All[k] = advPatternCmds[i];
+            patternBits_All[k] = advPatternBits[i];
 
             ++j;
             ++k;
