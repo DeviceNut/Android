@@ -69,16 +69,19 @@ public class Master extends AppCompatActivity implements FragFavs.FavoriteSelect
 
     public void onFavoriteDeselect()
     {
-        ((FragFavs)myFragments[pageFavorites]).FavoriteDeselect();
+        if (pageFavorites >= 0)
+            ((FragFavs)myFragments[pageFavorites]).FavoriteDeselect();
     }
 
     public void onFavoriteCreate(String name, int seg, int pnum, String vals)
     {
-        ((FragFavs)myFragments[pageFavorites]).FavoriteCreate(name, seg, pnum, vals);
+        if (pageFavorites >= 0)
+            ((FragFavs)myFragments[pageFavorites]).FavoriteCreate(name, seg, pnum, vals);
     }
 
     public boolean onPatternSelect(String name, int seg, int pnum, String vals)
     {
+        if (pageFavorites < 0) return false;
         return ((FragFavs)myFragments[pageFavorites]).IsFavoritePattern(name, seg, pnum, vals);
     }
 
@@ -152,7 +155,7 @@ public class Master extends AppCompatActivity implements FragFavs.FavoriteSelect
 
     private void SetupGoToText()
     {
-        //Log.d(LOGNAME, "SetupGoToText: curpage=" + pageCurrent);
+        Log.e(LOGNAME, "SetupGoToText: curpage=" + pageCurrent);
 
         if (pageCurrent == pageDetails)
         {

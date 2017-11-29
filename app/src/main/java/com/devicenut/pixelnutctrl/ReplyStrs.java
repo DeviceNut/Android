@@ -6,6 +6,7 @@ import static com.devicenut.pixelnutctrl.Main.ADDLEN_CMDSTR_PERSEG;
 import static com.devicenut.pixelnutctrl.Main.CMD_GET_PATTERNS;
 import static com.devicenut.pixelnutctrl.Main.CMD_GET_PLUGINS;
 import static com.devicenut.pixelnutctrl.Main.CMD_GET_SEGMENTS;
+import static com.devicenut.pixelnutctrl.Main.FEATURE_INT_PATTERNS;
 import static com.devicenut.pixelnutctrl.Main.MAXVAL_FORCE;
 import static com.devicenut.pixelnutctrl.Main.MAXVAL_HUE;
 import static com.devicenut.pixelnutctrl.Main.MAXVAL_PERCENT;
@@ -15,6 +16,7 @@ import static com.devicenut.pixelnutctrl.Main.MINLEN_SEGLEN_FORADV;
 import static com.devicenut.pixelnutctrl.Main.TITLE_PIXELNUT;
 import static com.devicenut.pixelnutctrl.Main.advPatternsCount;
 import static com.devicenut.pixelnutctrl.Main.basicPatternsCount;
+import static com.devicenut.pixelnutctrl.Main.featureBits;
 import static com.devicenut.pixelnutctrl.Main.patternBits_Device;
 import static com.devicenut.pixelnutctrl.Main.patternCmds_Device;
 import static com.devicenut.pixelnutctrl.Main.patternHelp_Device;
@@ -43,6 +45,7 @@ import static com.devicenut.pixelnutctrl.Main.segXmodeWht;
 import static com.devicenut.pixelnutctrl.Main.segLayers;
 import static com.devicenut.pixelnutctrl.Main.segPixels;
 import static com.devicenut.pixelnutctrl.Main.segTracks;
+import static com.devicenut.pixelnutctrl.Main.useExtPatterns;
 
 class ReplyStrs
 {
@@ -316,8 +319,8 @@ class ReplyStrs
                 {
                     numSegments     = Integer.parseInt(strs[0]);
                     segPatterns[0]  = Integer.parseInt(strs[1]);
-                    devicePatterns = Integer.parseInt(strs[2]);
-                    int bits        = Integer.parseInt(strs[3]);
+                    devicePatterns  = Integer.parseInt(strs[2]);
+                    featureBits     = Integer.parseInt(strs[3]);
                     customPlugins   = Integer.parseInt(strs[4]);
                     maxlenCmdStrs   = Integer.parseInt(strs[5]);
 
@@ -348,14 +351,27 @@ class ReplyStrs
                             Log.v(LOGNAME, "Resetting current pattern=0");
                         }
 
-                        // if command/pattern string not long enough then must use only basic patterns
-                        if (maxlenCmdStrs < (MINLEN_CMDSTR + (ADDLEN_CMDSTR_PERSEG * (numSegments-1))))
+                        if ((featureBits & FEATURE_INT_PATTERNS) != 0)
                         {
+                            // can only use internal patterns
+                            useExtPatterns = false;
+                            useAdvPatterns = false;
+                            numPatterns = 0;
+
+                            haveBasicSegs = true;
+                            for (int i = 0; i < numSegments; ++i)
+                                segBasicOnly[i] = true;
+                        }
+                        else if (maxlenCmdStrs < (MINLEN_CMDSTR + (ADDLEN_CMDSTR_PERSEG * (numSegments-1))))
+                        {
+                            // if command/pattern string not long enough then must use only basic patterns
+                            useExtPatterns = true;
                             useAdvPatterns = false;
                             numPatterns = basicPatternsCount;
                         }
                         else
                         {
+                            useExtPatterns = true;
                             useAdvPatterns = true;
                             numPatterns = basicPatternsCount + advPatternsCount;
                         }
@@ -364,19 +380,13 @@ class ReplyStrs
                         if (numSegments < 1) numSegments = 1;
                         if (customPlugins < 0) customPlugins = 0;
 
-                        boolean features = false;
-                        if ((bits & 0x80) != 0) // feature is enabled
-                        {
-                            features = true;
-                        }
-
                         Log.d(LOGNAME, ">> Segments=" + numSegments + ((numSegments > 1) ? (multiStrands ? " (physical)" : " (logical)") : ""));
                         Log.d(LOGNAME, ">> CmdStrLen=" + maxlenCmdStrs);
                         Log.d(LOGNAME, ">> CurPattern=" + segPatterns[0] + " DoInit=" + initPatterns);
                         Log.d(LOGNAME, ">> DevicePatterns=" + devicePatterns + " Advanced=" + useAdvPatterns);
                         Log.d(LOGNAME, ">> Total patterns=" + numPatterns);
                         Log.d(LOGNAME, ">> CustomPlugins=" + customPlugins);
-                        if (features) Log.v(LOGNAME, ">> Features=" + (bits & 0x7F));
+                        Log.v(LOGNAME, ">> Features=" + featureBits);
 
                         if (devicePatterns > 0)
                         {

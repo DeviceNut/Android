@@ -40,6 +40,7 @@ import static com.devicenut.pixelnutctrl.Main.MAXVAL_WHT;
 
 import static com.devicenut.pixelnutctrl.Main.NUM_FAVSTR_VALS;
 import static com.devicenut.pixelnutctrl.Main.appContext;
+import static com.devicenut.pixelnutctrl.Main.basicPatternsCount;
 import static com.devicenut.pixelnutctrl.Main.curBright;
 import static com.devicenut.pixelnutctrl.Main.curDelay;
 import static com.devicenut.pixelnutctrl.Main.curSegment;
@@ -47,6 +48,7 @@ import static com.devicenut.pixelnutctrl.Main.devicePatterns;
 import static com.devicenut.pixelnutctrl.Main.initPatterns;
 import static com.devicenut.pixelnutctrl.Main.multiStrands;
 import static com.devicenut.pixelnutctrl.Main.numSegments;
+import static com.devicenut.pixelnutctrl.Main.pageFavorites;
 import static com.devicenut.pixelnutctrl.Main.rangeDelay;
 import static com.devicenut.pixelnutctrl.Main.segBasicOnly;
 import static com.devicenut.pixelnutctrl.Main.segPatterns;
@@ -82,7 +84,7 @@ import static com.devicenut.pixelnutctrl.Main.patternCmds;
 import static com.devicenut.pixelnutctrl.Main.patternBits;
 
 import static com.devicenut.pixelnutctrl.Main.haveBasicSegs;
-import static com.devicenut.pixelnutctrl.Main.haveAdvPatterns;
+import static com.devicenut.pixelnutctrl.Main.useAdvPatterns;
 
 public class FragCtrls extends Fragment implements SeekBar.OnSeekBarChangeListener
 {
@@ -193,8 +195,11 @@ public class FragCtrls extends Fragment implements SeekBar.OnSeekBarChangeListen
         seekPropCount.setOnSeekBarChangeListener(this);
         seekTrigForce.setOnSeekBarChangeListener(this);
 
-        favButton = (Button) v.findViewById(R.id.button_Favorite);
-        favButton.setOnClickListener(mClicker);
+        if (pageFavorites >= 0)
+        {
+            favButton = (Button) v.findViewById(R.id.button_Favorite);
+            favButton.setOnClickListener(mClicker);
+        }
 
         manualButton = (Button) v.findViewById(R.id.button_AutoProp);
         manualButton.setOnClickListener(mClicker);
@@ -246,10 +251,10 @@ public class FragCtrls extends Fragment implements SeekBar.OnSeekBarChangeListen
         SetupPatternArraysForSegment(curSegment, true);
 
         // cannot create these until have context
-        if (haveBasicSegs) CreateSpinnerAdapterBasic();
-        CreateSpinnerAdapterAll();
+        if (haveBasicSegs)  CreateSpinnerAdapterBasic();
+        if (useAdvPatterns) CreateSpinnerAdapterAll();
 
-        if (segBasicOnly[curSegment])
+        if (segBasicOnly[curSegment] || !useAdvPatterns)
              selectPattern.setAdapter(spinnerArrayAdapter_Basic);
         else selectPattern.setAdapter(spinnerArrayAdapter_All);
         selectPattern.setOnItemSelectedListener(patternListener);
@@ -410,6 +415,68 @@ public class FragCtrls extends Fragment implements SeekBar.OnSeekBarChangeListen
         }
     };
 
+    private void SetupPatternArraysForSegment(int seg, boolean doselect)
+    {
+        if (segBasicOnly[seg])
+        {
+            mapIndexToPattern = mapIndexToPattern_Basic;
+            mapPatternToIndex = mapPatternToIndex_Basic;
+            patternNames      = patternNames_Basic;
+            patternHelp       = patternHelp_Basic;
+            patternCmds       = patternCmds_Basic;
+            patternBits       = patternBits_Basic;
+
+            if (doselect) selectPattern.setAdapter(spinnerArrayAdapter_Basic);
+        }
+        else
+        {
+            mapIndexToPattern = mapIndexToPattern_All;
+            mapPatternToIndex = mapPatternToIndex_All;
+            patternNames      = patternNames_All;
+            patternHelp       = patternHelp_All;
+            patternCmds       = patternCmds_All;
+            patternBits       = patternBits_All;
+
+            if (doselect) selectPattern.setAdapter(spinnerArrayAdapter_All);
+        }
+    }
+
+    private void CheckForFavorite()
+    {
+        if (pageFavorites >= 0)
+        {
+            int pnum = segPatterns[curSegment];
+            if (pnum >= devicePatterns)
+            {
+                String name = patternNames[pnum];
+                if (listenPatternSelect.onPatternSelect(name, numSegments, 0, null))
+                {
+                    for (int i = 0; i < numSegments; ++i)
+                    {
+                        String vals = "";
+
+                        vals += curBright[multiStrands ? i : 0] + " ";
+                        vals += curDelay[ multiStrands ? i : 0] + " ";
+                        vals += (segXmodeEnb[i] ? "1 " : "0 ");
+                        vals += segXmodeHue[ i] + " ";
+                        vals += segXmodeWht[ i] + " ";
+                        vals += segXmodeCnt[ i] + " ";
+                        vals += segTrigForce[i] + " ";
+
+                        favButton.setVisibility(INVISIBLE);
+
+                        if (!listenPatternSelect.onPatternSelect(null, i, segPatterns[i], vals))
+                        {
+                            favButton.setVisibility(VISIBLE);
+                            return;
+                        }
+                    }
+                }
+            }
+            favButton.setVisibility(GONE); // a device pattern, or is a favorite already
+        }
+    }
+
     private void SelectPattern(int pnum)
     {
         if (pnum < devicePatterns)
@@ -483,6 +550,7 @@ public class FragCtrls extends Fragment implements SeekBar.OnSeekBarChangeListen
         }
     }
 
+    // user just selected a favorite
     public void ChangePattern(int seg, int pnum, String vals)
     {
         Log.d(LOGNAME, "ChangePattern: seg=" + seg + " pnum=" + pnum + " vals=" + vals);
@@ -497,7 +565,11 @@ public class FragCtrls extends Fragment implements SeekBar.OnSeekBarChangeListen
         segXmodeWht[ seg] = Integer.parseInt(strs[4]);
         segXmodeCnt[ seg] = Integer.parseInt(strs[5]);
         segTrigForce[seg] = Integer.parseInt(strs[6]);
-        segPatterns[ seg] = pnum;
+
+        if (segBasicOnly[seg] && (pnum > basicPatternsCount))
+            pnum = 0; // cannot use this pattern, so set to Solid
+
+        segPatterns[seg] = pnum;
 
         if (seg == 0)
         {
@@ -548,112 +620,6 @@ public class FragCtrls extends Fragment implements SeekBar.OnSeekBarChangeListen
         {
             changePattern = true;
         }});
-    }
-
-    private void CheckForFavorite()
-    {
-        int pnum = segPatterns[curSegment];
-        if (pnum >= devicePatterns)
-        {
-            String name = patternNames[pnum];
-            if (listenPatternSelect.onPatternSelect(name, numSegments, 0, null))
-            {
-                for (int i = 0; i < numSegments; ++i)
-                {
-                    String vals = "";
-
-                    vals += curBright[multiStrands ? i : 0] + " ";
-                    vals += curDelay[ multiStrands ? i : 0] + " ";
-                    vals += (segXmodeEnb[i] ? "1 " : "0 ");
-                    vals += segXmodeHue[ i] + " ";
-                    vals += segXmodeWht[ i] + " ";
-                    vals += segXmodeCnt[ i] + " ";
-                    vals += segTrigForce[i] + " ";
-
-                    favButton.setVisibility(INVISIBLE);
-
-                    if (!listenPatternSelect.onPatternSelect(null, i, segPatterns[i], vals))
-                    {
-                        favButton.setVisibility(VISIBLE);
-                        return;
-                    }
-                }
-            }
-        }
-        favButton.setVisibility(GONE); // a device pattern, or is a favorite already
-    }
-
-    public void setHelpMode(boolean enable)
-    {
-        if (enable)
-        {
-            viewCtrls.setVisibility(GONE);
-            helpPage.setVisibility(VISIBLE);
-
-            String str = appContext.getResources().getString(R.string.text_help_head);
-
-            if (numSegments > 1)
-            {
-                if (multiStrands)
-                    str += appContext.getResources().getString(R.string.text_help_segs_physical);
-                else str += appContext.getResources().getString(R.string.text_help_segs_logical);
-            }
-
-            str += appContext.getResources().getString(R.string.text_help_tail);
-            helpText.setText(str);
-        }
-        else
-        {
-            helpPage.setVisibility(GONE);
-            viewCtrls.setVisibility(VISIBLE);
-        }
-    }
-
-    private void SetPatternHelp(boolean toggle, int pattern)
-    {
-        if ((helpMode > 0) && toggle)
-        {
-            helpButton.setText("?");
-            llPatternHelp.setVisibility(GONE);
-            helpMode = 0;
-        }
-        else
-        {
-            llPatternHelp.setVisibility(VISIBLE);
-            helpButton.setText("x");
-            helpText2.setText( patternHelp[pattern]);
-            helpMode = pattern+1;
-        }
-    }
-
-    private void SetupPatternArraysForSegment(int seg, boolean doselect)
-    {
-        if (segBasicOnly[seg])
-        {
-            haveAdvPatterns = false;
-
-            mapIndexToPattern = mapIndexToPattern_Basic;
-            mapPatternToIndex = mapPatternToIndex_Basic;
-            patternNames      = patternNames_Basic;
-            patternHelp       = patternHelp_Basic;
-            patternCmds       = patternCmds_Basic;
-            patternBits       = patternBits_Basic;
-
-            if (doselect) selectPattern.setAdapter(spinnerArrayAdapter_Basic);
-        }
-        else
-        {
-            haveAdvPatterns = true;
-
-            mapIndexToPattern = mapIndexToPattern_All;
-            mapPatternToIndex = mapPatternToIndex_All;
-            patternNames      = patternNames_All;
-            patternHelp       = patternHelp_All;
-            patternCmds       = patternCmds_All;
-            patternBits       = patternBits_All;
-
-            if (doselect) selectPattern.setAdapter(spinnerArrayAdapter_All);
-        }
     }
 
     private void SetControlPositions()
@@ -809,6 +775,49 @@ public class FragCtrls extends Fragment implements SeekBar.OnSeekBarChangeListen
         }
     }
 
+    public void setHelpMode(boolean enable)
+    {
+        if (enable)
+        {
+            viewCtrls.setVisibility(GONE);
+            helpPage.setVisibility(VISIBLE);
+
+            String str = appContext.getResources().getString(R.string.text_help_head);
+
+            if (numSegments > 1)
+            {
+                if (multiStrands)
+                    str += appContext.getResources().getString(R.string.text_help_segs_physical);
+                else str += appContext.getResources().getString(R.string.text_help_segs_logical);
+            }
+
+            str += appContext.getResources().getString(R.string.text_help_tail);
+            helpText.setText(str);
+        }
+        else
+        {
+            helpPage.setVisibility(GONE);
+            viewCtrls.setVisibility(VISIBLE);
+        }
+    }
+
+    private void SetPatternHelp(boolean toggle, int pattern)
+    {
+        if ((helpMode > 0) && toggle)
+        {
+            helpButton.setText("?");
+            llPatternHelp.setVisibility(GONE);
+            helpMode = 0;
+        }
+        else
+        {
+            llPatternHelp.setVisibility(VISIBLE);
+            helpButton.setText("x");
+            helpText2.setText( patternHelp[pattern]);
+            helpMode = pattern+1;
+        }
+    }
+
     private void SendString(String str)
     {
         if (listenDeviceCommand != null)
@@ -920,8 +929,11 @@ public class FragCtrls extends Fragment implements SeekBar.OnSeekBarChangeListen
 
                     SetControlPositions(); // set control positions without sending commands
 
-                    favButton.setVisibility(VISIBLE);
-                    listenFavoriteDeselect.onFavoriteDeselect(); // deselects current pattern
+                    if (pageFavorites >= 0)
+                    {
+                        favButton.setVisibility(VISIBLE);
+                        listenFavoriteDeselect.onFavoriteDeselect(); // deselects current pattern
+                    }
                     break;
                 }
                 case R.id.button_TrigAction:
@@ -1112,8 +1124,11 @@ public class FragCtrls extends Fragment implements SeekBar.OnSeekBarChangeListen
 
             if (fromUser)
             {
-                favButton.setVisibility(VISIBLE);
-                listenFavoriteDeselect.onFavoriteDeselect(); // deselects current pattern
+                if (pageFavorites >= 0)
+                {
+                    favButton.setVisibility(VISIBLE);
+                    listenFavoriteDeselect.onFavoriteDeselect(); // deselects current pattern
+                }
             }
         }
     }

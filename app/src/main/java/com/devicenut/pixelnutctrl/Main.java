@@ -225,6 +225,9 @@ public class Main extends Application
     static int maxlenCmdStrs = 0;               // max length of command string that can be sent
     static int rangeDelay = MINVAL_DELAYRANGE;  // default range of delay offsets
 
+    static int featureBits = 0;                 // bits that enable extended features
+    static final int FEATURE_INT_PATTERNS = 0x01; // set if cannot use external patterns
+
     static final int maxNumSegs = 5;            // limited because of layout
     static int segPatterns[]        = new int[maxNumSegs];   // current pattern for each segment (index from 0)
     static int curBright[]          = new int[maxNumSegs];
@@ -462,7 +465,7 @@ public class Main extends Application
     static boolean segBasicOnly[] = new boolean[maxNumSegs];
     static boolean haveBasicSegs = false;       // true if some segments too small for advanced patterns
     static boolean useAdvPatterns = true;       // false if limited flash space to receive commands
-    static boolean haveAdvPatterns;             // true if current pattern selection includes advanced
+    static boolean useExtPatterns;              // false if can use only device internal patterns
 
     // assigned for device specific patterns
     static String[] patternNames_Device;
@@ -500,26 +503,22 @@ public class Main extends Application
 
     static void InitVarsForDevice()
     {
-        //if ((numSegments == 1) || multiStrands) // not supported for logical segments
+        if (useExtPatterns)
         {
             pageFavorites = 0;
             pageControls = 1;
-            //FIXME pageDetails = 2;
-            pageDetails = -1;
+            pageDetails = -1; // FIXME =2
             numFragments = 2;
 
             AddDefaultFavorites();
         }
-        /*
         else
         {
             pageFavorites = -1;
             pageControls = 0;
-            //FIXME pageDetails = 1;
             pageDetails = -1;
             numFragments = 1;
         }
-        */
         pageCurrent = 0;
 
         if (haveBasicSegs) CreateListArrays_Basic(); // some segments use only basic patterns
@@ -536,7 +535,10 @@ public class Main extends Application
         int k = 0;
         int extra = 1;
         if (devicePatterns > 0) ++extra;
-        int n = devicePatterns + basicPatternsCount;
+        int n = devicePatterns;
+
+        if (useExtPatterns) n += basicPatternsCount;
+        else --extra;
 
         listNames_Basic = new String[n + extra];
         listEnables_Basic = new boolean[n + extra];
@@ -572,26 +574,29 @@ public class Main extends Application
             }
         }
 
-        listNames_Basic[j] = "Basic Patterns";
-        listEnables_Basic[j] = false;
-        mapIndexToPattern_Basic[j] = 0;
-        ++j;
-
-        for (int i = 0; i < basicPatternsCount; ++i)
+        if (useExtPatterns)
         {
-            Log.v(LOGNAME, "Adding basic pattern i=" + i + " j=" + j + " => " + basicPatternNames[i]);
-
-            listNames_Basic[j] = basicPatternNames[i];
-            listEnables_Basic[j] = true;
-            mapIndexToPattern_Basic[j] = k;
-            mapPatternToIndex_Basic[k] = j;
-            patternNames_Basic[k] = basicPatternNames[i];
-            patternHelp_Basic[k] = basicPatternHelp[i];
-            patternCmds_Basic[k] = basicPatternCmds[i];
-            patternBits_Basic[k] = basicPatternBits[i];
-
+            listNames_Basic[j] = "Basic Patterns";
+            listEnables_Basic[j] = false;
+            mapIndexToPattern_Basic[j] = 0;
             ++j;
-            ++k;
+
+            for (int i = 0; i < basicPatternsCount; ++i)
+            {
+                Log.v(LOGNAME, "Adding basic pattern i=" + i + " j=" + j + " => " + basicPatternNames[i]);
+
+                listNames_Basic[j] = basicPatternNames[i];
+                listEnables_Basic[j] = true;
+                mapIndexToPattern_Basic[j] = k;
+                mapPatternToIndex_Basic[k] = j;
+                patternNames_Basic[k] = basicPatternNames[i];
+                patternHelp_Basic[k] = basicPatternHelp[i];
+                patternCmds_Basic[k] = basicPatternCmds[i];
+                patternBits_Basic[k] = basicPatternBits[i];
+
+                ++j;
+                ++k;
+            }
         }
     }
 
@@ -603,7 +608,7 @@ public class Main extends Application
         int k = 0;
         int extra = 2;
         if (devicePatterns > 0) ++extra;
-        int n = devicePatterns + basicPatternsCount + advPatternsCount;
+        int n = devicePatterns;
 
         listNames_All = new String[n + extra];
         listEnables_All = new boolean[n + extra];
