@@ -155,7 +155,7 @@ public class Master extends AppCompatActivity implements FragFavs.FavoriteSelect
 
     private void SetupGoToText()
     {
-        Log.e(LOGNAME, "SetupGoToText: curpage=" + pageCurrent);
+        Log.d(LOGNAME, "SetupGoToText: curpage=" + pageCurrent);
 
         if (pageCurrent == pageDetails)
         {

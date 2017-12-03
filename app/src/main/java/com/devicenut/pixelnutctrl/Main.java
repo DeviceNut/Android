@@ -14,11 +14,20 @@ public class Main extends Application
     static MyPager masterPager;
     static int numFragments, pageFavorites, pageControls, pageDetails, pageCurrent;
 
+    static int maxlenAdvPatterns;
+
     static Context appContext;
     @Override public void onCreate()
     {
         super.onCreate();
         appContext = getApplicationContext();
+
+        maxlenAdvPatterns = 0;
+        for (int i = 0; i < advPatternCmds.length; ++i)
+        {
+            if (maxlenAdvPatterns < advPatternCmds[i].length())
+                maxlenAdvPatterns = advPatternCmds[i].length();
+        }
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -48,12 +57,10 @@ public class Main extends Application
     static final int MAXVAL_WHT              = 50;
     static final int MAXVAL_PERCENT          = 100;
     static final int MAXVAL_FORCE            = 1000;
-    static final int MINVAL_DELAYRANGE       = 80;       // use this for patterns defined here, and is minimal value for custom patterns
+    static final int MINVAL_DELAYRANGE       = 80;      // use this for patterns defined here, and is minimal value for custom patterns
 
-    static final int MINLEN_SEGLEN_FORADV    = 20;      // minimum length of each segment to be able to use the advanced patterns
     static final int MINLEN_CMDSTR           = 110;     // minimum length of the command/pattern string
-    static final int ADDLEN_CMDSTR_PERSEG    = 50;      // additional length of command/pattern string per additional segment,
-    // otherwise will not be able to use the advanced patterns
+    static final int MINLEN_SEGLEN_FORADV    = 20;      // minimum length of each segment to be able to use the advanced patterns
 
     static final String[] basicPatternNames =
             {
@@ -256,8 +263,7 @@ public class Main extends Application
     static final int FAVTYPE_BASIC = 0;
     static final int FAVTYPE_ADV = 1;
     static final int FAVTYPE_STORED = 2;
-    static final int NUM_FAVSTR_VALS = 7; // number of values in vals string
-    // bright, delay, auto/manual, color, white, count, trigger
+    static final int NUM_FAVSTR_VALS = 7; // number of values in vals string (bright, delay, auto/manual, color, white, count, trigger)
 
     static class FavoriteInfo
     {
@@ -608,7 +614,7 @@ public class Main extends Application
         int k = 0;
         int extra = 2;
         if (devicePatterns > 0) ++extra;
-        int n = devicePatterns;
+        int n = devicePatterns + basicPatternsCount + advPatternsCount;
 
         listNames_All = new String[n + extra];
         listEnables_All = new boolean[n + extra];

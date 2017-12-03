@@ -2,7 +2,7 @@ package com.devicenut.pixelnutctrl;
 
 import android.util.Log;
 
-import static com.devicenut.pixelnutctrl.Main.ADDLEN_CMDSTR_PERSEG;
+import static com.devicenut.pixelnutctrl.Main.TITLE_PIXELNUT;
 import static com.devicenut.pixelnutctrl.Main.CMD_GET_PATTERNS;
 import static com.devicenut.pixelnutctrl.Main.CMD_GET_PLUGINS;
 import static com.devicenut.pixelnutctrl.Main.CMD_GET_SEGMENTS;
@@ -13,10 +13,10 @@ import static com.devicenut.pixelnutctrl.Main.MAXVAL_PERCENT;
 import static com.devicenut.pixelnutctrl.Main.MAXVAL_WHT;
 import static com.devicenut.pixelnutctrl.Main.MINLEN_CMDSTR;
 import static com.devicenut.pixelnutctrl.Main.MINLEN_SEGLEN_FORADV;
-import static com.devicenut.pixelnutctrl.Main.TITLE_PIXELNUT;
 import static com.devicenut.pixelnutctrl.Main.advPatternsCount;
 import static com.devicenut.pixelnutctrl.Main.basicPatternsCount;
 import static com.devicenut.pixelnutctrl.Main.featureBits;
+import static com.devicenut.pixelnutctrl.Main.maxlenAdvPatterns;
 import static com.devicenut.pixelnutctrl.Main.patternBits_Device;
 import static com.devicenut.pixelnutctrl.Main.patternCmds_Device;
 import static com.devicenut.pixelnutctrl.Main.patternHelp_Device;
@@ -30,6 +30,7 @@ import static com.devicenut.pixelnutctrl.Main.customPlugins;
 import static com.devicenut.pixelnutctrl.Main.initPatterns;
 import static com.devicenut.pixelnutctrl.Main.multiStrands;
 import static com.devicenut.pixelnutctrl.Main.useAdvPatterns;
+import static com.devicenut.pixelnutctrl.Main.useExtPatterns;
 import static com.devicenut.pixelnutctrl.Main.maxlenCmdStrs;
 import static com.devicenut.pixelnutctrl.Main.numPatterns;
 import static com.devicenut.pixelnutctrl.Main.numSegments;
@@ -45,7 +46,6 @@ import static com.devicenut.pixelnutctrl.Main.segXmodeWht;
 import static com.devicenut.pixelnutctrl.Main.segLayers;
 import static com.devicenut.pixelnutctrl.Main.segPixels;
 import static com.devicenut.pixelnutctrl.Main.segTracks;
-import static com.devicenut.pixelnutctrl.Main.useExtPatterns;
 
 class ReplyStrs
 {
@@ -166,8 +166,9 @@ class ReplyStrs
                         segPosStart[j] = val1;
                         segPosCount[j] = val2;
 
-                        // if any segment is very short then just use basic patterns
-                        if (val2 < MINLEN_SEGLEN_FORADV)
+                        // if can use advanced patterns, but a given segment is very short,
+                        // then only allow basic patterns on that particular segment
+                        if (useAdvPatterns && (val2 < MINLEN_SEGLEN_FORADV))
                         {
                             Log.w(LOGNAME, "No advanced patterns for segment=" + j);
                             segBasicOnly[j] = true;
@@ -362,12 +363,17 @@ class ReplyStrs
                             for (int i = 0; i < numSegments; ++i)
                                 segBasicOnly[i] = true;
                         }
-                        else if (maxlenCmdStrs < (MINLEN_CMDSTR + (ADDLEN_CMDSTR_PERSEG * (numSegments-1))))
+                        else if (((numSegments > 1) && !multiStrands && (maxlenCmdStrs < (maxlenAdvPatterns * numSegments))) ||
+                                 (maxlenCmdStrs < (maxlenAdvPatterns * numSegments)))
                         {
                             // if command/pattern string not long enough then must use only basic patterns
                             useExtPatterns = true;
                             useAdvPatterns = false;
                             numPatterns = basicPatternsCount;
+
+                            haveBasicSegs = true;
+                            for (int i = 0; i < numSegments; ++i)
+                                segBasicOnly[i] = true;
                         }
                         else
                         {
@@ -386,7 +392,7 @@ class ReplyStrs
                         Log.d(LOGNAME, ">> DevicePatterns=" + devicePatterns + " Advanced=" + useAdvPatterns);
                         Log.d(LOGNAME, ">> Total patterns=" + numPatterns);
                         Log.d(LOGNAME, ">> CustomPlugins=" + customPlugins);
-                        Log.v(LOGNAME, ">> Features=" + featureBits);
+                        Log.v(LOGNAME, ">> Features=0x" + Integer.toHexString(featureBits));
 
                         if (devicePatterns > 0)
                         {

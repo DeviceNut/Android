@@ -97,6 +97,7 @@ public class FragFavs extends Fragment
 
         ReadAllFavorites();
         CreateList();
+
         return masterView;
     }
 
@@ -239,12 +240,15 @@ public class FragFavs extends Fragment
                 else if (id == idsCancel[i]) // remove choice from list of favorites
                 {
                     listFavorites[i] = null;
-                    if (i == curFavorite) curFavorite = -1;
+
+                    if (curFavorite == i) curFavorite = -1;
+                    else if (curFavorite > i) --curFavorite;
 
                     while (++i < numFavorites)
                         listFavorites[i-1] = listFavorites[i];
 
                     --numFavorites;
+
                     CreateList();
                     FavoriteSelect(curFavorite);
                     WriteAllFavorites();
@@ -279,19 +283,36 @@ public class FragFavs extends Fragment
 
     private void FavoriteInsert(Main.FavoriteInfo f)
     {
-        // insert choice into list of favorites
+        // first remove any other favorite if it matches the name
+        String name = f.getPatternName();
+        for (int i = 0; i < numFavorites; ++i)
+        {
+            if (listFavorites[i].getPatternName().equals(name))
+            {
+                if (i == curFavorite) curFavorite = -1;
+
+                while (++i < numFavorites)
+                    listFavorites[i-1] = listFavorites[i];
+
+                --numFavorites;
+                break;
+            }
+        }
+
+        // then insert choice into list of favorites
         for (int i = numFavorites; i > 0; --i)
             listFavorites[i] = listFavorites[i-1];
 
         listFavorites[0] = f;
-        ++numFavorites;
-    }
 
-    static Main.FavoriteInfo savedFavorite;
+        if (numFavorites < MAXNUM_FAVORITIES)
+            ++numFavorites;
+    }
 
     // check if newly selected pattern is the same as one of the favorites
     // if so, then select that favorite, otherwise deselect the current one
     // return false if failed to match any of the current favorites
+    static Main.FavoriteInfo savedFavorite;
     public boolean IsFavoritePattern(String name, int seg, int pnum, String vals)
     {
         Log.d(LOGNAME, "IsFavoritePattern: name=" + name + " seg=" + seg + " pnm=" + pnum + " vals=" + vals);
