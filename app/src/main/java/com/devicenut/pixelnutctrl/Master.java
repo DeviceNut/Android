@@ -29,6 +29,7 @@ import static com.devicenut.pixelnutctrl.Main.CMD_RESUME;
 import static com.devicenut.pixelnutctrl.Main.ble;
 import static com.devicenut.pixelnutctrl.Main.devName;
 import static com.devicenut.pixelnutctrl.Main.doUpdate;
+import static com.devicenut.pixelnutctrl.Main.isConnected;
 import static com.devicenut.pixelnutctrl.Main.numFragments;
 import static com.devicenut.pixelnutctrl.Main.pageControls;
 import static com.devicenut.pixelnutctrl.Main.pageDetails;
@@ -48,7 +49,6 @@ public class Master extends AppCompatActivity implements FragFavs.FavoriteSelect
     private final String LOGNAME = "Master";
     private final Activity context = this;
 
-    private boolean isConnected = false;
     private boolean isEditing = false;
     private boolean helpActive = false;
     private String devNameSaved = "";
@@ -113,8 +113,15 @@ public class Master extends AppCompatActivity implements FragFavs.FavoriteSelect
 
     @Override protected void onCreate(Bundle savedInstanceState)
     {
-        Log.d(LOGNAME, ">>onCreate: SavedInstance=" + ((savedInstanceState == null) ? "0" : "1"));
+        Log.d(LOGNAME, ">>onCreate: isConnected=" + isConnected);
         super.onCreate(savedInstanceState);
+
+        if (!isConnected)
+        {
+            finish();
+            return;
+        }
+
         setContentView(R.layout.activity_master);
 
         if (pageFavorites >= 0) myFragments[pageFavorites] = FragFavs.newInstance();
@@ -322,17 +329,17 @@ public class Master extends AppCompatActivity implements FragFavs.FavoriteSelect
         Log.v(LOGNAME, "Device disconnect: reason=" + reason + " connected=" + isConnected);
         if (isConnected)
         {
-            isConnected = false;
             context.runOnUiThread(new Runnable()
             {
                 public void run()
                 {
                     Toast.makeText(context, "Disconnect: " + reason, Toast.LENGTH_SHORT).show();
-
-                    Log.v(LOGNAME, "Finishing controls activity...");
-                    finish();
                 }
             });
+
+            isConnected = false;
+            Log.d(LOGNAME, "Finishing controls activity...");
+            finish();
         }
     }
 

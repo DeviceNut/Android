@@ -39,6 +39,7 @@ import static com.devicenut.pixelnutctrl.Main.pixelWidth;
 import static com.devicenut.pixelnutctrl.Main.ble;
 import static com.devicenut.pixelnutctrl.Main.devName;
 import static com.devicenut.pixelnutctrl.Main.numSegments;
+import static com.devicenut.pixelnutctrl.Main.isConnected;
 
 public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
 {
@@ -74,7 +75,6 @@ public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
     private boolean bleEnabled = false;
     private boolean isScanning = false;
     private boolean isConnecting = false;
-    private boolean isConnected = false;
     private boolean resumeScanning = true;
     private boolean didFail = false;
     private boolean isDone = false;

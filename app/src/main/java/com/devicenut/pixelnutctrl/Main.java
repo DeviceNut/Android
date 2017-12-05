@@ -194,7 +194,7 @@ public class Main extends Application
                     "E51 C10 D60 Q4 T E112 T E131 F1 I T G",
                     "E0 B80 D10 Q3 T E111 F O10 T10 E142 F250 I T G",
                     "E0 H30 D30 T E110 F600 I T E111 A1 G",
-                    "E50 B40 H0 D10 T E50 B50 H125 D15 T E20 B80 W80 H270 C15 D30 Q2 F0 I T20 O10 G",
+                    "E50 B60 H0 D10 T E50 B70 H125 D15 T E20 V1 B90 W80 H270 C15 D30 Q2 F0 I T20 O10 G",
                     "E50 V1 B65 W30 H100 D10 Q1 T E40 H270 C10 D50 T E20 C20 D15 A1 F0 I T G"
             };
 
@@ -217,6 +217,8 @@ public class Main extends Application
 
     static final int basicPatternsCount = basicPatternNames.length;
     static final int advPatternsCount = advPatternNames.length;
+
+    static boolean isConnected = false;         // shared by Devices and Master
 
     // determined for android device being used
     static int pixelWidth = 0;
@@ -456,13 +458,15 @@ public class Main extends Application
     static int curFavorite = -1;
 
     static final FavoriteInfo defFav_Purple = new FavoriteInfo("Purple", FAVTYPE_BASIC, 0, "60 0 0 0 0 0 0");
-    static final FavoriteInfo defFav_Rainbow = new FavoriteInfo(advPatternNames[0], FAVTYPE_ADV, 0, "90 0 1 0 0 0 500");
+    static final FavoriteInfo defFav_Rainbow = new FavoriteInfo("Rainbow", FAVTYPE_ADV, 0, "90 0 1 0 0 0 500");
+    static final FavoriteInfo defFav_Holiday = new FavoriteInfo("Christmas", FAVTYPE_ADV, 11, "100 -80 0 0 0 0 500");
 
     static void AddDefaultFavorites()
     {
         listFavorites[0] = defFav_Purple;
         listFavorites[1] = defFav_Rainbow;
-        numFavorites = 2;
+        listFavorites[2] = defFav_Holiday;
+        numFavorites = 3;
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
