@@ -258,7 +258,14 @@ public class FragCtrls extends Fragment implements SeekBar.OnSeekBarChangeListen
         else selectPattern.setAdapter(spinnerArrayAdapter_All);
         selectPattern.setOnItemSelectedListener(patternListener);
 
-        SetPatternNameOnly();   // select the pattern name to be displayed
+        if (initPatterns)
+        {
+            Log.d(LOGNAME, "Initializing all patterns...");
+            SelectPattern(segPatterns[0]);
+            initPatterns = false;
+        }
+
+        SetPatternNameOnly();   // only set the pattern display name
         SetControlPositions();  // set controls display without sending commands
         CheckForFavorite();     // check if selected pattern is one of the favorites
 
@@ -394,7 +401,7 @@ public class FragCtrls extends Fragment implements SeekBar.OnSeekBarChangeListen
             v.setTextColor(ContextCompat.getColor(appContext, R.color.UserChoice));
             v.setTextSize(18);
 
-            if (initPatterns || changePattern)
+            if (changePattern)
             {
                 Log.d(LOGNAME, "Pattern choice: " + parent.getItemAtPosition(position));
 
@@ -407,8 +414,6 @@ public class FragCtrls extends Fragment implements SeekBar.OnSeekBarChangeListen
 
                 // change text for new pattern if pattern help is active, but keep it active
                 if (helpMode > 0) SetPatternHelp(false, pnum);
-
-                initPatterns = false; // end of one-time initialization
             }
             else changePattern = true; // reset for next time
         }
@@ -477,75 +482,78 @@ public class FragCtrls extends Fragment implements SeekBar.OnSeekBarChangeListen
 
     private void SelectPattern(int pnum)
     {
-        if (pnum < devicePatterns)
+        if (numSegments > 1)
         {
-            int num = pnum+1;       // device pattern numbers start at 1
-            SendString("" + num);   // store current pattern number
-        }
-        else if (numSegments == 1)
-        {
-            SendString(CMD_START_END);
-            SendString(CMD_POP_PATTERN);
-            SendString(patternCmds[pnum]);
-            SendString(CMD_START_END);
-
-            int num = pnum+1;       // device pattern numbers start at 1
-            SendString("" + num);   // store current pattern number
-        }
-        else if (!multiStrands) // must send all segment patterns at once
-        {
-            SendString(CMD_START_END);
-            SendString(CMD_POP_PATTERN);
-
-            for (int i = 0; i < numSegments; ++i)
+            if (!multiStrands) // must send all segment patterns at once
+            // note that device patterns are not supported for this case
             {
-                SendString("X" + segPosStart[i] + " Y" + segPosCount[i]);
-                SetupPatternArraysForSegment(i, false);
-                SendString(patternCmds[segPatterns[i]]);
-            }
-            SetupPatternArraysForSegment(curSegment, false);
+                SendString(CMD_START_END);
+                SendString(CMD_POP_PATTERN);
 
-            SendString(CMD_START_END);
-
-            int num = pnum+1;       // device pattern numbers start at 1
-            SendString("" + num);   // store current pattern number
-        }
-
-        // else physically separate segments, so can treat them as such
-        else if (initPatterns || useSegEnables)
-        {
-            for (int i = 0; i < numSegments; ++i)
-            {
-                if (segEnables[i])
+                for (int i = 0; i < numSegments; ++i)
                 {
-                    int seg = i+1;
-                    SendString(CMD_SEGS_ENABLE + seg);
-                    SendString(CMD_START_END);
-                    SendString(CMD_POP_PATTERN);
-                    segPatterns[i] = pnum;
+                    SendString("X" + segPosStart[i] + " Y" + segPosCount[i]);
                     SetupPatternArraysForSegment(i, false);
                     SendString(patternCmds[segPatterns[i]]);
-                    SendString(CMD_START_END);
-
-                    int num = pnum+1;       // device pattern numbers start at 1
-                    SendString("" + num);   // store current pattern number
                 }
-            }
-            SetupPatternArraysForSegment(curSegment, false);
+                SetupPatternArraysForSegment(curSegment, false);
 
-            int seg = curSegment+1;
-            SendString(CMD_SEGS_ENABLE + seg);
+                SendString(CMD_START_END);
+
+                int num = pnum+1;       // device pattern numbers start at 1
+                SendString("" + num);   // store current pattern number
+
+                return;
+            }
+
+            // physically separate segments, so can treat them as such
+            if (initPatterns || useSegEnables)
+            {
+                for (int i = 0; i < numSegments; ++i)
+                {
+                    Log.d(LOGNAME, "Selecting pattern: seg=" + i + " enable=" + segEnables[i] + " init=" + initPatterns);
+
+                    if (initPatterns || segEnables[i])
+                    {
+                        if (initPatterns) pnum = segPatterns[i];
+                        else segPatterns[i] = pnum;
+
+                        int seg = i+1;
+                        SendString(CMD_SEGS_ENABLE + seg);
+
+                        if (segPatterns[i] >= devicePatterns)
+                        {
+                            SendString(CMD_START_END);
+                            SendString(CMD_POP_PATTERN);
+                            SetupPatternArraysForSegment(i, false);
+                            SendString(patternCmds[segPatterns[i]]);
+                            SendString(CMD_START_END);
+                        }
+
+                        int num = pnum+1;       // device pattern numbers start at 1
+                        SendString("" + num);   // store current pattern number
+                    }
+                }
+                SetupPatternArraysForSegment(curSegment, false);
+
+                int seg = curSegment+1;
+                SendString(CMD_SEGS_ENABLE + seg);
+
+                return;
+            }
         }
-        else
+        // else a single segment, or multiple physical segments not grouped together and not initializing
+
+        if (pnum >= devicePatterns)
         {
             SendString(CMD_START_END);
             SendString(CMD_POP_PATTERN);
             SendString(patternCmds[pnum]);
             SendString(CMD_START_END);
-
-            int num = pnum+1;       // device pattern numbers start at 1
-            SendString("" + num);   // store current pattern number
         }
+
+        int num = pnum+1;       // device pattern numbers start at 1
+        SendString("" + num);   // store current pattern number
     }
 
     // user just selected a favorite
@@ -700,15 +708,13 @@ public class FragCtrls extends Fragment implements SeekBar.OnSeekBarChangeListen
             return;
         }
 
-        SetupPatternArraysForSegment(index, true);
-
         boolean enable = segRadioButtons[index].isChecked();
 
         if (useSegEnables) // allow multiple segment selections
         {
             if (enable && !segEnables[index]) // adding new segment to the chain
             {
-                Log.d(LOGNAME, "Copying all values to segment=" + index);
+                Log.d(LOGNAME, "Copying values to segment=" + index + " pattern=" + segPatterns[curSegment]);
                 segEnables[index] = true;
 
                 curDelay[    index] = curDelay[    curSegment];
@@ -722,14 +728,18 @@ public class FragCtrls extends Fragment implements SeekBar.OnSeekBarChangeListen
 
                 int seg = index+1;
                 int pnum = segPatterns[index]+1;
-                Log.d(LOGNAME, "  segment=" + seg + " pattern=" + pnum);
+                Log.d(LOGNAME, "  pattern=" + segPatterns[index]);
 
                 // change the pattern:
                 SendString(CMD_SEGS_ENABLE + seg);
-                SendString(CMD_START_END);; // start sequence
-                SendString(CMD_POP_PATTERN);
-                SendString(patternCmds[ segPatterns[index] ]);
-                SendString(CMD_START_END);; // end sequence
+
+                if (segPatterns[index] >= devicePatterns)
+                {
+                    SendString(CMD_START_END);; // start sequence
+                    SendString(CMD_POP_PATTERN);
+                    SendString(patternCmds[ segPatterns[index] ]);
+                    SendString(CMD_START_END);; // end sequence
+                }
                 SendString("" + pnum); // store pattern number
 
                 // change brightness/delay:
@@ -758,6 +768,7 @@ public class FragCtrls extends Fragment implements SeekBar.OnSeekBarChangeListen
             int num = curSegment+1; // device segment numbers start at 1
             SendString(CMD_SEGS_ENABLE + num); // restricts subsequent controls to this segment
 
+            SetupPatternArraysForSegment(index, true);
             SetPatternNameOnly();   // select the pattern name to be displayed
             SetControlPositions();  // set controls display without sending commands
         }

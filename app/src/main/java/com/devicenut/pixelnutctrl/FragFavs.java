@@ -191,7 +191,7 @@ public class FragFavs extends Fragment
             if ((f != null) && !f.builtin)
             {
                 Log.d(LOGNAME, "Save favorite: name=" + f.name);
-                SaveString(i, f.makeString());
+                SaveString(i, f.makeString(null));
             }
             else SaveString(i, null);
         }
@@ -325,10 +325,10 @@ public class FragFavs extends Fragment
 
             if (seg == numSegments-1)
             {
-                String str1 = savedFavorite.makeString();
+                String str1 = savedFavorite.makeString(null);
                 for (int i = 0; i < numFavorites; ++i)
                 {
-                    String str2 = listFavorites[i].makeString();
+                    String str2 = listFavorites[i].makeString(savedFavorite.getPatternName());
                     Log.v(LOGNAME, "Matching str=" + str1 + "\nWith fav=" + str2);
                     if (str1.equals(str2))
                     {

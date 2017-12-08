@@ -378,11 +378,12 @@ public class Main extends Application
         }
 
         // creates string from instance
-        String makeString()
+        String makeString(String n)
         {
             if (data == null) return "";
 
-            String s = name + "\n";
+            String s = (n == null) ? name : n;
+            s += "\n";
             for (int i = 0; i < segs; ++i)
             {
                 s += data[i].type + " " + data[i].index + " " + data[i].values;

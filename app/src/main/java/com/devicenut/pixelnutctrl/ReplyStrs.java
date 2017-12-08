@@ -325,20 +325,26 @@ class ReplyStrs
                     customPlugins   = Integer.parseInt(strs[4]);
                     maxlenCmdStrs   = Integer.parseInt(strs[5]);
 
+                    if (numSegments < 0)
+                    {
+                        multiStrands = false;
+                        numSegments = -numSegments;
+
+                        if (devicePatterns > 0)
+                        {
+                            Log.e(LOGNAME, "Cannot have device patterns AND logical segments");
+                            replyFail = true;
+                        }
+                    }
+                    else if (numSegments > 1) multiStrands = true;
+
                     if (maxlenCmdStrs < MINLEN_CMDSTR)
                     {
                         Log.e(LOGNAME, "Cmd/Pattern string is too short: len=" + maxlenCmdStrs);
                         replyFail = true;
                     }
-                    else
+                    else if (!replyFail)
                     {
-                        if (numSegments < 0)
-                        {
-                            multiStrands = true;
-                            numSegments = -numSegments;
-                        }
-                        else multiStrands = false;
-
                         if (segPatterns[0] > 0)
                         {
                             segPatterns[0] -= 1; // device patterns start at 1
