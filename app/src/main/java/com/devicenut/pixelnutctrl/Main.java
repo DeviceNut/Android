@@ -194,7 +194,7 @@ public class Main extends Application
                     "E51 C10 D60 Q4 T E112 T E131 F1 I T G",
                     "E0 B80 D10 Q3 T E111 F O10 T10 E142 F250 I T G",
                     "E0 H30 D30 T E110 F600 I T E111 A1 G",
-                    "E50 B60 H0 D10 T E50 B70 H125 D15 T E20 V1 B90 W80 H270 C15 D30 Q2 F0 I T20 O10 G",
+                    "E50 B60 H0 D10 T E50 B70 H125 D15 T E20 V1 B90 W80 H270 C25 D30 Q2 F0 I T20 O10 G",
                     "E50 V1 B65 W30 H100 D10 Q1 T E40 H270 C10 D50 T E20 C20 D15 A1 F0 I T G"
             };
 

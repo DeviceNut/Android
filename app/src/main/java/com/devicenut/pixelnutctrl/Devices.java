@@ -179,7 +179,7 @@ public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
         {
             @Override public void run()
             {
-                SleepMsecs(2000);
+                SleepMsecs(2000); // allow time for user to see our screen
                 Devices.this.finish();
             }
         }.start();
@@ -415,7 +415,7 @@ public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
                 {
 
                     isDone = false;
-                    SleepMsecs(500); // don't send too soon...hack!
+                    SleepMsecs(300); // don't send too soon...hack!
                     Log.d(LOGNAME, "Sending command: " + CMD_PAUSE);
                     ble.WriteString(CMD_PAUSE);
                     Log.d(LOGNAME, "Sending command: " + CMD_GET_INFO);
@@ -522,7 +522,7 @@ public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
         {
             @Override public void run()
             {
-                SleepMsecs(500); // don't send too soon...hack!
+                SleepMsecs(300); // don't send too soon...hack!
                 Log.d(LOGNAME, "Sending command: " + doReply.sendCmdStr);
                 ble.WriteString(doReply.sendCmdStr);
             }
@@ -546,7 +546,7 @@ public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
                     {
                         @Override public void run()
                         {
-                            SleepMsecs(500); // don't send too soon...hack!
+                            SleepMsecs(300); // don't send too soon...hack!
                             Log.d(LOGNAME, "Sending command: " + CMD_RESUME);
                             ble.WriteString(CMD_RESUME);
                         }
@@ -554,7 +554,7 @@ public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
                     }.start();
 
                     Log.i(LOGNAME, ">>> Device Setup Successful <<<");
-                    SleepMsecs(250); // allow time for display update
+                    SleepMsecs(100); // allow time for display update
 
                     SetupDeviceControls();
                     startActivity( new Intent(Devices.this, Master.class) );
@@ -586,7 +586,7 @@ public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
 
         InitVarsForDevice();
 
-        if (numSegments > 1)
-            SendString(CMD_SEGS_ENABLE + "1");
+        //if (numSegments > 1) Assumes device starts with segment 1 FIXME?
+        //    SendString(CMD_SEGS_ENABLE + "1");
     }
 }

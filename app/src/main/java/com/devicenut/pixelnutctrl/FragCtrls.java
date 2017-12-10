@@ -612,7 +612,9 @@ public class FragCtrls extends Fragment implements SeekBar.OnSeekBarChangeListen
             SetControlPositions();  // set controls display without sending commands
 
             SendString(CMD_RESUME);
-            SendString(CMD_SEGS_ENABLE + "1");
+
+            if (numSegments > 1)
+                SendString(CMD_SEGS_ENABLE + "1");
         }
     }
 
