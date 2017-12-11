@@ -460,7 +460,7 @@ public class Main extends Application
 
     static final FavoriteInfo defFav_Purple = new FavoriteInfo("Purple", FAVTYPE_BASIC, 0, "60 0 0 0 0 0 0");
     static final FavoriteInfo defFav_Rainbow = new FavoriteInfo("Rainbow", FAVTYPE_ADV, 0, "90 0 1 0 0 0 500");
-    static final FavoriteInfo defFav_Holiday = new FavoriteInfo("Christmas", FAVTYPE_ADV, 11, "100 -80 0 0 0 0 500");
+    static final FavoriteInfo defFav_Holiday = new FavoriteInfo("Christmas", FAVTYPE_ADV, 11, "100 0 0 100 0 0 500");
 
     static void AddDefaultFavorites()
     {
