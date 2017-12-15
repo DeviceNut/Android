@@ -262,9 +262,10 @@ public class Main extends Application
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     static final int MAXNUM_FAVORITIES = 6; // limited by layout
-    static final int FAVTYPE_BASIC = 0;
-    static final int FAVTYPE_ADV = 1;
-    static final int FAVTYPE_STORED = 2;
+    static final int FAVTYPE_DEVICE = 0;
+    static final int FAVTYPE_BASIC = 1;
+    static final int FAVTYPE_ADV = 2;
+    static final int FAVTYPE_STORED = 3;  // TODO: not implemented
     static final int NUM_FAVSTR_VALS = 7; // number of values in vals string (bright, delay, auto/manual, color, white, count, trigger)
 
     static class FavoriteInfo
@@ -314,15 +315,25 @@ public class Main extends Application
                 return false; // invalid segment number
             }
 
-            int t = FAVTYPE_BASIC;
-            int i;
+            int t, i;
 
-            if ((p >= basicPatternsCount) && (p < (basicPatternsCount + advPatternsCount)))
+            if ((p >= (devicePatterns + basicPatternsCount)) &&
+                (p <  (devicePatterns + basicPatternsCount + advPatternsCount)))
             {
                 t = FAVTYPE_ADV;
-                i = p - basicPatternsCount;
+                i = p - (devicePatterns + basicPatternsCount);
             }
-            else if ((p >= 0) || (p < basicPatternsCount)) i = p;
+            else if ((p >= devicePatterns) &&
+                     (p <  (devicePatterns + basicPatternsCount)))
+            {
+                t = FAVTYPE_BASIC;
+                i = p - devicePatterns;
+            }
+            else if ((p >= 0) || (p < devicePatterns))
+            {
+                t = FAVTYPE_DEVICE;
+                i = p;
+            }
             else
             {
                 Log.w(LOGNAME, "AddValue: invalid pnum=" + p);
@@ -398,6 +409,11 @@ public class Main extends Application
             if (i < 0) return false;
             switch (t)
             {
+                case FAVTYPE_DEVICE:
+                {
+                    if (i >= devicePatterns) return false;
+                    break;
+                }
                 case FAVTYPE_BASIC:
                 {
                     if (i >= basicPatternsCount) return false;
@@ -425,6 +441,15 @@ public class Main extends Application
             switch (data[seg].type)
             {
                 default:
+                {
+                    pnum = 0;
+                    break;
+                }
+                case FAVTYPE_DEVICE:
+                {
+                    break;
+                }
+                case FAVTYPE_BASIC:
                 {
                     pnum += devicePatterns;
                     break;
@@ -460,7 +485,7 @@ public class Main extends Application
 
     static final FavoriteInfo defFav_Purple = new FavoriteInfo("Purple", FAVTYPE_BASIC, 0, "60 0 0 0 0 0 0");
     static final FavoriteInfo defFav_Rainbow = new FavoriteInfo("Rainbow", FAVTYPE_ADV, 0, "90 0 1 0 0 0 500");
-    static final FavoriteInfo defFav_Holiday = new FavoriteInfo("Christmas", FAVTYPE_ADV, 11, "100 0 0 100 0 0 500");
+    static final FavoriteInfo defFav_Holiday = new FavoriteInfo("Christmas", FAVTYPE_ADV, 11, "100 0 0 0 100 0 1000");
 
     static void AddDefaultFavorites()
     {
