@@ -32,6 +32,7 @@ import static com.devicenut.pixelnutctrl.Main.TITLE_ADAFRUIT;
 import static com.devicenut.pixelnutctrl.Main.TITLE_NONAME;
 import static com.devicenut.pixelnutctrl.Main.TITLE_PIXELNUT;
 import static com.devicenut.pixelnutctrl.Main.URL_PIXELNUT;
+import static com.devicenut.pixelnutctrl.Main.appContext;
 import static com.devicenut.pixelnutctrl.Main.pixelDensity;
 import static com.devicenut.pixelnutctrl.Main.pixelHeight;
 import static com.devicenut.pixelnutctrl.Main.pixelWidth;
@@ -100,7 +101,7 @@ public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
         {
             Toast.makeText(this, "Cannot find Bluetooth LE", Toast.LENGTH_LONG).show();
             blePresentAndEnabled = false;
-            DoFinish();
+            WaitAndFinish();
             return;
         }
 
@@ -138,7 +139,7 @@ public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
         {
             blePresentAndEnabled = false;
             Toast.makeText(this, "Bluetooth LE not enabled", Toast.LENGTH_LONG).show();
-            DoFinish();
+            WaitAndFinish();
             return;
         }
 
@@ -146,8 +147,10 @@ public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
         isConnected = false;
         ble.setCallbacks(this);
 
-        if (resumeScanning) StartScanning();
-        else resumeScanning = true;
+        if (resumeScanning && !isScanning) StartScanning();
+        else SetupUserDisplay();
+
+        resumeScanning = true;
     }
 
     @Override protected void onPause()
@@ -173,7 +176,7 @@ public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
         catch (Exception ignored) {}
     }
 
-    private void DoFinish()
+    private void WaitAndFinish()
     {
         new Thread()
         {
@@ -278,6 +281,7 @@ public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
             textConnecting.setText(getResources().getString(R.string.title_connecting));
             progressBar.setVisibility(View.VISIBLE);
             buttonScan.setText(getResources().getString(R.string.name_cancel));
+            buttonScan.setTextColor(ContextCompat.getColor(appContext, R.color.UserChoice));
         }
         else if (isScanning)
         {
@@ -286,6 +290,7 @@ public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
             textConnecting.setVisibility(View.GONE);
             progressBar.setVisibility(View.VISIBLE);
             buttonScan.setText(getResources().getString(R.string.name_stop));
+            buttonScan.setTextColor(ContextCompat.getColor(appContext, R.color.UserChoice));
         }
         else // scan stopped, waiting for user
         {
@@ -293,6 +298,7 @@ public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
             textConnecting.setVisibility(View.GONE);
             progressBar.setVisibility(View.GONE);
             buttonScan.setText(getResources().getString(R.string.name_scan));
+            buttonScan.setTextColor(ContextCompat.getColor(appContext, R.color.UserChoice));
         }
 
         buttonScan.setEnabled(true);
@@ -585,8 +591,5 @@ public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
         Log.d(LOGNAME, "Device name=" + devName);
 
         InitVarsForDevice();
-
-        //if (numSegments > 1) Assumes device starts with segment 1 FIXME?
-        //    SendString(CMD_SEGS_ENABLE + "1");
     }
 }

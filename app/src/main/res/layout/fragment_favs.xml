@@ -75,7 +75,7 @@
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_gravity="center_horizontal"
+                    android:gravity="center_horizontal"
                     android:orientation="horizontal"
                     android:visibility="gone"
                     android:id="@+id/ll_Favorite1">
@@ -84,11 +84,11 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginBottom="12dp"
-                        android:textAllCaps="false"
                         android:minWidth="250dp"
                         android:textColor="@color/UserChoice"
                         android:textSize="20sp"
                         android:textStyle="bold"
+                        android:textAllCaps="false"
                         android:id="@+id/button_Favorite1"/>
 
                     <Button
@@ -106,7 +106,7 @@
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_gravity="center_horizontal"
+                    android:gravity="center_horizontal"
                     android:orientation="horizontal"
                     android:visibility="gone"
                     android:id="@+id/ll_Favorite2">
@@ -115,11 +115,11 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginBottom="12dp"
-                        android:textAllCaps="false"
                         android:minWidth="250dp"
                         android:textColor="@color/UserChoice"
                         android:textSize="20sp"
                         android:textStyle="bold"
+                        android:textAllCaps="false"
                         android:id="@+id/button_Favorite2"/>
 
                     <Button
@@ -137,7 +137,7 @@
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_gravity="center_horizontal"
+                    android:gravity="center_horizontal"
                     android:orientation="horizontal"
                     android:visibility="gone"
                     android:id="@+id/ll_Favorite3">
@@ -146,11 +146,11 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginBottom="12dp"
-                        android:textAllCaps="false"
                         android:minWidth="250dp"
                         android:textColor="@color/UserChoice"
                         android:textSize="20sp"
                         android:textStyle="bold"
+                        android:textAllCaps="false"
                         android:id="@+id/button_Favorite3"/>
 
                     <Button
@@ -168,7 +168,7 @@
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_gravity="center_horizontal"
+                    android:gravity="center_horizontal"
                     android:orientation="horizontal"
                     android:visibility="gone"
                     android:id="@+id/ll_Favorite4">
@@ -177,11 +177,11 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginBottom="12dp"
-                        android:textAllCaps="false"
                         android:minWidth="250dp"
                         android:textColor="@color/UserChoice"
                         android:textSize="20sp"
                         android:textStyle="bold"
+                        android:textAllCaps="false"
                         android:id="@+id/button_Favorite4"/>
 
                     <Button
@@ -199,7 +199,7 @@
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_gravity="center_horizontal"
+                    android:gravity="center_horizontal"
                     android:orientation="horizontal"
                     android:visibility="gone"
                     android:id="@+id/ll_Favorite5">
@@ -208,11 +208,11 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginBottom="12dp"
-                        android:textAllCaps="false"
                         android:minWidth="250dp"
                         android:textColor="@color/UserChoice"
                         android:textSize="20sp"
                         android:textStyle="bold"
+                        android:textAllCaps="false"
                         android:id="@+id/button_Favorite5"/>
 
                     <Button
@@ -230,7 +230,7 @@
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_gravity="center_horizontal"
+                    android:gravity="center_horizontal"
                     android:orientation="horizontal"
                     android:visibility="gone"
                     android:id="@+id/ll_Favorite6">
@@ -239,11 +239,11 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginBottom="12dp"
-                        android:textAllCaps="false"
                         android:minWidth="250dp"
                         android:textColor="@color/UserChoice"
                         android:textSize="20sp"
                         android:textStyle="bold"
+                        android:textAllCaps="false"
                         android:id="@+id/button_Favorite6"/>
 
                     <Button

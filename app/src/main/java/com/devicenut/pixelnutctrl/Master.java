@@ -27,8 +27,11 @@ import static com.devicenut.pixelnutctrl.Main.CMD_BLUENAME;
 import static com.devicenut.pixelnutctrl.Main.CMD_PAUSE;
 import static com.devicenut.pixelnutctrl.Main.CMD_RESUME;
 import static com.devicenut.pixelnutctrl.Main.ble;
+import static com.devicenut.pixelnutctrl.Main.createViewCtrls;
+import static com.devicenut.pixelnutctrl.Main.createViewFavs;
 import static com.devicenut.pixelnutctrl.Main.devName;
 import static com.devicenut.pixelnutctrl.Main.doUpdate;
+import static com.devicenut.pixelnutctrl.Main.helpActive;
 import static com.devicenut.pixelnutctrl.Main.isConnected;
 import static com.devicenut.pixelnutctrl.Main.numFragments;
 import static com.devicenut.pixelnutctrl.Main.pageControls;
@@ -50,7 +53,6 @@ public class Master extends AppCompatActivity implements FragFavs.FavoriteSelect
     private final Activity context = this;
 
     private boolean isEditing = false;
-    private boolean helpActive = false;
     private String devNameSaved = "";
 
     private LinearLayout llFragPages;
@@ -231,12 +233,15 @@ public class Master extends AppCompatActivity implements FragFavs.FavoriteSelect
             // set pause button to correct state
             pauseButton.setText(getResources().getString(doUpdate ? R.string.name_pause : R.string.name_resume));
         }
+
         nameText.setText(devName);
+
+        SetHelpMode(helpActive);
     }
 
     @Override public void onBackPressed()
     {
-        if (helpActive) ToggleHelp();
+        if (helpActive) SetHelpMode(!helpActive);
         else
         {
             if (isConnected) ble.disconnect();
@@ -245,32 +250,35 @@ public class Master extends AppCompatActivity implements FragFavs.FavoriteSelect
         }
     }
 
-    private void ToggleHelp()
+    private void SetHelpMode(boolean enable)
     {
-        // TODO: show help for Details page
+        // FIXME: show help for Details page
 
-        if (helpActive) // turn controls help off
+        if (createViewFavs && createViewCtrls)
         {
-            ((FragFavs)myFragments[pageFavorites]).setHelpMode(false);
-            ((FragCtrls)myFragments[pageControls]).setHelpMode(false);
+            if (enable) // turn controls help on
+            {
+                SetFragViewPageHeight(true);
+                llGoToText.setVisibility(GONE);
 
-            helpButton.setText(getResources().getString(R.string.name_help));
-            helpActive = false;
+                ((FragFavs)myFragments[pageFavorites]).setHelpMode(true);
+                ((FragCtrls)myFragments[pageControls]).setHelpMode(true);
 
-            llGoToText.setVisibility(VISIBLE);
-            SetFragViewPageHeight(false);
-            SetupGoToText();
-        }
-        else
-        {
-            SetFragViewPageHeight(true);
-            llGoToText.setVisibility(GONE);
+                helpButton.setText(getResources().getString(R.string.name_action));
+                helpActive = true;
+            }
+            else
+            {
+                ((FragFavs)myFragments[pageFavorites]).setHelpMode(false);
+                ((FragCtrls)myFragments[pageControls]).setHelpMode(false);
 
-            ((FragFavs)myFragments[pageFavorites]).setHelpMode(true);
-            ((FragCtrls)myFragments[pageControls]).setHelpMode(true);
+                helpButton.setText(getResources().getString(R.string.name_help));
+                helpActive = false;
 
-            helpButton.setText(getResources().getString(R.string.name_action));
-            helpActive = true;
+                llGoToText.setVisibility(VISIBLE);
+                SetFragViewPageHeight(false);
+                SetupGoToText();
+            }
         }
     }
 
@@ -301,7 +309,7 @@ public class Master extends AppCompatActivity implements FragFavs.FavoriteSelect
             }
             case R.id.button_HelpPage:
             {
-                ToggleHelp();
+                SetHelpMode(!helpActive);
                 break;
             }
             case R.id.text_GoLeft:

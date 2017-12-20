@@ -2,6 +2,7 @@ package com.devicenut.pixelnutctrl;
 
 import android.util.Log;
 
+import static com.devicenut.pixelnutctrl.Main.FEATURE_BASIC_PATTERNS;
 import static com.devicenut.pixelnutctrl.Main.TITLE_PIXELNUT;
 import static com.devicenut.pixelnutctrl.Main.CMD_GET_PATTERNS;
 import static com.devicenut.pixelnutctrl.Main.CMD_GET_PLUGINS;
@@ -73,13 +74,65 @@ class ReplyStrs
         didFinishReading = false;
     }
 
+    private boolean CheckValue(int val, int min, int max)
+    {
+        if (val < min) return false;
+        if ((0 < max) && (max < val)) return false;
+        return true;
+    }
+
     private void CheckSegVals(int i)
     {
-        if (!CheckValue(segPatterns[i],  0, numPatterns-1))  segPatterns[i] = 0;
-        if (!CheckValue(segXmodeHue[i],  0, MAXVAL_HUE))     segXmodeHue[i] = 0;
-        if (!CheckValue(segXmodeWht[i],  0, MAXVAL_WHT))     segXmodeWht[i] = MAXVAL_WHT;
-        if (!CheckValue(segXmodeCnt[i],  0, MAXVAL_PERCENT)) segXmodeCnt[i] = 0;
-        if (!CheckValue(segTrigForce[i], 0, MAXVAL_FORCE))   segTrigForce[i] = MAXVAL_FORCE >> 1;
+        if (!CheckValue(curDelay[i], -rangeDelay, rangeDelay))
+        {
+            curDelay[i] = 0;
+            Log.w(LOGNAME, "Adjusting delay=" + curDelay[i]);
+        }
+
+        if (!CheckValue(curBright[i], 0, MAXVAL_PERCENT))
+        {
+            curBright[i] = MAXVAL_PERCENT;
+            Log.w(LOGNAME, "Adjusting bright=" + curBright[i]);
+        }
+
+        if (segBasicOnly[i])
+        {
+            int max = devicePatterns + basicPatternsCount;
+            if (!CheckValue(segPatterns[i],  0, max-1))
+            {
+                segPatterns[i] = 0;
+                Log.w(LOGNAME, "Adjusting pattern=" + segPatterns[i]);
+            }
+        }
+        else if (!CheckValue(segPatterns[i],  0, numPatterns-1))
+        {
+            segPatterns[i] = 0;
+            Log.w(LOGNAME, "Adjusting pattern=" + segPatterns[i]);
+        }
+
+        if (!CheckValue(segXmodeHue[i],  0, MAXVAL_HUE))
+        {
+            segXmodeHue[i] = 0;
+            Log.w(LOGNAME, "Adjusting hue=" + segXmodeHue[i]);
+        }
+
+        if (!CheckValue(segXmodeWht[i],  0, MAXVAL_WHT))
+        {
+            segXmodeWht[i] = MAXVAL_WHT;
+            Log.w(LOGNAME, "Adjusting white=" + segXmodeWht[i]);
+        }
+
+        if (!CheckValue(segXmodeCnt[i],  0, MAXVAL_PERCENT))
+        {
+            segXmodeCnt[i] = 0;
+            Log.w(LOGNAME, "Adjusting count=" + segXmodeCnt[i]);
+        }
+
+        if (!CheckValue(segTrigForce[i], 0, MAXVAL_FORCE))
+        {
+            segTrigForce[i] = MAXVAL_FORCE >> 1;
+            Log.w(LOGNAME, "Adjusting force=" + segTrigForce[i]);
+        }
     }
 
     private void CheckForExtendedCommands()
@@ -129,7 +182,6 @@ class ReplyStrs
                         segPixels[j] = val1;
                         segLayers[j] = val2;
                         segTracks[j] = val3;
-                        segBasicOnly[j] = false;
 
                         if (!CheckValue(segPixels[j], 1, 0) ||
                             !CheckValue(segLayers[j], 2, 0) ||
@@ -146,7 +198,6 @@ class ReplyStrs
                                 segPixels[j] = val1;
                                 segLayers[j] = val2;
                                 segTracks[j] = val3;
-                                segBasicOnly[j] = false;
                             }
                             break;
                         }
@@ -174,14 +225,13 @@ class ReplyStrs
                             segBasicOnly[j] = true;
                             haveBasicSegs = true;
                         }
-                        else segBasicOnly[j] = false;
                     }
                 }
             }
             else if (replyState <= numSegments+1)
             {
                 int segindex = replyState-2;
-                Log.v(LOGNAME, "SegValues[" + segindex + "]: " + reply);
+                Log.d(LOGNAME, "SegValues[" + segindex + "]: " + reply);
 
                 String[] strs = reply.split("\\s+"); // remove ALL spaces
                 if (strs.length >= 8)
@@ -196,18 +246,6 @@ class ReplyStrs
                     segTrigForce[segindex] = Integer.parseInt(strs[8]) + (Integer.parseInt(strs[9]) << 8);
 
                     if (segPatterns[segindex] > 0) segPatterns[segindex] -= 1; // device patterns start at 1
-
-                    if (!CheckValue(curDelay[segindex], -rangeDelay, rangeDelay))
-                    {
-                        curDelay[segindex] = 0;
-                        Log.v(LOGNAME, "Adjusting delay=" + curDelay[segindex]);
-                    }
-
-                    if (!CheckValue(curBright[segindex], 0, MAXVAL_PERCENT))
-                    {
-                        curBright[segindex] = MAXVAL_PERCENT;
-                        Log.v(LOGNAME, "Adjusting bright=" + curBright[segindex]);
-                    }
 
                     Log.d(LOGNAME, ">> Bright=" + curBright[segindex] + " Delay=" + curDelay[segindex]);
                     Log.d(LOGNAME, ">> Pattern=" + segPatterns[segindex] + " Mode=" + segXmodeEnb[segindex] + " Force=" + segTrigForce[segindex]);
@@ -325,10 +363,9 @@ class ReplyStrs
                     customPlugins   = Integer.parseInt(strs[4]);
                     maxlenCmdStrs   = Integer.parseInt(strs[5]);
 
-                    if (numSegments < 0)
+                    if (numSegments > 0)
                     {
                         multiStrands = false;
-                        numSegments = -numSegments;
 
                         if (devicePatterns > 0)
                         {
@@ -336,7 +373,12 @@ class ReplyStrs
                             replyFail = true;
                         }
                     }
-                    else if (numSegments > 1) multiStrands = true;
+                    else if (numSegments < 1)
+                    {
+                        multiStrands = true;
+                        numSegments = -numSegments;
+                    }
+                    else replyFail = true;
 
                     if (maxlenCmdStrs < MINLEN_CMDSTR)
                     {
@@ -352,12 +394,6 @@ class ReplyStrs
                         }
                         else initPatterns = true; // trigger sending initial pattern to device
 
-                        if (segPatterns[0] >= numPatterns)
-                        {
-                            segPatterns[0] = 0;
-                            Log.v(LOGNAME, "Resetting current pattern=0");
-                        }
-
                         if ((featureBits & FEATURE_INT_PATTERNS) != 0)
                         {
                             // can only use internal patterns
@@ -369,8 +405,19 @@ class ReplyStrs
                             for (int i = 0; i < numSegments; ++i)
                                 segBasicOnly[i] = true;
                         }
+                        else if ((featureBits & FEATURE_BASIC_PATTERNS) != 0)
+                        {
+                            // can only use basic patterns
+                            useExtPatterns = true;
+                            useAdvPatterns = false;
+                            numPatterns = basicPatternsCount;
+
+                            haveBasicSegs = true;
+                            for (int i = 0; i < numSegments; ++i)
+                                segBasicOnly[i] = true;
+                        }
                         else if (((numSegments > 1) && !multiStrands && (maxlenCmdStrs < (maxlenAdvPatterns * numSegments))) ||
-                                 (maxlenCmdStrs < (maxlenAdvPatterns * numSegments)))
+                                 (maxlenCmdStrs < maxlenAdvPatterns))
                         {
                             // if command/pattern string not long enough then must use only basic patterns
                             useExtPatterns = true;
@@ -386,6 +433,10 @@ class ReplyStrs
                             useExtPatterns = true;
                             useAdvPatterns = true;
                             numPatterns = basicPatternsCount + advPatternsCount;
+
+                            haveBasicSegs = false;
+                            for (int i = 0; i < numSegments; ++i)
+                                segBasicOnly[i] = false;
                         }
                         numPatterns += devicePatterns;
 
@@ -393,12 +444,12 @@ class ReplyStrs
                         if (customPlugins < 0) customPlugins = 0;
 
                         Log.d(LOGNAME, ">> Segments=" + numSegments + ((numSegments > 1) ? (multiStrands ? " (physical)" : " (logical)") : ""));
-                        Log.d(LOGNAME, ">> CmdStrLen=" + maxlenCmdStrs);
+                        Log.d(LOGNAME, ">> CmdStrLen=" + maxlenCmdStrs + " MaxAdvPatterns=" + maxlenAdvPatterns);
                         Log.d(LOGNAME, ">> CurPattern=" + segPatterns[0] + " DoInit=" + initPatterns);
                         Log.d(LOGNAME, ">> DevicePatterns=" + devicePatterns + " Advanced=" + useAdvPatterns);
                         Log.d(LOGNAME, ">> Total patterns=" + numPatterns);
                         Log.d(LOGNAME, ">> CustomPlugins=" + customPlugins);
-                        Log.v(LOGNAME, ">> Features=0x" + Integer.toHexString(featureBits));
+                        Log.d(LOGNAME, ">> Features=0x" + Integer.toHexString(featureBits));
 
                         if (devicePatterns > 0)
                         {
@@ -406,6 +457,12 @@ class ReplyStrs
                             patternHelp_Device = new String[devicePatterns];
                             patternCmds_Device = new String[devicePatterns];
                             patternBits_Device = new int[devicePatterns];
+                        }
+
+                        if (numPatterns <= 0)
+                        {
+                            Log.e(LOGNAME, "No patterns defined!");
+                            replyFail = true;
                         }
                     }
                 }
@@ -446,18 +503,6 @@ class ReplyStrs
                     }
                     else
                     {
-                        if (!CheckValue(curDelay[0], -rangeDelay, rangeDelay))
-                        {
-                            curDelay[0] = 0;
-                            Log.v(LOGNAME, "Adjusting delay=" + curDelay[0]);
-                        }
-
-                        if (!CheckValue(curBright[0], 0, MAXVAL_PERCENT))
-                        {
-                            curBright[0] = MAXVAL_PERCENT;
-                            Log.v(LOGNAME, "Adjusting bright=" + curBright[0]);
-                        }
-
                         Log.d(LOGNAME, ">> Pixels=" + segPixels[0] + " Layers=" + segLayers[0] + " Tracks=" + segTracks[0]);
                         Log.d(LOGNAME, ">> Bright=" + curBright[0] + " Delay=" + curDelay[0]);
                     }
@@ -569,12 +614,5 @@ class ReplyStrs
         didFinishReading = true;
         Log.v(LOGNAME, "Finished !!!");
         return 3; // finished - goto Controls activity
-    }
-
-    private boolean CheckValue(int val, int min, int max)
-    {
-        if (val < min) return false;
-        if ((0 < max) && (max < val)) return false;
-        return true;
     }
 }

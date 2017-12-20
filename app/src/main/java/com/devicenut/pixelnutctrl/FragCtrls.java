@@ -40,6 +40,7 @@ import static com.devicenut.pixelnutctrl.Main.MAXVAL_WHT;
 import static com.devicenut.pixelnutctrl.Main.NUM_FAVSTR_VALS;
 
 import static com.devicenut.pixelnutctrl.Main.appContext;
+import static com.devicenut.pixelnutctrl.Main.createViewFavs;
 import static com.devicenut.pixelnutctrl.Main.curBright;
 import static com.devicenut.pixelnutctrl.Main.curDelay;
 import static com.devicenut.pixelnutctrl.Main.curSegment;
@@ -84,6 +85,7 @@ import static com.devicenut.pixelnutctrl.Main.patternNames;
 import static com.devicenut.pixelnutctrl.Main.patternHelp;
 import static com.devicenut.pixelnutctrl.Main.patternCmds;
 import static com.devicenut.pixelnutctrl.Main.patternBits;
+import static com.devicenut.pixelnutctrl.Main.createViewCtrls;
 
 public class FragCtrls extends Fragment implements SeekBar.OnSeekBarChangeListener
 {
@@ -269,6 +271,7 @@ public class FragCtrls extends Fragment implements SeekBar.OnSeekBarChangeListen
         SetControlPositions();  // set controls display without sending commands
         CheckForFavorite();     // check if selected pattern is one of the favorites
 
+        createViewCtrls = true;
         return v;
     }
 
@@ -295,6 +298,7 @@ public class FragCtrls extends Fragment implements SeekBar.OnSeekBarChangeListen
         seekBright = seekDelay = seekTrigForce = null;
         seekPropColor = seekPropWhite = seekPropCount = null;
 
+        createViewCtrls = false;
     }
 
     @Override
@@ -423,6 +427,7 @@ public class FragCtrls extends Fragment implements SeekBar.OnSeekBarChangeListen
     {
         if (segBasicOnly[seg])
         {
+            Log.d(LOGNAME, "Setting basic arrays...");
             mapIndexToPattern = mapIndexToPattern_Basic;
             mapPatternToIndex = mapPatternToIndex_Basic;
             patternNames      = patternNames_Basic;
@@ -434,6 +439,7 @@ public class FragCtrls extends Fragment implements SeekBar.OnSeekBarChangeListen
         }
         else
         {
+            Log.d(LOGNAME, "Setting advanced arrays...");
             mapIndexToPattern = mapIndexToPattern_All;
             mapPatternToIndex = mapPatternToIndex_All;
             patternNames      = patternNames_All;
@@ -800,7 +806,7 @@ public class FragCtrls extends Fragment implements SeekBar.OnSeekBarChangeListen
             if (numSegments > 1)
             {
                 if (multiStrands)
-                    str += appContext.getResources().getString(R.string.text_help_segs_physical);
+                     str += appContext.getResources().getString(R.string.text_help_segs_physical);
                 else str += appContext.getResources().getString(R.string.text_help_segs_logical);
             }
 

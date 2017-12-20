@@ -235,7 +235,8 @@ public class Main extends Application
     static int rangeDelay = MINVAL_DELAYRANGE;  // default range of delay offsets
 
     static int featureBits = 0;                 // bits that enable extended features
-    static final int FEATURE_INT_PATTERNS = 0x01; // set if cannot use external patterns
+    static final int FEATURE_INT_PATTERNS = 0x01;   // set if cannot use external patterns
+    static final int FEATURE_BASIC_PATTERNS = 0x02; // set if cannot use advanced patterns
 
     static final int maxNumSegs = 5;            // limited because of layout
     static int segPatterns[]        = new int[maxNumSegs];   // current pattern for each segment (index from 0)
@@ -258,6 +259,10 @@ public class Main extends Application
     static boolean initPatterns = false;        // true if must initialize device with patterns at startup
     static boolean multiStrands = false;        // true if device has multiple physical pixel strands
                                                 // false means all segment info must be sent when changing patterns
+
+    static boolean createViewFavs = false;      // true when views have been created, false when it's deleted
+    static boolean createViewCtrls = false;
+    static boolean helpActive = false;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -429,6 +434,7 @@ public class Main extends Application
             return true;
         }
 
+        int getSegmentCount() { return segs; }
         String getPatternName() { return name; }
 
         int getPatternNum(int seg)
@@ -484,15 +490,20 @@ public class Main extends Application
     static int curFavorite = -1;
 
     static final FavoriteInfo defFav_Purple = new FavoriteInfo("Purple", FAVTYPE_BASIC, 0, "60 0 0 0 0 0 0");
-    static final FavoriteInfo defFav_Rainbow = new FavoriteInfo("Rainbow", FAVTYPE_ADV, 0, "90 0 1 0 0 0 500");
-    static final FavoriteInfo defFav_Holiday = new FavoriteInfo("Christmas", FAVTYPE_ADV, 11, "100 0 0 0 100 0 1000");
+    static final FavoriteInfo defFav_Rainbow = new FavoriteInfo("Rainbow", FAVTYPE_ADV, 0, "90 0 0 0 0 0 500");
+    static final FavoriteInfo defFav_Holiday = new FavoriteInfo("Christmas", FAVTYPE_ADV, 11, "100 0 11 0 50 0 1000");
 
     static void AddDefaultFavorites()
     {
         listFavorites[0] = defFav_Purple;
-        listFavorites[1] = defFav_Rainbow;
-        listFavorites[2] = defFav_Holiday;
-        numFavorites = 3;
+        numFavorites = 1;
+
+        if (useAdvPatterns)
+        {
+            listFavorites[1] = defFav_Rainbow;
+            listFavorites[2] = defFav_Holiday;
+            numFavorites += 2;
+        }
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

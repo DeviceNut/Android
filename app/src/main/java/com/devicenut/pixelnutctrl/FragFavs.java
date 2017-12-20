@@ -15,13 +15,16 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 
 import static android.view.View.GONE;
+import static android.view.View.INVISIBLE;
 import static android.view.View.VISIBLE;
 import static com.devicenut.pixelnutctrl.Main.MAXNUM_FAVORITIES;
 import static com.devicenut.pixelnutctrl.Main.appContext;
+import static com.devicenut.pixelnutctrl.Main.numPatterns;
 import static com.devicenut.pixelnutctrl.Main.numSegments;
 import static com.devicenut.pixelnutctrl.Main.numFavorites;
 import static com.devicenut.pixelnutctrl.Main.curFavorite;
 import static com.devicenut.pixelnutctrl.Main.listFavorites;
+import static com.devicenut.pixelnutctrl.Main.createViewFavs;
 
 public class FragFavs extends Fragment
 {
@@ -98,6 +101,8 @@ public class FragFavs extends Fragment
         ReadAllFavorites();
         CreateList();
 
+        createViewFavs = true;
+
         return masterView;
     }
 
@@ -109,6 +114,8 @@ public class FragFavs extends Fragment
         llViewFavs = null;
         helpPage = null;
         helpText = null;
+
+        createViewFavs = false;
     }
 
     @Override public void onAttach(Context context)
@@ -144,10 +151,12 @@ public class FragFavs extends Fragment
                 objsChoose[i] = b;
 
                 b = (Button)masterView.findViewById(idsCancel[i]);
-                b.setOnClickListener(mClicker);
                 if (listFavorites[i].userCreated())
-                     b.setVisibility(VISIBLE);
-                else b.setVisibility(GONE);
+                {
+                    b.setVisibility(VISIBLE);
+                    b.setOnClickListener(mClicker);
+                }
+                else b.setVisibility(INVISIBLE);
 
                 ll.setVisibility(VISIBLE);
             }
@@ -162,12 +171,29 @@ public class FragFavs extends Fragment
         editor.apply();
     }
 
+    private boolean HasValidPatternNum(Main.FavoriteInfo f)
+    {
+        for (int j = 0; j < f.getSegmentCount(); ++j)
+        {
+            Log.v(LOGNAME, "Checking favorite=" + f.getPatternName() + " segment=" + j + " pattern=" + f.getPatternNum(j));
+            if (f.getPatternNum(j) >= numPatterns)
+            {
+                Log.w(LOGNAME, "Cannot use favorite=" + f.getPatternName());
+                return false;
+            }
+        }
+        return true;
+    }
+
     private void ReadAllFavorites()
     {
         for (int i = MAXNUM_FAVORITIES-1; i >= 0 ; --i)
         {
             String s = mySettings.getString(prefBaseName + i, null);
             Main.FavoriteInfo f = new Main.FavoriteInfo(s);
+
+            if (!HasValidPatternNum(f)) continue;
+
             if (f.data != null)
             {
                 Log.d(LOGNAME, "Add favorite: name=" + f.name);
