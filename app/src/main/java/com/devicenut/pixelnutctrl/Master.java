@@ -22,14 +22,12 @@ import android.widget.Toast;
 
 import static android.view.View.GONE;
 import static android.view.View.VISIBLE;
-import static com.devicenut.pixelnutctrl.Bluetooth.BLESTAT_DISCONNECTED;
 import static com.devicenut.pixelnutctrl.Main.CMD_BLUENAME;
 import static com.devicenut.pixelnutctrl.Main.CMD_PAUSE;
 import static com.devicenut.pixelnutctrl.Main.CMD_RESUME;
-import static com.devicenut.pixelnutctrl.Main.ble;
+import static com.devicenut.pixelnutctrl.Main.DEVSTAT_DISCONNECTED;
 import static com.devicenut.pixelnutctrl.Main.createViewCtrls;
 import static com.devicenut.pixelnutctrl.Main.createViewFavs;
-import static com.devicenut.pixelnutctrl.Main.devName;
 import static com.devicenut.pixelnutctrl.Main.doUpdate;
 import static com.devicenut.pixelnutctrl.Main.helpActive;
 import static com.devicenut.pixelnutctrl.Main.isConnected;
@@ -41,13 +39,18 @@ import static com.devicenut.pixelnutctrl.Main.pageCurrent;
 import static com.devicenut.pixelnutctrl.Main.masterPager;
 import static com.devicenut.pixelnutctrl.Main.pixelDensity;
 import static com.devicenut.pixelnutctrl.Main.pixelHeight;
+import static com.devicenut.pixelnutctrl.Main.ble;
+import static com.devicenut.pixelnutctrl.Main.wifi;
+import static com.devicenut.pixelnutctrl.Main.devName;
+import static com.devicenut.pixelnutctrl.Main.devIsBLE;
 
 public class Master extends AppCompatActivity implements FragFavs.FavoriteSelectInterface,
                                                          FragCtrls.FavoriteDeselectInterface,
                                                          FragCtrls.FavoriteCreateInterface,
                                                          FragCtrls.PatternSelectInterface,
                                                          FragCtrls.DeviceCommandInterface,
-                                                         Bluetooth.BleCallbacks
+                                                         Bluetooth.BleCallbacks,
+                                                         Wifi.WifiCallbacks
 {
     private final String LOGNAME = "Master";
     private final Activity context = this;
@@ -207,6 +210,12 @@ public class Master extends AppCompatActivity implements FragFavs.FavoriteSelect
         Log.d(LOGNAME, ">>onResume");
         super.onResume();
 
+        if (!isConnected)
+        {
+            finish();
+            return;
+        }
+
         if (isEditing && (ble != null))
         {
             isEditing = false;
@@ -225,9 +234,10 @@ public class Master extends AppCompatActivity implements FragFavs.FavoriteSelect
         }
         else
         {
-            assert ble != null;
-            ble.setCallbacks(this);
-            isConnected = true;
+            if (devIsBLE)
+                 ble.setCallbacks(this);
+            else wifi.setCallbacks(this);
+
             devNameSaved = devName;
 
             // set pause button to correct state
@@ -244,7 +254,12 @@ public class Master extends AppCompatActivity implements FragFavs.FavoriteSelect
         if (helpActive) SetHelpMode(!helpActive);
         else
         {
-            if (isConnected) ble.disconnect();
+            if (isConnected)
+            {
+                if (devIsBLE)
+                     ble.disconnect();
+                else wifi.disconnect();
+            }
 
             super.onBackPressed();
         }
@@ -329,7 +344,12 @@ public class Master extends AppCompatActivity implements FragFavs.FavoriteSelect
 
     private void SendString(String str)
     {
-        ble.WriteString(str);
+        if (isConnected)
+        {
+            if (devIsBLE)
+                 ble.WriteString(str);
+            else wifi.WriteString(str);
+        }
     }
 
     private void DeviceDisconnect(final String reason)
@@ -351,7 +371,7 @@ public class Master extends AppCompatActivity implements FragFavs.FavoriteSelect
         }
     }
 
-    @Override public void onScan(String name, int id)
+    @Override public void onScan(String name, int id, boolean isble)
     {
         Log.e(LOGNAME, "Unexpected callback: onScan");
     }
@@ -369,7 +389,7 @@ public class Master extends AppCompatActivity implements FragFavs.FavoriteSelect
 
     @Override public void onWrite(final int status)
     {
-        if ((status != 0) && (status != BLESTAT_DISCONNECTED))
+        if ((status != 0) && (status != DEVSTAT_DISCONNECTED))
         {
             Log.e(LOGNAME, "Write status: " + status); //Integer.toHexString(status));
             DeviceDisconnect("Write");

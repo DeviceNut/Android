@@ -21,7 +21,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import static com.devicenut.pixelnutctrl.Main.DEVSTAT_DISCONNECTED;
+import static com.devicenut.pixelnutctrl.Main.DEVSTAT_FAILED;
+import static com.devicenut.pixelnutctrl.Main.DEVSTAT_SUCCESS;
 import static com.devicenut.pixelnutctrl.Main.appContext;
+import static com.devicenut.pixelnutctrl.Main.deviceID;
 
 class Bluetooth
 {
@@ -46,14 +50,9 @@ class Bluetooth
     private static String[] writeChunks = null;
     private static int nextChunk = 0;
 
-    static final int BLESTAT_SUCCESS        =  0;
-    static final int BLESTAT_CALL_FAILED    = -1;
-    static final int BLESTAT_DISCONNECTED   = -2;
-    static final int BLESTAT_NO_SERVICES    = -3;
-
     interface BleCallbacks
     {
-        void onScan(String name, int id);
+        void onScan(String name, int id, boolean isble);
         void onConnect(final int status);
         void onDisconnect();
         void onWrite(final int status);
@@ -63,6 +62,8 @@ class Bluetooth
 
     Bluetooth()
     {
+        bleCB = null;
+
         if (appContext.getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE))
         {
             BluetoothManager manager = (BluetoothManager) appContext.getSystemService(Context.BLUETOOTH_SERVICE);
@@ -70,11 +71,11 @@ class Bluetooth
         }
     }
 
-    boolean checkForBlePresent()
+    boolean checkForPresence()
     {
         return (bleAdapter != null);
     }
-    boolean checkForBleEnabled()
+    boolean checkIfEnabled()
     {
         if (bleAdapter == null) return false;
         /*
@@ -99,6 +100,7 @@ class Bluetooth
 
     void startScanning()
     {
+        if (bleAdapter == null) return; // sanity check
         /*
         if (Build.VERSION.SDK_INT < 23)
         {
@@ -120,14 +122,15 @@ class Bluetooth
 
     void stopScanning()
     {
+        if (bleAdapter == null) return; // sanity check
         bleAdapter.getBluetoothLeScanner().stopScan(bleScanDevicesCB);
     }
 
-    boolean connect(int devid)
+    boolean connect()
     {
         strLine = ""; // clear any read data
 
-        BluetoothDevice bdev = bleDevList.get(devid);
+        BluetoothDevice bdev = bleDevList.get(deviceID);
         if (bdev == null) return false;
 
         Log.i(LOGNAME, "Connecting to GATT...");
@@ -136,19 +139,6 @@ class Bluetooth
         bleGatt = bdev.connectGatt(appContext, false, bleGattCB);
 
         return (bleGatt != null);
-    }
-
-    String getDevNameFromID(int devid)
-    {
-        BluetoothDevice bdev = bleDevList.get(devid);
-        if (bdev == null) return null;
-        return bdev.getName();
-    }
-
-    String getCurDevName()
-    {
-        if (bleDevice == null) return null;
-        return bleDevice.getName();
     }
 
     /*
@@ -194,13 +184,20 @@ class Bluetooth
 
     private void SendNextChunk()
     {
+        if ((bleTx == null) || (bleGatt == null))
+        {
+            bleCB.onWrite(DEVSTAT_DISCONNECTED);
+            writeEnable = false;
+            return;
+        }
+
         String str = writeChunks[nextChunk++] + " ";
 
         int len = str.length();
         if (len >= MAXLEN_CHUNK) // cannot support chunks that are too large
         {
             Log.e(LOGNAME, "Chunk too large: str=\"" + str + "\"");
-            bleCB.onWrite(BLESTAT_CALL_FAILED);
+            bleCB.onWrite(DEVSTAT_FAILED);
             writeEnable = false;
             return;
         }
@@ -218,9 +215,8 @@ class Bluetooth
         if (!bleGatt.writeCharacteristic(bleTx))
         {
             Log.e(LOGNAME, "Chunk write failed: \"" + str + "\"");
-            bleCB.onWrite(BLESTAT_CALL_FAILED);
+            bleCB.onWrite(DEVSTAT_FAILED);
             writeEnable = false;
-            return;
         }
     }
 
@@ -235,12 +231,7 @@ class Bluetooth
                 {
                     yield();
 
-                    if ((bleTx == null) || (bleGatt == null))
-                    {
-                        bleCB.onWrite(BLESTAT_DISCONNECTED);
-                        writeEnable = false;
-                    }
-                    else if (doNextChunk)
+                    if (doNextChunk)
                     {
                         if ((writeChunks != null) && (nextChunk < writeChunks.length))
                         {
@@ -305,7 +296,9 @@ class Bluetooth
                 bleDevList.add(dev);
                 int id = bleDevList.indexOf(dev);
                 Log.d(LOGNAME, "Found #" + id + ": " + name);
-                bleCB.onScan(name, id);
+
+                if (bleCB == null) Log.e(LOGNAME, "BLE CB is null!!!"); // have seen this happen, but how???
+                else bleCB.onScan(name, id, true);
             }
         }
 
@@ -314,7 +307,7 @@ class Bluetooth
         // @param errorCode Error code (one of SCAN_FAILED_*)
         public void onScanFailed(int errorCode)
         {
-            Log.e(LOGNAME, "Scan error=" + errorCode); // TODO: do something here!
+            Log.e(LOGNAME, "Scan error=" + errorCode); // TODO: do something here?
         }
     };
 
@@ -378,26 +371,26 @@ class Bluetooth
 
                                 writeEnable = true;
                                 StartSender();
-                                bleCB.onConnect(BLESTAT_SUCCESS);
+                                bleCB.onConnect(DEVSTAT_SUCCESS);
                                 return;
                             }
                             else
                             {
                                 Log.e(LOGNAME, "Config descriptor is null");
-                                bleCB.onConnect(BLESTAT_CALL_FAILED);
+                                bleCB.onConnect(DEVSTAT_FAILED);
                                 return;
                             }
                         }
                         else
                         {
                             Log.e(LOGNAME, "Rx/Tx characteristic is null");
-                            bleCB.onConnect(BLESTAT_CALL_FAILED);
+                            bleCB.onConnect(DEVSTAT_FAILED);
                             return;
                         }
                     }
                 }
             }
-            bleCB.onConnect(BLESTAT_NO_SERVICES);
+            bleCB.onConnect(DEVSTAT_FAILED);
         }
 
         @Override public void onCharacteristicWrite(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status)
@@ -409,13 +402,13 @@ class Bluetooth
                     Log.v(LOGNAME, "Write string completed");
                     writeChunks = null;
                     nextChunk = 0;
-                    bleCB.onWrite(BLESTAT_SUCCESS);
+                    bleCB.onWrite(DEVSTAT_SUCCESS);
                 }
                 else Log.v(LOGNAME, "Write chunk finished");
 
                 doNextChunk = true;
             }
-            else bleCB.onWrite(BLESTAT_CALL_FAILED);
+            else bleCB.onWrite(DEVSTAT_FAILED);
         }
 
         @Override public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic)

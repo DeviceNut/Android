@@ -22,27 +22,30 @@ import android.widget.Toast;
 
 import java.util.ArrayList;
 
-import static com.devicenut.pixelnutctrl.Bluetooth.BLESTAT_SUCCESS;
+import static com.devicenut.pixelnutctrl.Main.DEVSTAT_SUCCESS;
 import static com.devicenut.pixelnutctrl.Main.CMD_GET_INFO;
 import static com.devicenut.pixelnutctrl.Main.CMD_PAUSE;
 import static com.devicenut.pixelnutctrl.Main.CMD_RESUME;
-import static com.devicenut.pixelnutctrl.Main.CMD_SEGS_ENABLE;
-import static com.devicenut.pixelnutctrl.Main.InitVarsForDevice;
 import static com.devicenut.pixelnutctrl.Main.TITLE_ADAFRUIT;
 import static com.devicenut.pixelnutctrl.Main.TITLE_NONAME;
 import static com.devicenut.pixelnutctrl.Main.TITLE_PIXELNUT;
 import static com.devicenut.pixelnutctrl.Main.URL_PIXELNUT;
 import static com.devicenut.pixelnutctrl.Main.appContext;
+import static com.devicenut.pixelnutctrl.Main.blePresentAndEnabled;
+import static com.devicenut.pixelnutctrl.Main.deviceID;
 import static com.devicenut.pixelnutctrl.Main.pixelDensity;
 import static com.devicenut.pixelnutctrl.Main.pixelHeight;
 import static com.devicenut.pixelnutctrl.Main.pixelWidth;
+import static com.devicenut.pixelnutctrl.Main.InitVarsForDevice;
 
 import static com.devicenut.pixelnutctrl.Main.ble;
+import static com.devicenut.pixelnutctrl.Main.wifi;
 import static com.devicenut.pixelnutctrl.Main.devName;
-import static com.devicenut.pixelnutctrl.Main.numSegments;
+import static com.devicenut.pixelnutctrl.Main.devIsBLE;
 import static com.devicenut.pixelnutctrl.Main.isConnected;
+import static com.devicenut.pixelnutctrl.Main.wifiPresentAndEnabled;
 
-public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
+public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks, Wifi.WifiCallbacks
 {
     private final String LOGNAME = "Devices";
     private final Activity context = this;
@@ -53,7 +56,10 @@ public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
     private ProgressBar progressBar;
     private ProgressBar progressLine;
     private ScrollView scrollDevices;
-    private final ArrayList<Integer> bleDevIDs = new ArrayList<>();
+
+    private final ArrayList<Integer> deviceIDs = new ArrayList<>();
+    private final ArrayList<String> deviceNames = new ArrayList<>();
+    private final ArrayList<Boolean> deviceIsBLE = new ArrayList<>();
 
     private ReplyStrs doReply;
 
@@ -72,8 +78,6 @@ public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
     };
 
     private int buttonCount = 0;
-    private boolean blePresentAndEnabled = true;
-    private boolean bleEnabled = false;
     private boolean isScanning = false;
     private boolean isConnecting = false;
     private boolean resumeScanning = true;
@@ -94,13 +98,15 @@ public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
         progressBar = (ProgressBar) findViewById(R.id.progress_Scanner);
         progressLine = (ProgressBar) findViewById(R.id.progress_Loader);
 
-        blePresentAndEnabled = true;
-
         ble = new Bluetooth();
-        if (!ble.checkForBlePresent())
+        blePresentAndEnabled = ble.checkForPresence();
+
+        wifi = new Wifi();
+        wifiPresentAndEnabled = wifi.checkForPresence();
+
+        if (!blePresentAndEnabled && !wifiPresentAndEnabled)
         {
-            Toast.makeText(this, "Cannot find Bluetooth LE", Toast.LENGTH_LONG).show();
-            blePresentAndEnabled = false;
+            Toast.makeText(this, "Must have Bluetooth or WiFi", Toast.LENGTH_LONG).show();
             WaitAndFinish();
             return;
         }
@@ -132,22 +138,34 @@ public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
         Log.i(LOGNAME, ">>onResume");
         super.onResume();
 
-        if (!blePresentAndEnabled) return;
+        blePresentAndEnabled = ble.checkIfEnabled();
+        wifiPresentAndEnabled = wifi.checkIfEnabled();
 
-        bleEnabled = ble.checkForBleEnabled();
-        if (!bleEnabled)
+        if (!blePresentAndEnabled && !wifiPresentAndEnabled)
         {
-            blePresentAndEnabled = false;
-            Toast.makeText(this, "Bluetooth LE not enabled", Toast.LENGTH_LONG).show();
+            if (ble.checkForPresence() && wifi.checkForPresence())
+                 Toast.makeText(this, "Enable Bluetooth and/or WiFi", Toast.LENGTH_LONG).show();
+            else if (ble.checkForPresence())
+                 Toast.makeText(this, "Must enable Bluetooth", Toast.LENGTH_LONG).show();
+            else if (wifi.checkForPresence())
+                 Toast.makeText(this, "Must enable WiFi", Toast.LENGTH_LONG).show();
+            else Toast.makeText(this, "No Bluetooth or WiFi available", Toast.LENGTH_LONG).show();
+
             WaitAndFinish();
             return;
         }
 
+        if (ble.checkForPresence() && !blePresentAndEnabled)
+            Toast.makeText(this, "Warning: Bluetooth disabled", Toast.LENGTH_SHORT).show();
+
         isConnecting = false;
         isConnected = false;
-        ble.setCallbacks(this);
 
-        if (resumeScanning && !isScanning) StartScanning();
+        if (blePresentAndEnabled)  ble.setCallbacks(this);
+        if (wifiPresentAndEnabled) wifi.setCallbacks(this);
+
+        if (resumeScanning)
+             StartScanning();
         else SetupUserDisplay();
 
         resumeScanning = true;
@@ -158,7 +176,8 @@ public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
         Log.i(LOGNAME, ">>onPause");
         super.onPause();
 
-        if (bleEnabled) StopScanning();
+        StopScanning();
+
         //if (myToast != null) myToast.cancel();
     }
 
@@ -185,7 +204,8 @@ public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
                 SleepMsecs(2000); // allow time for user to see our screen
                 Devices.this.finish();
             }
-        }.start();
+        }
+        .start();
     }
 
     public void onClick(View v)
@@ -194,8 +214,8 @@ public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
         {
             case R.id.text_Header:
             {
-                if (isScanning) StopScanning();
-                else resumeScanning = false;
+                // if not scanning now, don't resume after return
+                if (!StopScanning()) resumeScanning = false;
 
                 startActivity(new Intent(this, About.class));
                 break;
@@ -210,8 +230,7 @@ public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
                         DoDisconnect();
                         StartScanning();
                     }
-                    else if (isScanning) StopScanning();
-                    else StartScanning();
+                    else if (!StopScanning()) StartScanning();
                 }
                 else if (isConnecting)
                 {
@@ -223,8 +242,8 @@ public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
             }
             case R.id.button_Website:
             {
-                if (isScanning) StopScanning();
-                else resumeScanning = false;
+                // if not scanning now, don't resume after return
+                if (!StopScanning()) resumeScanning = false;
 
                 Uri uri = Uri.parse(URL_PIXELNUT);
                 Intent intent = new Intent(Intent.ACTION_VIEW, uri);
@@ -239,17 +258,27 @@ public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
                 {
                     if (listButtons[i] == v.getId())
                     {
-                        int devid = bleDevIDs.get(i);
-                        Log.v(LOGNAME, "ButtonID=" + i + " DeviceID=" + devid + " DevName=" + ble.getDevNameFromID(devid));
+                        deviceID = deviceIDs.get(i);
+                        devName = deviceNames.get(i);
+                        devIsBLE = deviceIsBLE.get(i);
+
+                        Log.d(LOGNAME, "ButtonID=" + i + " DeviceID=" + deviceID + " DevName=" + devName + " BLE=" + devIsBLE);
 
                         doReply = new ReplyStrs();
 
-                        if (ble.connect(devid))
+                        boolean success;
+                        if (devIsBLE) success = ble.connect();
+                        else          success = wifi.connect();
+                        if (success)
                         {
                             isConnecting = true;
                             SetupUserDisplay();
+                            break;
                         }
-                        else Toast.makeText(context, "Cannot connect: retry", Toast.LENGTH_SHORT).show();
+
+                        Toast.makeText(context, "Cannot connect: retry", Toast.LENGTH_SHORT).show();
+                        deviceID = 0;
+                        devName = null;
                         break;
                     }
                 }
@@ -265,7 +294,11 @@ public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
             Button b = (Button) findViewById(listButton);
             b.setVisibility(View.GONE);
         }
-        bleDevIDs.clear();
+
+        deviceIDs.clear();
+        deviceNames.clear();
+        deviceIsBLE.clear();
+
         buttonCount = 0;
     }
 
@@ -281,7 +314,6 @@ public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
             textConnecting.setText(getResources().getString(R.string.title_connecting));
             progressBar.setVisibility(View.VISIBLE);
             buttonScan.setText(getResources().getString(R.string.name_cancel));
-            buttonScan.setTextColor(ContextCompat.getColor(appContext, R.color.UserChoice));
         }
         else if (isScanning)
         {
@@ -290,7 +322,6 @@ public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
             textConnecting.setVisibility(View.GONE);
             progressBar.setVisibility(View.VISIBLE);
             buttonScan.setText(getResources().getString(R.string.name_stop));
-            buttonScan.setTextColor(ContextCompat.getColor(appContext, R.color.UserChoice));
         }
         else // scan stopped, waiting for user
         {
@@ -298,10 +329,10 @@ public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
             textConnecting.setVisibility(View.GONE);
             progressBar.setVisibility(View.GONE);
             buttonScan.setText(getResources().getString(R.string.name_scan));
-            buttonScan.setTextColor(ContextCompat.getColor(appContext, R.color.UserChoice));
         }
 
         buttonScan.setEnabled(true);
+        buttonScan.setTextColor(ContextCompat.getColor(appContext, R.color.UserChoice));
 
         didFail = false;
     }
@@ -313,19 +344,32 @@ public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
             Log.d(LOGNAME, "Start scanning...");
             isScanning = true;
             SetupUserDisplay();
-            ble.startScanning();
+
+            if (blePresentAndEnabled)
+                ble.startScanning();
+
+            if (wifiPresentAndEnabled)
+                wifi.startScanning();
         }
     }
 
-    private void StopScanning()
+    private boolean StopScanning()
     {
         if (isScanning)
         {
             Log.d(LOGNAME, "Stop scanning...");
             isScanning = false;
             SetupUserDisplay();
-            ble.stopScanning();
+
+            if (blePresentAndEnabled)
+                ble.stopScanning();
+
+            if (wifiPresentAndEnabled)
+                wifi.stopScanning();
+
+            return true;
         }
+        return false;
     }
 
     private void DoDisconnect()
@@ -334,7 +378,9 @@ public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
         isConnecting = false;
         isConnected = false;
         StopScanning();
-        ble.disconnect();
+
+        if (devIsBLE) ble.disconnect();
+        else          wifi.disconnect();
     }
 
     private synchronized void DeviceFailed(final String errstr)
@@ -356,12 +402,14 @@ public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
         });
     }
 
-    @Override public void onScan(final String name, int id)
+    @Override public void onScan(final String name, int id, boolean isble)
     {
         if (isScanning && !isConnecting && !isConnected && (name != null))
         {
             String dspname = "";
             boolean haveone = false;
+
+            Log.v(LOGNAME, "OnScan: name=" + name + " id=" + id + " isble=" + isble);
 
             if (name.startsWith(TITLE_PIXELNUT))
             {
@@ -383,7 +431,9 @@ public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
                     b.setVisibility(View.VISIBLE);
 
                     ++buttonCount;
-                    bleDevIDs.add(id);
+                    deviceIDs.add(id);
+                    deviceNames.add(dspname);
+                    deviceIsBLE.add(isble);
 
                     scrollDevices.post(new Runnable()
                     {
@@ -409,26 +459,24 @@ public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
 
     @Override public void onConnect(final int status)
     {
-        if (status == BLESTAT_SUCCESS)
+        if (status == DEVSTAT_SUCCESS)
         {
             Log.i(LOGNAME, "Connected to our device <<<<<<<<<<");
             isConnected = true; // actually connected now
             // note: still have isConnecting set as well
+            // until finished retrieving configuration
 
             new Thread()
             {
                 @Override public void run()
                 {
-
                     isDone = false;
-                    SleepMsecs(300); // don't send too soon...hack!
-                    Log.d(LOGNAME, "Sending command: " + CMD_PAUSE);
-                    ble.WriteString(CMD_PAUSE);
-                    Log.d(LOGNAME, "Sending command: " + CMD_GET_INFO);
-                    ble.WriteString(CMD_GET_INFO);
+                    if (devIsBLE) SleepMsecs(300); // don't send too soon...hack!
+                    SendString(CMD_PAUSE);
+                    SendString(CMD_GET_INFO);
                 }
-
-            }.start();
+            }
+            .start();
         }
         else DeviceFailed("Connection Failed: Try Again");
     }
@@ -453,7 +501,7 @@ public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
 
     @Override public void onWrite(final int status)
     {
-        if (status != 0)
+        if (status != DEVSTAT_SUCCESS)
         {
             Log.e(LOGNAME, "Write status: " + status);
             DeviceFailed("Write Failed: Try Again");
@@ -528,12 +576,11 @@ public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
         {
             @Override public void run()
             {
-                SleepMsecs(300); // don't send too soon...hack!
-                Log.d(LOGNAME, "Sending command: " + doReply.sendCmdStr);
-                ble.WriteString(doReply.sendCmdStr);
+                if (devIsBLE) SleepMsecs(300); // don't send too soon...hack!
+                SendString(doReply.sendCmdStr);
             }
-
-        }.start();
+        }
+        .start();
     }
 
     private void UpdateProgress()
@@ -545,51 +592,22 @@ public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
                 doReply.progressPercent += doReply.progressPcentInc;
                 progressLine.setProgress((int)doReply.progressPercent);
                 Log.v(LOGNAME, "Progress=" + (int)doReply.progressPercent);
-
-                if (isDone)
-                {
-                    new Thread()
-                    {
-                        @Override public void run()
-                        {
-                            SleepMsecs(300); // don't send too soon...hack!
-                            Log.d(LOGNAME, "Sending command: " + CMD_RESUME);
-                            ble.WriteString(CMD_RESUME);
-                        }
-
-                    }.start();
-
-                    Log.i(LOGNAME, ">>> Device Setup Successful <<<");
-                    SleepMsecs(100); // allow time for display update
-
-                    SetupDeviceControls();
-                    startActivity( new Intent(Devices.this, Master.class) );
-                }
             }
         });
+
+        if (isDone)
+        {
+            Log.i(LOGNAME, ">>> Device Setup Successful <<<");
+            InitVarsForDevice();
+
+            startActivity( new Intent(Devices.this, Master.class) );
+        }
     }
 
     private void SendString(String str)
     {
-        ble.WriteString(str);
-    }
-
-    private void SetupDeviceControls()
-    {
-        devName = ble.getCurDevName();
-        if ((devName == null) || (devName.length() < 3)) // have disconnected
-        {
-            Log.w(LOGNAME, "Lost connection (no device name)");
-            Toast.makeText(context, "Lost connection", Toast.LENGTH_SHORT).show();
-            onBackPressed();
-            return;
-        }
-
-        if (devName.startsWith(TITLE_PIXELNUT))
-             devName = devName.substring(2);
-        else devName = TITLE_NONAME;
-        Log.d(LOGNAME, "Device name=" + devName);
-
-        InitVarsForDevice();
+        Log.d(LOGNAME, "Sending command: " + str);
+        if (devIsBLE) ble.WriteString(str);
+        else          wifi.WriteString(str);
     }
 }

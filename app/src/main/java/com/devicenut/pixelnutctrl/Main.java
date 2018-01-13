@@ -8,15 +8,22 @@ public class Main extends Application
 {
     private static final String LOGNAME = "Main";
 
-    static String devName;
+    static Wifi wifi;
     static Bluetooth ble;
+    static int deviceID;
+    static String devName;
+    static boolean devIsBLE;
+    static boolean blePresentAndEnabled = false;
+    static boolean wifiPresentAndEnabled = false;
+
+    static final PCQueue<String> msgWriteQueue = new PCQueue<>(50);
 
     static MyPager masterPager;
     static int numFragments, pageFavorites, pageControls, pageDetails, pageCurrent;
 
     static int maxlenAdvPatterns;
-
     static Context appContext;
+
     @Override public void onCreate()
     {
         super.onCreate();
@@ -32,10 +39,14 @@ public class Main extends Application
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+    static final int DEVSTAT_SUCCESS        =  0;
+    static final int DEVSTAT_DISCONNECTED   = -1;
+    static final int DEVSTAT_FAILED         = -2;
+
     static final String TITLE_PIXELNUT       = "P!";
     static final String TITLE_ADAFRUIT       = "Adafruit";
     static final String TITLE_NONAME         = "NoName";
-    static final String URL_PIXELNUT         = "http://www.pixelnutstore.com";
+    static final String URL_PIXELNUT         = "http://www.pixelnut.io";
 
     static final String CMD_GET_INFO         = "?";
     static final String CMD_GET_SEGMENTS     = "?S";

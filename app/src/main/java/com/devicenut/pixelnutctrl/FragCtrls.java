@@ -46,6 +46,7 @@ import static com.devicenut.pixelnutctrl.Main.curDelay;
 import static com.devicenut.pixelnutctrl.Main.curSegment;
 import static com.devicenut.pixelnutctrl.Main.devicePatterns;
 import static com.devicenut.pixelnutctrl.Main.initPatterns;
+import static com.devicenut.pixelnutctrl.Main.isConnected;
 import static com.devicenut.pixelnutctrl.Main.multiStrands;
 import static com.devicenut.pixelnutctrl.Main.basicPatternsCount;
 import static com.devicenut.pixelnutctrl.Main.haveBasicSegs;
