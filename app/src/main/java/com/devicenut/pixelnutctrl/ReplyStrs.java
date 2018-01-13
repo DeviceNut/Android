@@ -367,7 +367,7 @@ class ReplyStrs
                     {
                         multiStrands = false;
 
-                        if (devicePatterns > 0)
+                        if ((devicePatterns > 0) && (numSegments > 1))
                         {
                             Log.e(LOGNAME, "Cannot have device patterns AND logical segments");
                             replyFail = true;
