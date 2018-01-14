@@ -17,6 +17,8 @@ public class Main extends Application
     static boolean wifiPresentAndEnabled = false;
 
     static final PCQueue<String> msgWriteQueue = new PCQueue<>(50);
+    static boolean msgWriteEnable = true;
+    static MsgQueue msgThread;
 
     static MyPager masterPager;
     static int numFragments, pageFavorites, pageControls, pageDetails, pageCurrent;
@@ -42,6 +44,8 @@ public class Main extends Application
     static final int DEVSTAT_SUCCESS        =  0;
     static final int DEVSTAT_DISCONNECTED   = -1;
     static final int DEVSTAT_FAILED         = -2;
+
+    static final int MAXLEN_BLE_CHUNK       = 20; // max chars that can be sent at once with BLE implementation
 
     static final String TITLE_PIXELNUT       = "P!";
     static final String TITLE_ADAFRUIT       = "Adafruit";

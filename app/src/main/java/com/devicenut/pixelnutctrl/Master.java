@@ -26,11 +26,12 @@ import static com.devicenut.pixelnutctrl.Main.CMD_BLUENAME;
 import static com.devicenut.pixelnutctrl.Main.CMD_PAUSE;
 import static com.devicenut.pixelnutctrl.Main.CMD_RESUME;
 import static com.devicenut.pixelnutctrl.Main.DEVSTAT_DISCONNECTED;
+import static com.devicenut.pixelnutctrl.Main.DEVSTAT_FAILED;
+import static com.devicenut.pixelnutctrl.Main.DEVSTAT_SUCCESS;
 import static com.devicenut.pixelnutctrl.Main.createViewCtrls;
 import static com.devicenut.pixelnutctrl.Main.createViewFavs;
 import static com.devicenut.pixelnutctrl.Main.doUpdate;
 import static com.devicenut.pixelnutctrl.Main.helpActive;
-import static com.devicenut.pixelnutctrl.Main.isConnected;
 import static com.devicenut.pixelnutctrl.Main.numFragments;
 import static com.devicenut.pixelnutctrl.Main.pageControls;
 import static com.devicenut.pixelnutctrl.Main.pageDetails;
@@ -39,10 +40,14 @@ import static com.devicenut.pixelnutctrl.Main.pageCurrent;
 import static com.devicenut.pixelnutctrl.Main.masterPager;
 import static com.devicenut.pixelnutctrl.Main.pixelDensity;
 import static com.devicenut.pixelnutctrl.Main.pixelHeight;
+
 import static com.devicenut.pixelnutctrl.Main.ble;
 import static com.devicenut.pixelnutctrl.Main.wifi;
 import static com.devicenut.pixelnutctrl.Main.devName;
 import static com.devicenut.pixelnutctrl.Main.devIsBLE;
+import static com.devicenut.pixelnutctrl.Main.msgWriteEnable;
+import static com.devicenut.pixelnutctrl.Main.msgWriteQueue;
+import static com.devicenut.pixelnutctrl.Main.isConnected;
 
 public class Master extends AppCompatActivity implements FragFavs.FavoriteSelectInterface,
                                                          FragCtrls.FavoriteDeselectInterface,
@@ -251,7 +256,7 @@ public class Master extends AppCompatActivity implements FragFavs.FavoriteSelect
 
     @Override public void onBackPressed()
     {
-        if (helpActive) SetHelpMode(!helpActive);
+        if (helpActive) SetHelpMode(false);
         else
         {
             if (isConnected)
@@ -344,12 +349,8 @@ public class Master extends AppCompatActivity implements FragFavs.FavoriteSelect
 
     private void SendString(String str)
     {
-        if (isConnected)
-        {
-            if (devIsBLE)
-                 ble.WriteString(str);
-            else wifi.WriteString(str);
-        }
+        if (isConnected && !msgWriteQueue.put(str))
+            Log.e(LOGNAME, "Msg queue full: str=" + str + "\"");
     }
 
     private void DeviceDisconnect(final String reason)
@@ -389,9 +390,13 @@ public class Master extends AppCompatActivity implements FragFavs.FavoriteSelect
 
     @Override public void onWrite(final int status)
     {
-        if ((status != 0) && (status != DEVSTAT_DISCONNECTED))
+        if (status == DEVSTAT_SUCCESS)
+            msgWriteEnable = true;
+        else if (status == DEVSTAT_DISCONNECTED)
+            Log.w(LOGNAME, "OnWrite: disconnected");
+        else
         {
-            Log.e(LOGNAME, "Write status: " + status); //Integer.toHexString(status));
+            Log.e(LOGNAME, "OnWrite: failed");
             DeviceDisconnect("Write");
         }
     }

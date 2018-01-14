@@ -26,6 +26,7 @@ import static com.devicenut.pixelnutctrl.Main.DEVSTAT_FAILED;
 import static com.devicenut.pixelnutctrl.Main.DEVSTAT_SUCCESS;
 import static com.devicenut.pixelnutctrl.Main.appContext;
 import static com.devicenut.pixelnutctrl.Main.deviceID;
+import static com.devicenut.pixelnutctrl.Main.msgWriteEnable;
 
 class Bluetooth
 {
@@ -35,20 +36,12 @@ class Bluetooth
     private static final String UUID_TX     = "6e400002-b5a3-f393-e0a9-e50e24dcca9e";
     private static final String UUID_RX     = "6e400003-b5a3-f393-e0a9-e50e24dcca9e";
     private static final String CH_CONFIG   = "00002902-0000-1000-8000-00805f9b34fb";
-    private static final int MAXLEN_CHUNK   = 20;
 
     private static BluetoothAdapter bleAdapter = null;
     private static final List<BluetoothDevice> bleDevList = new ArrayList<>();
-    private static BluetoothDevice bleDevice = null;
     private static BluetoothGatt bleGatt = null;
     private static BluetoothGattCharacteristic bleTx, bleRx;
-
-    private static final PCQueue<String> writeQueue = new PCQueue<>(50);
     private static String strLine = "";
-    private static boolean writeEnable = false;
-    private static boolean doNextChunk = true;
-    private static String[] writeChunks = null;
-    private static int nextChunk = 0;
 
     interface BleCallbacks
     {
@@ -135,7 +128,6 @@ class Bluetooth
 
         Log.i(LOGNAME, "Connecting to GATT...");
 
-        bleDevice = bdev;
         bleGatt = bdev.connectGatt(appContext, false, bleGattCB);
 
         return (bleGatt != null);
@@ -162,126 +154,40 @@ class Bluetooth
 
     void disconnect()
     {
-        writeEnable = false; // stop write sender thread
-
         if (bleGatt != null)
         {
             Log.i(LOGNAME, "Disconnecting from GATT");
             bleGatt.disconnect();
         }
-        else
-        {
-            Log.w(LOGNAME, "No GATT to disconnect");
-            bleDevice = null;
-        }
+        else Log.w(LOGNAME, "No GATT to disconnect");
     }
 
+    // this must be called on a non-UI thread
     void WriteString(String str)
     {
-        if (!writeEnable) Log.e(LOGNAME, "Write disabled: str=" + str + "\"");
-        else if (!writeQueue.put(str)) Log.e(LOGNAME, "Queue full: str=" + str + "\"");
-    }
-
-    private void SendNextChunk()
-    {
-        if ((bleTx == null) || (bleGatt == null))
+        if ((bleTx != null) && (bleGatt != null))
         {
-            bleCB.onWrite(DEVSTAT_DISCONNECTED);
-            writeEnable = false;
-            return;
-        }
-
-        String str = writeChunks[nextChunk++] + " ";
-
-        int len = str.length();
-        if (len >= MAXLEN_CHUNK) // cannot support chunks that are too large
-        {
-            Log.e(LOGNAME, "Chunk too large: str=\"" + str + "\"");
-            bleCB.onWrite(DEVSTAT_FAILED);
-            writeEnable = false;
-            return;
-        }
-
-        while ((nextChunk < writeChunks.length))
-        {
-            len += writeChunks[nextChunk].length() + 1; // 1 for space separator
-            if (len >= MAXLEN_CHUNK) break;
-            str += writeChunks[nextChunk++] + " ";
-        }
-
-        Log.v(LOGNAME, "Sending chunk: \"" + str + "\"");
-
-        bleTx.setValue(str + "\n"); // MUST add newline to end of each string
-        if (!bleGatt.writeCharacteristic(bleTx))
-        {
-            Log.e(LOGNAME, "Chunk write failed: \"" + str + "\"");
-            bleCB.onWrite(DEVSTAT_FAILED);
-            writeEnable = false;
-        }
-    }
-
-    private void StartSender()
-    {
-        new Thread()
-        {
-            @Override public void run()
+            bleTx.setValue(str);
+            if (!bleGatt.writeCharacteristic(bleTx))
             {
-                Log.i(LOGNAME, "SenderThread starting...");
-                while (writeEnable)
-                {
-                    yield();
-
-                    if (doNextChunk)
-                    {
-                        if ((writeChunks != null) && (nextChunk < writeChunks.length))
-                        {
-                            doNextChunk = false; // wait for completion
-                            SendNextChunk();
-                        }
-                        else if (!writeQueue.empty())
-                        {
-                            Log.v(LOGNAME, "Getting next command from queue");
-                            String cmd1 = writeQueue.get();
-                            if (cmd1 != null)
-                            {
-                                while(true) // coalesce same commands
-                                {
-                                    String cmd2 = writeQueue.peek();
-                                    if ((cmd2 == null) || !cmd2.substring(0,1).equals(cmd1.substring(0,1)))
-                                        break;
-
-                                    Log.v(LOGNAME, "Skipping=\"" + cmd1 + "\" (\"" + cmd2 + "\")");
-                                    cmd1 = writeQueue.get();
-                                }
-                                Log.d(LOGNAME, "Command=\"" + cmd1 + "\"");
-
-                                writeChunks = cmd1.split("\\s+"); // remove ALL spaces
-                                nextChunk = 0;
-
-                                doNextChunk = false; // wait for completion
-                                SendNextChunk();
-                            }
-                            else Log.e(LOGNAME, "Queue was empty");
-                        }
-                        // else wait for next string in queue
-                    }
-                }
-                Log.i(LOGNAME, "SenderThread has ended");
+                Log.e(LOGNAME, "Write failed: \"" + str + "\"");
+                bleCB.onWrite(DEVSTAT_FAILED);
             }
-        }.start();
+        }
+        else bleCB.onWrite(DEVSTAT_DISCONNECTED);
     }
 
     private void ShowProperties(String type, BluetoothGattCharacteristic ch)
     {
         int props = ch.getProperties();
-        if ((props & BluetoothGattCharacteristic.PROPERTY_READ) != 0)       Log.v(LOGNAME, type + "=PropRead");
-        if ((props & BluetoothGattCharacteristic.PROPERTY_WRITE) != 0)      Log.v(LOGNAME, type + "=PropWrite");
-        if ((props & BluetoothGattCharacteristic.PROPERTY_NOTIFY) != 0)     Log.v(LOGNAME, type + "=PropNotify");
-        if ((props & BluetoothGattCharacteristic.PROPERTY_INDICATE) != 0)   Log.v(LOGNAME, type + "=PropIndicate");
+        if ((props & BluetoothGattCharacteristic.PROPERTY_READ)     != 0) Log.v(LOGNAME, type + "=PropRead");
+        if ((props & BluetoothGattCharacteristic.PROPERTY_WRITE)    != 0) Log.v(LOGNAME, type + "=PropWrite");
+        if ((props & BluetoothGattCharacteristic.PROPERTY_NOTIFY)   != 0) Log.v(LOGNAME, type + "=PropNotify");
+        if ((props & BluetoothGattCharacteristic.PROPERTY_INDICATE) != 0) Log.v(LOGNAME, type + "=PropIndicate");
 
         int perms = ch.getPermissions();
-        if ((perms & BluetoothGattCharacteristic.PERMISSION_READ) != 0)     Log.v(LOGNAME, type + "=PermRead");
-        if ((perms & BluetoothGattCharacteristic.PERMISSION_WRITE) != 0)    Log.v(LOGNAME, type + "=PermRead");
+        if ((perms & BluetoothGattCharacteristic.PERMISSION_READ)   != 0) Log.v(LOGNAME, type + "=PermRead");
+        if ((perms & BluetoothGattCharacteristic.PERMISSION_WRITE)  != 0) Log.v(LOGNAME, type + "=PermRead");
     }
 
     private final ScanCallback bleScanDevicesCB = new ScanCallback()
@@ -330,83 +236,70 @@ class Bluetooth
                 bleCB.onDisconnect();
                 bleGatt.close();
                 bleGatt = null;
-                bleDevice = null;
             }
         }
 
         @Override public void onServicesDiscovered(BluetoothGatt gatt, int status)
         {
-            if (status == BluetoothGatt.GATT_SUCCESS)
+            if (status != BluetoothGatt.GATT_SUCCESS)
             {
-                for (BluetoothGattService service : bleGatt.getServices())
+                bleCB.onConnect(DEVSTAT_FAILED);
+                return;
+            }
+
+            for (BluetoothGattService service : bleGatt.getServices())
+            {
+                Log.v(LOGNAME, "Service=" + service.getUuid());
+                if (service.getUuid().toString().equals(UUID_UART))
                 {
-                    Log.v(LOGNAME, "Service=" + service.getUuid());
-                    if (service.getUuid().toString().equals(UUID_UART))
+                    Log.d(LOGNAME, "Found UART Service");
+
+                    bleTx = bleRx = null;
+                    for (BluetoothGattCharacteristic ch : service.getCharacteristics())
                     {
-                        Log.d(LOGNAME, "Found UART Service");
-
-                        bleTx = bleRx = null;
-                        for (BluetoothGattCharacteristic ch : service.getCharacteristics())
-                        {
-                                 if (ch.getUuid().toString().equals(UUID_TX)) bleTx = ch;
-                            else if (ch.getUuid().toString().equals(UUID_RX)) bleRx = ch;
-                        }
-
-                        if ((bleTx != null) && (bleRx != null))
-                        {
-                            Log.v(LOGNAME, "Found RX and TX Chars");
-                            if (BuildConfig.DEBUG)
-                            {
-                                ShowProperties("TX", bleTx);
-                                ShowProperties("RX", bleRx);
-                            }
-
-                            BluetoothGattDescriptor config = bleRx.getDescriptor(UUID.fromString(CH_CONFIG));
-                            if (config != null)
-                            {
-                                Log.v(LOGNAME, "Found Config Descriptor");
-                                bleGatt.setCharacteristicNotification(bleRx, true);
-                                config.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
-                                bleGatt.writeDescriptor(config);
-
-                                writeEnable = true;
-                                StartSender();
-                                bleCB.onConnect(DEVSTAT_SUCCESS);
-                                return;
-                            }
-                            else
-                            {
-                                Log.e(LOGNAME, "Config descriptor is null");
-                                bleCB.onConnect(DEVSTAT_FAILED);
-                                return;
-                            }
-                        }
-                        else
-                        {
-                            Log.e(LOGNAME, "Rx/Tx characteristic is null");
-                            bleCB.onConnect(DEVSTAT_FAILED);
-                            return;
-                        }
+                             if (ch.getUuid().toString().equals(UUID_TX)) bleTx = ch;
+                        else if (ch.getUuid().toString().equals(UUID_RX)) bleRx = ch;
                     }
+
+                    if ((bleTx == null) || (bleRx == null))
+                    {
+                        Log.e(LOGNAME, "Rx/Tx characteristic is null");
+                        bleCB.onConnect(DEVSTAT_FAILED);
+                        return;
+                    }
+
+                    Log.v(LOGNAME, "Found RX and TX Chars");
+                    if (BuildConfig.DEBUG)
+                    {
+                        ShowProperties("TX", bleTx);
+                        ShowProperties("RX", bleRx);
+                    }
+
+                    BluetoothGattDescriptor config = bleRx.getDescriptor(UUID.fromString(CH_CONFIG));
+                    if (config == null)
+                    {
+                        Log.e(LOGNAME, "Config descriptor is null");
+                        bleCB.onConnect(DEVSTAT_FAILED);
+                        return;
+                    }
+
+                    Log.v(LOGNAME, "Found Config Descriptor");
+
+                    bleGatt.setCharacteristicNotification(bleRx, true);
+                    config.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
+                    bleGatt.writeDescriptor(config);
+
+                    bleCB.onConnect(DEVSTAT_SUCCESS);
                 }
             }
-            bleCB.onConnect(DEVSTAT_FAILED);
         }
 
         @Override public void onCharacteristicWrite(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status)
         {
             if (status == BluetoothGatt.GATT_SUCCESS)
             {
-                if (nextChunk >= writeChunks.length)
-                {
-                    Log.v(LOGNAME, "Write string completed");
-                    writeChunks = null;
-                    nextChunk = 0;
-                    bleCB.onWrite(DEVSTAT_SUCCESS);
-                }
-                else Log.v(LOGNAME, "Write chunk finished");
-
-                doNextChunk = true;
+                Log.v(LOGNAME, "Write completed");
+                bleCB.onWrite(DEVSTAT_SUCCESS);
             }
             else bleCB.onWrite(DEVSTAT_FAILED);
         }
@@ -442,8 +335,6 @@ class Bluetooth
                 strLine = "";
                 str = str.substring(i+1);
             }
-
-            //Log.v(LOGNAME, "StrLine=" + strLine);
         }
 
         @Override public void onReadRemoteRssi(BluetoothGatt gatt, int rssi, int status) {}

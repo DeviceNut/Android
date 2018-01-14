@@ -33,6 +33,7 @@ import static com.devicenut.pixelnutctrl.Main.URL_PIXELNUT;
 import static com.devicenut.pixelnutctrl.Main.appContext;
 import static com.devicenut.pixelnutctrl.Main.blePresentAndEnabled;
 import static com.devicenut.pixelnutctrl.Main.deviceID;
+import static com.devicenut.pixelnutctrl.Main.msgThread;
 import static com.devicenut.pixelnutctrl.Main.pixelDensity;
 import static com.devicenut.pixelnutctrl.Main.pixelHeight;
 import static com.devicenut.pixelnutctrl.Main.pixelWidth;
@@ -44,6 +45,8 @@ import static com.devicenut.pixelnutctrl.Main.devName;
 import static com.devicenut.pixelnutctrl.Main.devIsBLE;
 import static com.devicenut.pixelnutctrl.Main.isConnected;
 import static com.devicenut.pixelnutctrl.Main.wifiPresentAndEnabled;
+import static com.devicenut.pixelnutctrl.Main.msgWriteEnable;
+import static com.devicenut.pixelnutctrl.Main.msgWriteQueue;
 
 public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks, Wifi.WifiCallbacks
 {
@@ -333,8 +336,6 @@ public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
 
         buttonScan.setEnabled(true);
         buttonScan.setTextColor(ContextCompat.getColor(appContext, R.color.UserChoice));
-
-        didFail = false;
     }
 
     private void StartScanning()
@@ -385,21 +386,24 @@ public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
 
     private synchronized void DeviceFailed(final String errstr)
     {
-        if (didFail) return;
-        didFail = true;
-
-        Log.w(LOGNAME, errstr);
-
-        DoDisconnect();
-
-        context.runOnUiThread(new Runnable()
+        if (!didFail)
         {
-            public void run()
+            didFail = true;
+            msgWriteEnable = false;
+
+            Log.e(LOGNAME, errstr);
+
+            DoDisconnect();
+
+            context.runOnUiThread(new Runnable()
             {
-                Toast.makeText(context, errstr, Toast.LENGTH_SHORT).show();
-                SetupUserDisplay();
-            }
-        });
+                public void run()
+                {
+                    Toast.makeText(context, errstr, Toast.LENGTH_SHORT).show();
+                    SetupUserDisplay();
+                }
+            });
+        }
     }
 
     @Override public void onScan(final String name, int id, boolean isble)
@@ -466,34 +470,34 @@ public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
             // note: still have isConnecting set as well
             // until finished retrieving configuration
 
-            new Thread()
-            {
-                @Override public void run()
-                {
-                    isDone = false;
-                    if (devIsBLE) SleepMsecs(300); // don't send too soon...hack!
-                    SendString(CMD_PAUSE);
-                    SendString(CMD_GET_INFO);
-                }
-            }
-            .start();
+            isDone = false;
+            didFail = false;
+
+            msgWriteQueue.clear();
+            msgWriteEnable = true;
+
+            msgThread = new MsgQueue();
+            msgThread.start();
+
+            SendString(CMD_PAUSE);
+            SendString(CMD_GET_INFO);
         }
         else DeviceFailed("Connection Failed: Try Again");
     }
 
     @Override public void onDisconnect()
     {
-        final String errstr = "Device Disconnected: Try Again";
-        Log.w(LOGNAME, errstr);
-
         isConnecting = false;
         isConnected = false;
+
+        final String errstr = "Device Disconnected: Try Again";
+        if (!didFail) Log.e(LOGNAME, errstr);
 
         context.runOnUiThread(new Runnable()
         {
             public void run()
             {
-                Toast.makeText(context, errstr, Toast.LENGTH_SHORT).show();
+                if (!didFail) Toast.makeText(context, errstr, Toast.LENGTH_SHORT).show();
                 StartScanning(); // return to scanning
             }
         });
@@ -503,7 +507,7 @@ public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
     {
         if (status != DEVSTAT_SUCCESS)
         {
-            Log.e(LOGNAME, "Write status: " + status);
+            Log.e(LOGNAME, "OnWrite: status=" + status);
             DeviceFailed("Write Failed: Try Again");
         }
     }
@@ -558,7 +562,7 @@ public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
             case 2:
             {
                 UpdateProgress();
-                SendCommand();
+                SendString(doReply.sendCmdStr);
                 break;
             }
             case 3:
@@ -568,19 +572,6 @@ public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
                 break;
             }
         }
-    }
-
-    private void SendCommand()
-    {
-        new Thread()
-        {
-            @Override public void run()
-            {
-                if (devIsBLE) SleepMsecs(300); // don't send too soon...hack!
-                SendString(doReply.sendCmdStr);
-            }
-        }
-        .start();
     }
 
     private void UpdateProgress()
@@ -607,7 +598,7 @@ public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
     private void SendString(String str)
     {
         Log.d(LOGNAME, "Sending command: " + str);
-        if (devIsBLE) ble.WriteString(str);
-        else          wifi.WriteString(str);
+        if (devIsBLE) SleepMsecs(300); // don't send too soon...hack!
+        if (!msgWriteQueue.put(str)) Log.e(LOGNAME, "Msg queue full: str=" + str + "\"");
     }
 }

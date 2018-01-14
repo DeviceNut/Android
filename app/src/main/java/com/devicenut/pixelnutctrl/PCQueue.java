@@ -8,14 +8,14 @@ class PCQueue<E>
     private final int qcount;
     private final Object[] queue;
 
-    public PCQueue(int count)
+    PCQueue(int count)
     {
         qcount = count+1; // one slot still empty when queue is full
         queue = new Object[qcount];
         head = tail = 0;
     }
 
-    public boolean put(E e)
+    boolean put(E e)
     {
         if (e == null) return false;
 
@@ -27,18 +27,19 @@ class PCQueue<E>
         return true;
     }
 
-    public boolean empty()
+    boolean empty()
     {
         return head==tail;
     }
+    void clear() { head=tail; }
 
-    public E peek()
+    E peek()
     {
         if (empty()) return null;
         return (E) queue[head];
     }
 
-    public E get()
+    E get()
     {
         E e = peek();
         if (e != null) head = (head + 1) % qcount;

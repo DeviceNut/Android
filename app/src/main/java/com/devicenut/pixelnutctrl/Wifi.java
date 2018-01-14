@@ -33,16 +33,12 @@ class Wifi
     private static WifiManager wifiManager = null;
     private static List<WifiConfiguration> listAll;
     private static WifiReceiver wifiReceiver;
-    private static List<ScanResult> listActive;
     private static boolean stopScan = false;
     private static boolean stopConnect = false;
     private static final List<String> wifiNameList = new ArrayList<>();
 
     private static final String DEVICE_URL = "http://192.168.0.1:80/command";
     private static URL wifiURL;
-    private static HttpURLConnection devConnection;
-    private static BufferedWriter devWriter;
-    private static BufferedReader devReader;
 
     interface WifiCallbacks
     {
@@ -135,7 +131,7 @@ class Wifi
             @Override public void run()
             {
                 int count = 0;
-                Log.i(LOGNAME, "WiFi Connect Thread starting...");
+                Log.i(LOGNAME, "Connect thread starting...");
 
                 while (!stopConnect)
                 {
@@ -174,7 +170,7 @@ class Wifi
 
     void disconnect()
     {
-        Log.d(LOGNAME, "Disconnect Wifi");
+        Log.d(LOGNAME, "Disconnect network");
         stopConnect = true;
         wifiManager.disconnect();
     }
@@ -196,13 +192,14 @@ class Wifi
         return true;
     }
 
+    // this must be called on a non-UI thread
     void WriteString(String str)
     {
         Log.v(LOGNAME, "Wifi write: " + str);
         try
         {
             Log.d(LOGNAME, "Opening connection...");
-            devConnection = (HttpURLConnection) wifiURL.openConnection();
+            HttpURLConnection devConnection = (HttpURLConnection) wifiURL.openConnection();
 
             Log.v(LOGNAME, "Using HTTP POST");
             devConnection.setRequestMethod("POST");
@@ -215,12 +212,12 @@ class Wifi
             Log.d(LOGNAME, "Connecting to device...");
             devConnection.connect();
 
-            devWriter = new BufferedWriter(new OutputStreamWriter(devConnection.getOutputStream()));
+            BufferedWriter devWriter = new BufferedWriter(new OutputStreamWriter(devConnection.getOutputStream()));
             devWriter.write(str);
             devWriter.flush();
             devWriter.close();
 
-            devReader = new BufferedReader(new InputStreamReader(devConnection.getInputStream()));
+            BufferedReader devReader = new BufferedReader(new InputStreamReader(devConnection.getInputStream()));
             String inline;
             while ((inline = devReader.readLine()) != null) // this will block
             {
@@ -233,7 +230,7 @@ class Wifi
         }
         catch (Exception e)
         {
-            Log.e(LOGNAME, "Wifi write failed");
+            Log.e(LOGNAME, "Write failed: \"" + str + "\"");
             e.printStackTrace();
 
             wifiCB.onWrite(DEVSTAT_FAILED);
@@ -248,7 +245,8 @@ class Wifi
             if (stopScan) return;
             if (wifiCB == null) return;
 
-            listActive = wifiManager.getScanResults();
+            List<ScanResult> listActive = wifiManager.getScanResults();
+
             for (int i = 0; i < listActive.size(); ++i)
             {
                 ScanResult result = listActive.get(i);
