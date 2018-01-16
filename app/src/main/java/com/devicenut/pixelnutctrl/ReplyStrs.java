@@ -363,6 +363,7 @@ class ReplyStrs
                     customPlugins   = Integer.parseInt(strs[4]);
                     maxlenCmdStrs   = Integer.parseInt(strs[5]);
 
+                    if (numSegments == -1) numSegments = 1; // older firmware did this
                     if (numSegments > 0)
                     {
                         multiStrands = false;
