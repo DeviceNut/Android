@@ -106,6 +106,8 @@ class Wifi
 
         Log.i(LOGNAME, "Stop scanning...");
         appContext.unregisterReceiver(wifiReceiver);
+
+        stopConnecting();
     }
 
     void stopConnecting()
