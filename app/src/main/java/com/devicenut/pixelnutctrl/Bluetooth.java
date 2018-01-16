@@ -14,19 +14,25 @@ import android.bluetooth.le.ScanResult;
 import android.bluetooth.le.ScanSettings;
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.os.Build;
 import android.util.Log;
 
+import java.lang.reflect.Method;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import static android.bluetooth.le.ScanSettings.MATCH_MODE_AGGRESSIVE;
+import static android.bluetooth.le.ScanSettings.MATCH_NUM_ONE_ADVERTISEMENT;
+import static android.bluetooth.le.ScanSettings.SCAN_MODE_LOW_LATENCY;
 import static com.devicenut.pixelnutctrl.Main.DEVSTAT_DISCONNECTED;
 import static com.devicenut.pixelnutctrl.Main.DEVSTAT_FAILED;
 import static com.devicenut.pixelnutctrl.Main.DEVSTAT_SUCCESS;
+import static com.devicenut.pixelnutctrl.Main.SleepMsecs;
 import static com.devicenut.pixelnutctrl.Main.appContext;
 import static com.devicenut.pixelnutctrl.Main.deviceID;
-import static com.devicenut.pixelnutctrl.Main.msgWriteEnable;
+import static com.devicenut.pixelnutctrl.Main.doRefreshCache;
 
 class Bluetooth
 {
@@ -110,12 +116,22 @@ class Bluetooth
         */
         bleDevList.clear();
         ScanSettings.Builder builder = new ScanSettings.Builder();
+        builder.setScanMode(SCAN_MODE_LOW_LATENCY);
+        if (Build.VERSION.SDK_INT >= 23)
+        {
+            builder.setMatchMode(MATCH_MODE_AGGRESSIVE);
+            builder.setNumOfMatches(MATCH_NUM_ONE_ADVERTISEMENT);
+        }
+
+        Log.i(LOGNAME, "Start scanning...");
         bleAdapter.getBluetoothLeScanner().startScan(null, builder.build(), bleScanDevicesCB);
     }
 
     void stopScanning()
     {
         if (bleAdapter == null) return; // sanity check
+
+        Log.i(LOGNAME, "Stop scanning...");
         bleAdapter.getBluetoothLeScanner().stopScan(bleScanDevicesCB);
     }
 
@@ -127,37 +143,39 @@ class Bluetooth
         if (bdev == null) return false;
 
         Log.i(LOGNAME, "Connecting to GATT...");
+        SleepMsecs(100); // hack to prevent disconnect
 
+        //bleAdapter.cancelDiscovery();
         bleGatt = bdev.connectGatt(appContext, false, bleGattCB);
-
-        return (bleGatt != null);
-    }
-
-    /*
-    boolean refreshDeviceCache() // this doesn't work to clear cached name
-    {
         if (bleGatt == null) return false;
-        try
+
+        if (doRefreshCache)
         {
-            Method localMethod = bleGatt.getClass().getMethod("refresh");
-            if (localMethod != null)
+            doRefreshCache = false;
+            /*
+            try // this doesn't seem to work
             {
-                boolean result = (Boolean) localMethod.invoke(bleGatt);
-                if (result) Log.d(LOGNAME, "Bluetooth refresh cache");
-                return result;
+                Method localMethod = bleGatt.getClass().getMethod("refresh");
+                if (localMethod != null)
+                {
+                    boolean result = (Boolean) localMethod.invoke(bleGatt);
+                    if (result) Log.d(LOGNAME, "Bluetooth refresh cache");
+                    return result;
+                }
             }
+            catch (Exception localException) { Log.e(LOGNAME, "Failed refreshing device cache"); }
+            */
         }
-        catch (Exception localException) { Log.e(LOGNAME, "Failed refreshing device cache"); }
-        return false;
+        return true;
     }
-    */
 
     void disconnect()
     {
         if (bleGatt != null)
         {
             Log.i(LOGNAME, "Disconnecting from GATT");
-            bleGatt.disconnect();
+            //bleGatt.disconnect(); // unnecessary if close(), can cause issues?
+            bleGatt.close();
         }
         else Log.w(LOGNAME, "No GATT to disconnect");
     }
@@ -177,6 +195,7 @@ class Bluetooth
         else bleCB.onWrite(DEVSTAT_DISCONNECTED);
     }
 
+    /*
     private void ShowProperties(String type, BluetoothGattCharacteristic ch)
     {
         int props = ch.getProperties();
@@ -189,6 +208,7 @@ class Bluetooth
         if ((perms & BluetoothGattCharacteristic.PERMISSION_READ)   != 0) Log.v(LOGNAME, type + "=PermRead");
         if ((perms & BluetoothGattCharacteristic.PERMISSION_WRITE)  != 0) Log.v(LOGNAME, type + "=PermRead");
     }
+    */
 
     private final ScanCallback bleScanDevicesCB = new ScanCallback()
     {
@@ -213,7 +233,8 @@ class Bluetooth
         // @param errorCode Error code (one of SCAN_FAILED_*)
         public void onScanFailed(int errorCode)
         {
-            Log.e(LOGNAME, "Scan error=" + errorCode); // TODO: do something here?
+            // never seen this happen
+            Log.e(LOGNAME, "Scan error=" + errorCode);
         }
     };
 
@@ -237,6 +258,7 @@ class Bluetooth
                 bleGatt.close();
                 bleGatt = null;
             }
+            else Log.i(LOGNAME, "GATT state=" + newState);
         }
 
         @Override public void onServicesDiscovered(BluetoothGatt gatt, int status)
@@ -271,8 +293,8 @@ class Bluetooth
                     Log.v(LOGNAME, "Found RX and TX Chars");
                     if (BuildConfig.DEBUG)
                     {
-                        ShowProperties("TX", bleTx);
-                        ShowProperties("RX", bleRx);
+                        //ShowProperties("TX", bleTx);
+                        //ShowProperties("RX", bleRx);
                     }
 
                     BluetoothGattDescriptor config = bleRx.getDescriptor(UUID.fromString(CH_CONFIG));

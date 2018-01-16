@@ -31,6 +31,7 @@ import static com.devicenut.pixelnutctrl.Main.CMD_POP_PATTERN;
 import static com.devicenut.pixelnutctrl.Main.CMD_PROPVALS;
 import static com.devicenut.pixelnutctrl.Main.CMD_RESUME;
 import static com.devicenut.pixelnutctrl.Main.CMD_SEGS_ENABLE;
+import static com.devicenut.pixelnutctrl.Main.CMD_SEQ_END;
 import static com.devicenut.pixelnutctrl.Main.CMD_START_END;
 import static com.devicenut.pixelnutctrl.Main.CMD_TRIGGER;
 import static com.devicenut.pixelnutctrl.Main.MAXVAL_FORCE;
@@ -264,7 +265,7 @@ public class FragCtrls extends Fragment implements SeekBar.OnSeekBarChangeListen
         if (initPatterns)
         {
             Log.d(LOGNAME, "Initializing all patterns...");
-            SelectPattern(segPatterns[0]);
+            SelectPattern(segPatterns[0], true);
             initPatterns = false;
         }
 
@@ -413,9 +414,9 @@ public class FragCtrls extends Fragment implements SeekBar.OnSeekBarChangeListen
                 int pnum = mapIndexToPattern[position];
                 segPatterns[curSegment] = pnum;
 
-                SelectPattern(pnum);    // send pattern commands
-                SetControlPositions();  // set control positions without sending commands
-                CheckForFavorite();     // check if this pattern is one of the favorites
+                SelectPattern(pnum, true);  // send pattern commands
+                SetControlPositions();      // set control positions without sending commands
+                CheckForFavorite();         // check if this pattern is one of the favorites
 
                 // change text for new pattern if pattern help is active, but keep it active
                 if (helpMode > 0) SetPatternHelp(false, pnum);
@@ -487,7 +488,7 @@ public class FragCtrls extends Fragment implements SeekBar.OnSeekBarChangeListen
         }
     }
 
-    private void SelectPattern(int pnum)
+    private void SelectPattern(int pnum, boolean doend)
     {
         if (numSegments > 1)
         {
@@ -510,6 +511,7 @@ public class FragCtrls extends Fragment implements SeekBar.OnSeekBarChangeListen
                 int num = pnum+1;       // device pattern numbers start at 1
                 SendString("" + num);   // store current pattern number
 
+                SendString(CMD_SEQ_END);
                 return;
             }
 
@@ -546,6 +548,7 @@ public class FragCtrls extends Fragment implements SeekBar.OnSeekBarChangeListen
                 int seg = curSegment+1;
                 SendString(CMD_SEGS_ENABLE + seg);
 
+                SendString(CMD_SEQ_END);
                 return;
             }
         }
@@ -561,6 +564,8 @@ public class FragCtrls extends Fragment implements SeekBar.OnSeekBarChangeListen
 
         int num = pnum+1;       // device pattern numbers start at 1
         SendString("" + num);   // store current pattern number
+
+        if (doend) SendString(CMD_SEQ_END);
     }
 
     // user just selected a favorite
@@ -611,7 +616,7 @@ public class FragCtrls extends Fragment implements SeekBar.OnSeekBarChangeListen
         SendString(CMD_BRIGHT + curBright[seg]);
         SendString(CMD_DELAY + curDelay[seg]);
 
-        SelectPattern(pnum);
+        SelectPattern(pnum, false);
 
         if (seg == numSegments-1)
         {
@@ -623,6 +628,8 @@ public class FragCtrls extends Fragment implements SeekBar.OnSeekBarChangeListen
             if (numSegments > 1)
                 SendString(CMD_SEGS_ENABLE + "1");
         }
+
+        SendString(CMD_SEQ_END);
     }
 
     private void SetPatternNameOnly()
@@ -661,6 +668,8 @@ public class FragCtrls extends Fragment implements SeekBar.OnSeekBarChangeListen
             {
                 segXmodeEnb[curSegment] = true;
                 SendString(CMD_EXTMODE + "1");
+
+                SendString(CMD_SEQ_END);
             }
         }
         else manualButton.setVisibility(VISIBLE);
@@ -764,6 +773,8 @@ public class FragCtrls extends Fragment implements SeekBar.OnSeekBarChangeListen
                 // switch back to current segment
                 seg = curSegment+1;
                 SendString(CMD_SEGS_ENABLE + seg);
+
+                SendString(CMD_SEQ_END);
             }
             else segEnables[index] = enable;
         }
@@ -776,6 +787,8 @@ public class FragCtrls extends Fragment implements SeekBar.OnSeekBarChangeListen
 
             int num = curSegment+1; // device segment numbers start at 1
             SendString(CMD_SEGS_ENABLE + num); // restricts subsequent controls to this segment
+
+            SendString(CMD_SEQ_END);
 
             SetupPatternArraysForSegment(index, true);
             SetPatternNameOnly();   // select the pattern name to be displayed
@@ -946,6 +959,7 @@ public class FragCtrls extends Fragment implements SeekBar.OnSeekBarChangeListen
                         else SendString(CMD_EXTMODE + "0");
                         SendString(CMD_PROPVALS + segXmodeHue[curSegment] + " " + segXmodeWht[curSegment] + " " + segXmodeCnt[curSegment]);
                     }
+                    SendString(CMD_SEQ_END);
 
                     SetControlPositions(); // set control positions without sending commands
 
@@ -979,6 +993,8 @@ public class FragCtrls extends Fragment implements SeekBar.OnSeekBarChangeListen
                     else if ((patternBits[segPatterns[curSegment]] & 0x20) != 0)
                          SendString(CMD_TRIGGER + segTrigForce[curSegment]);
                     else SendString(CMD_TRIGGER + 0);
+
+                    SendString(CMD_SEQ_END);
                     break;
                 }
             }
@@ -1018,6 +1034,8 @@ public class FragCtrls extends Fragment implements SeekBar.OnSeekBarChangeListen
                         curBright[index] = progress;
                         SendString(CMD_BRIGHT + curBright[index]);
                     }
+
+                    SendString(CMD_SEQ_END);
                     break;
                 }
                 case R.id.seek_Delay:
@@ -1045,6 +1063,8 @@ public class FragCtrls extends Fragment implements SeekBar.OnSeekBarChangeListen
                         curDelay[index] = rangeDelay - (progress * 2 * rangeDelay)/100;
                         SendString(CMD_DELAY + curDelay[index]);
                     }
+
+                    SendString(CMD_SEQ_END);
                     break;
                 }
                 case R.id.seek_PropColor:
@@ -1072,6 +1092,8 @@ public class FragCtrls extends Fragment implements SeekBar.OnSeekBarChangeListen
                         segXmodeHue[curSegment] = (progress * MAXVAL_HUE) / MAXVAL_PERCENT;
                         SendString(CMD_PROPVALS + segXmodeHue[curSegment] + " " + segXmodeWht[curSegment] + " " + segXmodeCnt[curSegment]);
                     }
+
+                    SendString(CMD_SEQ_END);
                     break;
                 }
                 case R.id.seek_PropWhite:
@@ -1099,6 +1121,8 @@ public class FragCtrls extends Fragment implements SeekBar.OnSeekBarChangeListen
                         segXmodeWht[curSegment] = (progress * MAXVAL_WHT) / MAXVAL_PERCENT;
                         SendString(CMD_PROPVALS + segXmodeHue[curSegment] + " " + segXmodeWht[curSegment] + " " + segXmodeCnt[curSegment]);
                     }
+
+                    SendString(CMD_SEQ_END);
                     break;
                 }
                 case R.id.seek_PropCount:
@@ -1126,6 +1150,8 @@ public class FragCtrls extends Fragment implements SeekBar.OnSeekBarChangeListen
                         segXmodeCnt[curSegment] = progress;
                         SendString(CMD_PROPVALS + segXmodeHue[curSegment] + " " + segXmodeWht[curSegment] + " " + segXmodeCnt[curSegment]);
                     }
+
+                    SendString(CMD_SEQ_END);
                     break;
                 }
                 case R.id.seek_TrigForce:

@@ -22,22 +22,23 @@ import android.widget.Toast;
 
 import java.util.ArrayList;
 
+import static com.devicenut.pixelnutctrl.Main.CMD_SEQ_END;
 import static com.devicenut.pixelnutctrl.Main.DEVSTAT_SUCCESS;
 import static com.devicenut.pixelnutctrl.Main.CMD_GET_INFO;
-import static com.devicenut.pixelnutctrl.Main.CMD_PAUSE;
-import static com.devicenut.pixelnutctrl.Main.CMD_RESUME;
 import static com.devicenut.pixelnutctrl.Main.TITLE_ADAFRUIT;
 import static com.devicenut.pixelnutctrl.Main.TITLE_NONAME;
 import static com.devicenut.pixelnutctrl.Main.TITLE_PIXELNUT;
 import static com.devicenut.pixelnutctrl.Main.URL_PIXELNUT;
 import static com.devicenut.pixelnutctrl.Main.appContext;
 import static com.devicenut.pixelnutctrl.Main.blePresentAndEnabled;
+import static com.devicenut.pixelnutctrl.Main.cmdPauseEnable;
 import static com.devicenut.pixelnutctrl.Main.deviceID;
 import static com.devicenut.pixelnutctrl.Main.msgThread;
 import static com.devicenut.pixelnutctrl.Main.pixelDensity;
 import static com.devicenut.pixelnutctrl.Main.pixelHeight;
 import static com.devicenut.pixelnutctrl.Main.pixelWidth;
 import static com.devicenut.pixelnutctrl.Main.InitVarsForDevice;
+import static com.devicenut.pixelnutctrl.Main.SleepMsecs;
 
 import static com.devicenut.pixelnutctrl.Main.ble;
 import static com.devicenut.pixelnutctrl.Main.wifi;
@@ -181,6 +182,8 @@ public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
 
         StopScanning();
 
+        if (!devIsBLE) wifi.stopConnecting();
+
         //if (myToast != null) myToast.cancel();
     }
 
@@ -189,13 +192,6 @@ public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
         if (isConnected) DoDisconnect();
 
         super.onBackPressed();
-    }
-
-    private void SleepMsecs(int msecs)
-    {
-        //noinspection EmptyCatchBlock
-        try { Thread.sleep(msecs); }
-        catch (Exception ignored) {}
     }
 
     private void WaitAndFinish()
@@ -475,12 +471,13 @@ public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
 
             msgWriteQueue.clear();
             msgWriteEnable = true;
+            cmdPauseEnable = true;
 
             msgThread = new MsgQueue();
             msgThread.start();
 
-            SendString(CMD_PAUSE);
             SendString(CMD_GET_INFO);
+            SendString(CMD_SEQ_END);
         }
         else DeviceFailed("Connection Failed: Try Again");
     }
@@ -510,6 +507,7 @@ public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
             Log.e(LOGNAME, "OnWrite: status=" + status);
             DeviceFailed("Write Failed: Try Again");
         }
+        else msgWriteEnable = true;
     }
 
     @Override public void onRead(String rstr)
@@ -563,6 +561,7 @@ public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
             {
                 UpdateProgress();
                 SendString(doReply.sendCmdStr);
+                SendString(CMD_SEQ_END);
                 break;
             }
             case 3:
@@ -590,6 +589,7 @@ public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
         {
             Log.i(LOGNAME, ">>> Device Setup Successful <<<");
             InitVarsForDevice();
+            cmdPauseEnable = false;
 
             startActivity( new Intent(Devices.this, Master.class) );
         }
@@ -597,8 +597,8 @@ public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
 
     private void SendString(String str)
     {
-        Log.d(LOGNAME, "Sending command: " + str);
-        if (devIsBLE) SleepMsecs(300); // don't send too soon...hack!
-        if (!msgWriteQueue.put(str)) Log.e(LOGNAME, "Msg queue full: str=" + str + "\"");
+        //Log.v(LOGNAME, "Queue command: " + str);
+        if (!msgWriteQueue.put(str))
+            Log.e(LOGNAME, "Msg queue full: str=" + str + "\"");
     }
 }

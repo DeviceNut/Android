@@ -16,9 +16,12 @@ public class Main extends Application
     static boolean blePresentAndEnabled = false;
     static boolean wifiPresentAndEnabled = false;
 
-    static final PCQueue<String> msgWriteQueue = new PCQueue<>(50);
-    static boolean msgWriteEnable = true;
     static MsgQueue msgThread;
+    static final PCQueue<String> msgWriteQueue = new PCQueue<>(50);
+    static volatile boolean msgWriteEnable = true;
+    static volatile boolean cmdPauseEnable = true;
+
+    static boolean doRefreshCache = false;
 
     static MyPager masterPager;
     static int numFragments, pageFavorites, pageControls, pageDetails, pageCurrent;
@@ -37,6 +40,14 @@ public class Main extends Application
             if (maxlenAdvPatterns < advPatternCmds[i].length())
                 maxlenAdvPatterns = advPatternCmds[i].length();
         }
+    }
+
+    // only works on background threads
+    static void SleepMsecs(int msecs)
+    {
+        //noinspection EmptyCatchBlock
+        try { Thread.sleep(msecs); }
+        catch (Exception ignored) {}
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -65,8 +76,9 @@ public class Main extends Application
     static final String CMD_PAUSE            = "[";
     static final String CMD_RESUME           = "]";
     static final String CMD_SEGS_ENABLE      = "#";
-    static final String CMD_POP_PATTERN      = "P";
+    static final String CMD_POP_PATTERN      = "P "; // always used before pattern string, needs to be separated
     static final String CMD_START_END        = ".";
+    static final String CMD_SEQ_END          = "\n";
 
     static final int MAXVAL_HUE              = 359;
     static final int MAXVAL_WHT              = 50;
@@ -74,7 +86,7 @@ public class Main extends Application
     static final int MAXVAL_FORCE            = 1000;
     static final int MINVAL_DELAYRANGE       = 80;      // use this for patterns defined here, and is minimal value for custom patterns
 
-    static final int MINLEN_CMDSTR           = 110;     // minimum length of the command/pattern string
+    static final int MINLEN_CMDSTR           = 100;     // minimum length of the command/pattern string
     static final int MINLEN_SEGLEN_FORADV    = 20;      // minimum length of each segment to be able to use the advanced patterns
 
     static final String[] basicPatternNames =
@@ -506,7 +518,7 @@ public class Main extends Application
 
     static final FavoriteInfo defFav_Purple = new FavoriteInfo("Purple", FAVTYPE_BASIC, 0, "60 0 0 0 0 0 0");
     static final FavoriteInfo defFav_Rainbow = new FavoriteInfo("Rainbow", FAVTYPE_ADV, 0, "90 0 0 0 0 0 500");
-    static final FavoriteInfo defFav_Holiday = new FavoriteInfo("Christmas", FAVTYPE_ADV, 11, "100 0 11 0 50 0 1000");
+    static final FavoriteInfo defFav_Holiday = new FavoriteInfo("Christmas", FAVTYPE_ADV, 11, "100 -20 11 0 50 0 1000");
 
     static void AddDefaultFavorites()
     {

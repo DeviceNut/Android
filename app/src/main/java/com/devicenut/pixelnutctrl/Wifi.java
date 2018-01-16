@@ -20,11 +20,12 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
+import static android.os.Process.setThreadPriority;
 import static com.devicenut.pixelnutctrl.Main.DEVSTAT_FAILED;
 import static com.devicenut.pixelnutctrl.Main.DEVSTAT_SUCCESS;
+import static com.devicenut.pixelnutctrl.Main.SleepMsecs;
 import static com.devicenut.pixelnutctrl.Main.appContext;
 import static com.devicenut.pixelnutctrl.Main.deviceID;
-import static com.devicenut.pixelnutctrl.Main.wifi;
 
 class Wifi
 {
@@ -37,7 +38,8 @@ class Wifi
     private static boolean stopConnect = false;
     private static final List<String> wifiNameList = new ArrayList<>();
 
-    private static final String DEVICE_URL = "http://192.168.0.1:80/command";
+    //private static final String DEVICE_URL = "http://192.168.0.1:80/index";
+    private static final String DEVICE_URL = "http://192.168.0.1/command";
     private static URL wifiURL;
 
     interface WifiCallbacks
@@ -93,6 +95,7 @@ class Wifi
         stopScan = false;
         wifiNameList.clear();
 
+        Log.i(LOGNAME, "Start scanning...");
         appContext.registerReceiver(wifiReceiver, new IntentFilter(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION));
         wifiManager.startScan(); // always returns true (or throws exception)
     }
@@ -101,7 +104,13 @@ class Wifi
     {
         if (wifiManager == null) return; // sanity check
 
+        Log.i(LOGNAME, "Stop scanning...");
         appContext.unregisterReceiver(wifiReceiver);
+    }
+
+    void stopConnecting()
+    {
+        stopConnect = true;
     }
 
     private boolean IsConnected()
@@ -132,23 +141,16 @@ class Wifi
             {
                 int count = 0;
                 Log.i(LOGNAME, "Connect thread starting...");
+                setThreadPriority(-10);
 
                 while (!stopConnect)
                 {
-                    try { Thread.sleep(1000); }
-                    catch (Exception ignored) {}
+                    SleepMsecs(1000);
 
                     if (IsConnected())
                     {
                         Log.d(LOGNAME, "Network connection complete");
-
-                        if (!OpenConnection())
-                        {
-                            Log.d(LOGNAME, "Connect with HTTP failed");
-                            wifiCB.onConnect(DEVSTAT_FAILED);
-                        }
-                        else wifiCB.onConnect(DEVSTAT_SUCCESS);
-
+                        wifiCB.onConnect(DEVSTAT_SUCCESS);
                         break;
                     }
 
@@ -175,50 +177,40 @@ class Wifi
         wifiManager.disconnect();
     }
 
-    private boolean OpenConnection()
-    {
-        try
-        {
-            Log.d(LOGNAME, DEVICE_URL);
-            wifiURL = new URL(DEVICE_URL);
-        }
-        catch (Exception e)
-        {
-            Log.e(LOGNAME, "Open connection failed");
-            e.printStackTrace();
-            return false;
-        }
-
-        return true;
-    }
-
     // this must be called on a non-UI thread
     void WriteString(String str)
     {
-        Log.v(LOGNAME, "Wifi write: " + str);
+        Log.d(LOGNAME, "Wifi write: " + str);
         try
         {
-            Log.d(LOGNAME, "Opening connection...");
+            Log.v(LOGNAME, DEVICE_URL);
+            wifiURL = new URL(DEVICE_URL);
+
+            Log.v(LOGNAME, "Opening connection...");
             HttpURLConnection devConnection = (HttpURLConnection) wifiURL.openConnection();
 
             Log.v(LOGNAME, "Using HTTP POST");
             devConnection.setRequestMethod("POST");
+            devConnection.setRequestMethod("GET");
 
             devConnection.setDoInput(true);
             devConnection.setDoOutput(true);
             devConnection.setReadTimeout(0);     // wait forever for connection/data
             devConnection.setConnectTimeout(0);
 
-            Log.d(LOGNAME, "Connecting to device...");
+            Log.v(LOGNAME, "Connecting to device...");
             devConnection.connect();
 
+            Log.v(LOGNAME, "Sending message to device...");
             BufferedWriter devWriter = new BufferedWriter(new OutputStreamWriter(devConnection.getOutputStream()));
             devWriter.write(str);
             devWriter.flush();
             devWriter.close();
 
+            Log.v(LOGNAME, "Reading response from device...");
             BufferedReader devReader = new BufferedReader(new InputStreamReader(devConnection.getInputStream()));
             String inline;
+
             while ((inline = devReader.readLine()) != null) // this will block
             {
                 inline = inline.trim();
@@ -226,7 +218,12 @@ class Wifi
                 if (inline.equals("ok")) break;
                 wifiCB.onRead(inline);
             }
+
+            devReader.close();
             Log.v(LOGNAME, "Wifi finished reading");
+
+            devConnection.disconnect();
+            wifiCB.onWrite(DEVSTAT_SUCCESS);
         }
         catch (Exception e)
         {

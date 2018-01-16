@@ -25,11 +25,12 @@ import static android.view.View.VISIBLE;
 import static com.devicenut.pixelnutctrl.Main.CMD_BLUENAME;
 import static com.devicenut.pixelnutctrl.Main.CMD_PAUSE;
 import static com.devicenut.pixelnutctrl.Main.CMD_RESUME;
+import static com.devicenut.pixelnutctrl.Main.CMD_SEQ_END;
 import static com.devicenut.pixelnutctrl.Main.DEVSTAT_DISCONNECTED;
-import static com.devicenut.pixelnutctrl.Main.DEVSTAT_FAILED;
 import static com.devicenut.pixelnutctrl.Main.DEVSTAT_SUCCESS;
 import static com.devicenut.pixelnutctrl.Main.createViewCtrls;
 import static com.devicenut.pixelnutctrl.Main.createViewFavs;
+import static com.devicenut.pixelnutctrl.Main.doRefreshCache;
 import static com.devicenut.pixelnutctrl.Main.doUpdate;
 import static com.devicenut.pixelnutctrl.Main.helpActive;
 import static com.devicenut.pixelnutctrl.Main.numFragments;
@@ -99,26 +100,23 @@ public class Master extends AppCompatActivity implements FragFavs.FavoriteSelect
     {
         if (str.equals(CMD_PAUSE))
         {
-            if (doUpdate)
+            if (doUpdate) // not paused
             {
                 // don't change text
-                SendString(CMD_PAUSE);
                 doUpdate = false;
             }
             // else already paused
         }
         else if (str.equals(CMD_RESUME))
         {
-            if (!doUpdate)
+            if (!doUpdate) // user had paused, so change the text
             {
-                // resuming, but user had paused, so change the text
                 pauseButton.setText(getResources().getString(R.string.name_pause));
-                SendString(CMD_RESUME);
-                doUpdate = true;
+                doUpdate = false;
             }
             // else already resumed
         }
-        else SendString(str);
+        SendString(str);
     }
 
     @Override protected void onCreate(Bundle savedInstanceState)
@@ -228,11 +226,11 @@ public class Master extends AppCompatActivity implements FragFavs.FavoriteSelect
             {
                 Log.d(LOGNAME, "Renaming device=" + devName);
                 SendString(CMD_BLUENAME + devName);
+                SendString(CMD_SEQ_END);
 
                 if (Build.VERSION.SDK_INT < 23)
                 {
-                    //ble.refreshDeviceCache(); // doesn't work FIXME
-
+                    doRefreshCache = true; // force refreshing cache before do next scan: doesn't work FIXME
                     Toast.makeText(context, "Rescan from Settings to see name change", Toast.LENGTH_SHORT).show();
                 }
             }
@@ -317,11 +315,13 @@ public class Master extends AppCompatActivity implements FragFavs.FavoriteSelect
                 if (doUpdate)
                 {
                     SendString(CMD_PAUSE);
+                    SendString(CMD_SEQ_END);
                     pauseButton.setText(getResources().getString(R.string.name_resume));
                 }
                 else
                 {
                     SendString(CMD_RESUME);
+                    SendString(CMD_SEQ_END);
                     pauseButton.setText(getResources().getString(R.string.name_pause));
                 }
                 doUpdate = !doUpdate;
@@ -349,8 +349,9 @@ public class Master extends AppCompatActivity implements FragFavs.FavoriteSelect
 
     private void SendString(String str)
     {
+        Log.v(LOGNAME, "Queue command: \"" + str + "\"");
         if (isConnected && !msgWriteQueue.put(str))
-            Log.e(LOGNAME, "Msg queue full: str=" + str + "\"");
+            Log.e(LOGNAME, "Msg queue full: str=\"" + str + "\"");
     }
 
     private void DeviceDisconnect(final String reason)
@@ -392,6 +393,7 @@ public class Master extends AppCompatActivity implements FragFavs.FavoriteSelect
     {
         if (status == DEVSTAT_SUCCESS)
             msgWriteEnable = true;
+
         else if (status == DEVSTAT_DISCONNECTED)
             Log.w(LOGNAME, "OnWrite: disconnected");
         else
