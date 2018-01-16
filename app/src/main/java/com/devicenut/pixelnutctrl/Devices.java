@@ -105,8 +105,8 @@ public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
         ble = new Bluetooth();
         blePresentAndEnabled = ble.checkForPresence();
 
-        wifi = new Wifi();
-        wifiPresentAndEnabled = wifi.checkForPresence();
+        //wifi = new Wifi(); TODO
+        //wifiPresentAndEnabled = wifi.checkForPresence();
 
         if (!blePresentAndEnabled && !wifiPresentAndEnabled)
         {
@@ -143,7 +143,7 @@ public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
         super.onResume();
 
         blePresentAndEnabled = ble.checkIfEnabled();
-        wifiPresentAndEnabled = wifi.checkIfEnabled();
+        //TODO wifiPresentAndEnabled = wifi.checkIfEnabled();
 
         if (!blePresentAndEnabled && !wifiPresentAndEnabled)
         {
@@ -182,7 +182,8 @@ public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
 
         StopScanning();
 
-        if (!devIsBLE) wifi.stopConnecting();
+        if (wifiPresentAndEnabled && !devIsBLE)
+            wifi.stopConnecting();
 
         //if (myToast != null) myToast.cancel();
     }
