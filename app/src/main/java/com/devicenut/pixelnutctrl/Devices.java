@@ -33,6 +33,7 @@ import static com.devicenut.pixelnutctrl.Main.appContext;
 import static com.devicenut.pixelnutctrl.Main.blePresentAndEnabled;
 import static com.devicenut.pixelnutctrl.Main.cmdPauseEnable;
 import static com.devicenut.pixelnutctrl.Main.deviceID;
+import static com.devicenut.pixelnutctrl.Main.enableWiFi;
 import static com.devicenut.pixelnutctrl.Main.msgThread;
 import static com.devicenut.pixelnutctrl.Main.pixelDensity;
 import static com.devicenut.pixelnutctrl.Main.pixelHeight;
@@ -105,8 +106,11 @@ public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
         ble = new Bluetooth();
         blePresentAndEnabled = ble.checkForPresence();
 
-        //wifi = new Wifi(); TODO
-        //wifiPresentAndEnabled = wifi.checkForPresence();
+        if (enableWiFi)
+        {
+            wifi = new Wifi();
+            wifiPresentAndEnabled = wifi.checkForPresence();
+        }
 
         if (!blePresentAndEnabled && !wifiPresentAndEnabled)
         {
@@ -143,7 +147,7 @@ public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
         super.onResume();
 
         blePresentAndEnabled = ble.checkIfEnabled();
-        //TODO wifiPresentAndEnabled = wifi.checkIfEnabled();
+        if (enableWiFi) wifiPresentAndEnabled = wifi.checkIfEnabled();
 
         if (!blePresentAndEnabled && !wifiPresentAndEnabled)
         {

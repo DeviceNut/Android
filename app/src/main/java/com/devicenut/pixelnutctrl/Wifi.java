@@ -1,3 +1,9 @@
+/* TODO put permissions into manifest
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
+    <uses-permission android:name="android.permission.CHANGE_WIFI_STATE"/>
+ */
+
 package com.devicenut.pixelnutctrl;
 
 import android.content.BroadcastReceiver;
@@ -32,7 +38,6 @@ class Wifi
     private static final String LOGNAME = "WiFi";
 
     private static WifiManager wifiManager = null;
-    private static List<WifiConfiguration> listAll;
     private static WifiReceiver wifiReceiver;
     private static boolean stopScan = false;
     private static boolean stopConnect = false;
@@ -62,9 +67,6 @@ class Wifi
             wifiManager = (WifiManager) appContext.getSystemService(Context.WIFI_SERVICE);
             if (wifiManager != null)
             {
-                // This list all of the networks every configured (connected to?):
-                listAll = wifiManager.getConfiguredNetworks();
-
                 /*
                 if (!wifiManager.isWifiEnabled())
                 {
@@ -126,14 +128,19 @@ class Wifi
         int p1 = (ip >> 0)  & 0xFF;
         Log.d(LOGNAME, "Info: SSID=" + ssid + " IP=" + p1 + "." + p2 + "." + p3 + "." + p4);
 
-        return((info.getNetworkId() == deviceID) && (ip != 0));
+        if (info.getNetworkId() != deviceID) // if deviceID doesn't match then need to rescan
+        {
+            stopConnect = true;
+            wifiCB.onConnect(DEVSTAT_FAILED);
+            return false;
+        }
+        return(ip != 0);
     }
 
     boolean connect()
     {
         boolean success = wifiManager.enableNetwork(deviceID, true);
         Log.i(LOGNAME, "Connection to NetID=" + deviceID + ": " + (success ? "success" : "failed"));
-
         if (!success) return false;
 
         stopConnect = false;
@@ -152,6 +159,7 @@ class Wifi
                     if (IsConnected())
                     {
                         Log.d(LOGNAME, "Network connection complete");
+                        SleepMsecs(1000); // hack to help prevent reset on first write?
                         wifiCB.onConnect(DEVSTAT_SUCCESS);
                         break;
                     }
@@ -169,7 +177,7 @@ class Wifi
         .start();
 
         stopScan = true;
-        return true;
+        return success;
     }
 
     void disconnect()
@@ -183,57 +191,62 @@ class Wifi
     void WriteString(String str)
     {
         Log.d(LOGNAME, "Wifi write: " + str);
-        try
+        for (int i = 0; i < 3; ++i)
         {
-            Log.v(LOGNAME, DEVICE_URL);
-            wifiURL = new URL(DEVICE_URL);
-
-            Log.v(LOGNAME, "Opening connection...");
-            HttpURLConnection devConnection = (HttpURLConnection) wifiURL.openConnection();
-
-            Log.v(LOGNAME, "Using HTTP POST");
-            devConnection.setRequestMethod("POST");
-            devConnection.setRequestMethod("GET");
-
-            devConnection.setDoInput(true);
-            devConnection.setDoOutput(true);
-            devConnection.setReadTimeout(0);     // wait forever for connection/data
-            devConnection.setConnectTimeout(0);
-
-            Log.v(LOGNAME, "Connecting to device...");
-            devConnection.connect();
-
-            Log.v(LOGNAME, "Sending message to device...");
-            BufferedWriter devWriter = new BufferedWriter(new OutputStreamWriter(devConnection.getOutputStream()));
-            devWriter.write(str);
-            devWriter.flush();
-            devWriter.close();
-
-            Log.v(LOGNAME, "Reading response from device...");
-            BufferedReader devReader = new BufferedReader(new InputStreamReader(devConnection.getInputStream()));
-            String inline;
-
-            while ((inline = devReader.readLine()) != null) // this will block
+            try
             {
-                inline = inline.trim();
-                Log.v(LOGNAME, "DeviceSays: " + inline);
-                if (inline.equals("ok")) break;
-                wifiCB.onRead(inline);
+                Log.v(LOGNAME, DEVICE_URL);
+                wifiURL = new URL(DEVICE_URL);
+
+                Log.v(LOGNAME, "Opening connection...");
+                HttpURLConnection devConnection = (HttpURLConnection) wifiURL.openConnection();
+
+                Log.v(LOGNAME, "Using HTTP POST");
+                devConnection.setRequestMethod("POST");
+                devConnection.setRequestMethod("GET");
+
+                devConnection.setDoInput(true);
+                devConnection.setDoOutput(true);
+                devConnection.setReadTimeout(0);     // wait forever for connection/data
+                devConnection.setConnectTimeout(0);
+
+                Log.v(LOGNAME, "Connecting to device...");
+                devConnection.connect();
+
+                Log.v(LOGNAME, "Sending message to device...");
+                BufferedWriter devWriter = new BufferedWriter(new OutputStreamWriter(devConnection.getOutputStream()));
+                devWriter.write(str);
+                devWriter.flush();
+                devWriter.close();
+
+                Log.v(LOGNAME, "Reading response from device...");
+                BufferedReader devReader = new BufferedReader(new InputStreamReader(devConnection.getInputStream()));
+                String inline;
+
+                while ((inline = devReader.readLine()) != null) // this will block
+                {
+                    inline = inline.trim();
+                    Log.v(LOGNAME, "DeviceSays: " + inline);
+                    if (inline.equals("ok")) break;
+                    wifiCB.onRead(inline);
+                }
+
+                devReader.close();
+                Log.v(LOGNAME, "Wifi finished reading");
+
+                devConnection.disconnect();
+                wifiCB.onWrite(DEVSTAT_SUCCESS);
+                return;
             }
-
-            devReader.close();
-            Log.v(LOGNAME, "Wifi finished reading");
-
-            devConnection.disconnect();
-            wifiCB.onWrite(DEVSTAT_SUCCESS);
+            catch (Exception e)
+            {
+                Log.e(LOGNAME, "Write failed: \"" + str + "\"");
+                e.printStackTrace();
+                // retry up to 3 times
+            }
         }
-        catch (Exception e)
-        {
-            Log.e(LOGNAME, "Write failed: \"" + str + "\"");
-            e.printStackTrace();
 
-            wifiCB.onWrite(DEVSTAT_FAILED);
-        }
+        wifiCB.onWrite(DEVSTAT_FAILED);
     }
 
     class WifiReceiver extends BroadcastReceiver
@@ -244,36 +257,66 @@ class Wifi
             if (stopScan) return;
             if (wifiCB == null) return;
 
+            // lists all networks ever configured (connected to)
+            List<WifiConfiguration> configlist = wifiManager.getConfiguredNetworks();
+
+            // this gets results from the latest scan
             List<ScanResult> listActive = wifiManager.getScanResults();
 
             for (int i = 0; i < listActive.size(); ++i)
             {
                 ScanResult result = listActive.get(i);
-                String ssid = "\"" + result.SSID + "\"";
-                Log.v(LOGNAME, "Result " + i + ") SSID=" + ssid);
-                // This SSID string does *not* include beginning/ending quotes
+                // result.SSID does *not* include beginning/ending quotes
+                String matchstr = "\"" + result.SSID + "\"";
+                Log.v(LOGNAME, "Result " + i + ") SSID=" + matchstr);
 
-                for (int j = 0; j < listAll.size(); ++j)
+                String ssid = result.SSID.trim(); // remove spaces first
+                if (ssid.startsWith("P!") && ssid.endsWith("-!")) // one or our devices
                 {
-                    WifiConfiguration entry = listAll.get(j);
-                    //Log.v(LOGNAME, "  Entry " + j + ") SSID=" + entry.SSID + " ID=" + entry.networkId);
-                    // Note: SSID string *includes* the beginning/ending quotes
-
-                    if (entry.SSID.equals(ssid)) // matches active SSID
+                    String name = ssid.substring(0, ssid.length()-2); // remove ending crap
+                    if (!wifiNameList.contains(name)) // have not already seen this
                     {
-                        Log.v(LOGNAME, "==> matches ID=" + entry.networkId);
+                        Log.d(LOGNAME, "Found device: " + name);
+                        int id = 0; // needed for connection call
+                        boolean haveid = false;
+                        boolean didadd = false;
 
-                        ssid = result.SSID.trim();
-                        if (ssid.startsWith("P!") && ssid.endsWith("-!")) // one or our devices
+                        while (!haveid)
                         {
-                            int id = entry.networkId; // needed for connection call
-                            String name = ssid.substring(0, ssid.length()-2); // remove ending crap
-                            Log.d(LOGNAME, "Found #" + id + ": " + name);
-
-                            if (!wifiNameList.contains(name))
+                            for (WifiConfiguration entry: configlist)
                             {
+                                // the config SSID string *includes* beginning/ending quotes
+                                //Log.v(LOGNAME, "  Entry " + j + ") SSID=" + entry.SSID + " ID=" + entry.networkId);
+
+                                if ((entry.SSID != null) && (entry.SSID.equals(matchstr)))
+                                {
+                                    haveid = true;
+                                    id = entry.networkId;
+                                    Log.v(LOGNAME, "==> matches ID=" + id);
+                                    break;
+                                }
+                            }
+
+                            if (haveid)
+                            {
+                                Log.d(LOGNAME, "Success: ID=" + id + " Name=" + name);
                                 wifiNameList.add(name);
                                 wifiCB.onScan(name, id, false);
+                            }
+                            else if (!didadd)
+                            {
+                                Log.v(LOGNAME, "Adding configuration...");
+                                WifiConfiguration conf = new WifiConfiguration();
+                                conf.SSID = matchstr;
+                                conf.allowedKeyManagement.set(WifiConfiguration.KeyMgmt.NONE);
+                                wifiManager.addNetwork(conf);
+                                configlist = wifiManager.getConfiguredNetworks(); // refresh list
+                                didadd = true;
+                            }
+                            else
+                            {
+                                Log.w(LOGNAME, "Failed to add configuration!");
+                                break;
                             }
                         }
                     }
