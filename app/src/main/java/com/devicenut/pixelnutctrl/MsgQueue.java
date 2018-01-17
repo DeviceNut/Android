@@ -53,12 +53,12 @@ class MsgQueue extends Thread
                         if (chunk.length() >= MAXLEN_BLE_CHUNK) // cannot support chunks that are too large
                             throw new NullPointerException("Chunk too large: " + chunk);
 
-                        // +1 for space or newline separator
-                        if ((str.length() + chunk.length() + 1) >= MAXLEN_BLE_CHUNK)
+                        // +1 for space AND newline separator
+                        if ((str.length() + chunk.length() + 2) >= MAXLEN_BLE_CHUNK)
                             break;
 
-                        if (str.length() > 0) str.append(" ");
                         str.append(chunk);
+                        str.append(" ");
                         ++nextChunk;
                     }
 
@@ -101,7 +101,7 @@ class MsgQueue extends Thread
 
                         if (devIsBLE)
                         {
-                            if (cmdstr == null) continue; // ignore
+                            if (cmdstr == null) continue; // ignore empty lines
 
                             else if (cmdstr.length()+1 >= MAXLEN_BLE_CHUNK)
                             {
@@ -113,6 +113,7 @@ class MsgQueue extends Thread
                             {
                                 msgWriteEnable = false;
                                 BleSendCommand(cmdstr + "\n"); // MUST be terminated
+                                // Note: do *not* have to have space at end of these
                             }
                         }
                         else
