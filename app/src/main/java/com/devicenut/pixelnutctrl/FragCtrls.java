@@ -608,16 +608,16 @@ public class FragCtrls extends Fragment implements SeekBar.OnSeekBarChangeListen
             SendString(CMD_PAUSE);
         }
 
-        if (segXmodeEnb[seg])
-             SendString(CMD_EXTMODE + "1");
-        else SendString(CMD_EXTMODE + "0");
-        SendString(CMD_PROPVALS + segXmodeHue[curSegment] + " " + segXmodeWht[curSegment] + " " + segXmodeCnt[curSegment]);
-
         if (numSegments > 1)
         {
             int devseg = seg+1;
             SendString(CMD_SEGS_ENABLE + devseg);
         }
+
+        if (segXmodeEnb[seg])
+             SendString(CMD_EXTMODE + "1");
+        else SendString(CMD_EXTMODE + "0");
+        SendString(CMD_PROPVALS + segXmodeHue[seg] + " " + segXmodeWht[seg] + " " + segXmodeCnt[seg]);
 
         SendString(CMD_BRIGHT + curBright[seg]);
         SendString(CMD_DELAY + curDelay[seg]);
