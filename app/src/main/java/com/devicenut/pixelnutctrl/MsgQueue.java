@@ -23,7 +23,7 @@ class MsgQueue extends Thread
 
     private void BleSendCommand(String str)
     {
-        Log.v(LOGNAME, "CmdPause=" + (cmdPauseEnable ? "on" : "off"));
+        //Log.v(LOGNAME, "CmdPause=" + (cmdPauseEnable ? "on" : "off"));
         if (cmdPauseEnable) SleepMsecs(300);
         ble.WriteString(str);
     }
@@ -71,14 +71,9 @@ class MsgQueue extends Thread
                 else
                 {
                     String cmdstr = msgWriteQueue.get();
-
                     if (cmdstr != null)
                     {
-                        if (cmdstr.equals(CMD_SEQ_END))
-                        {
-                            msgWriteQueue.get();
-                            cmdstr = null;
-                        }
+                        if (cmdstr.equals(CMD_SEQ_END)) cmdstr = null;
                         else
                         {
                             Log.v(LOGNAME, ">Get command: \"" + cmdstr + "\"");
