@@ -19,6 +19,7 @@ import android.util.Log;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.FileNotFoundException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
@@ -27,6 +28,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static android.os.Process.setThreadPriority;
+import static com.devicenut.pixelnutctrl.Main.DEVSTAT_BADSTATE;
 import static com.devicenut.pixelnutctrl.Main.DEVSTAT_FAILED;
 import static com.devicenut.pixelnutctrl.Main.DEVSTAT_SUCCESS;
 import static com.devicenut.pixelnutctrl.Main.SleepMsecs;
@@ -164,8 +166,8 @@ class Wifi
                         break;
                     }
 
-                    // timeout after 30 seconds
-                    if (++count >= 30)
+                    // timeout after 10 seconds
+                    if (++count >= 10)
                     {
                         Log.d(LOGNAME, "Network connection failed");
                         wifiCB.onConnect(DEVSTAT_FAILED);
@@ -236,6 +238,12 @@ class Wifi
 
                 devConnection.disconnect();
                 wifiCB.onWrite(DEVSTAT_SUCCESS);
+                return;
+            }
+            catch (FileNotFoundException e)
+            {
+                Log.w(LOGNAME, "Device not listening!");
+                wifiCB.onWrite(DEVSTAT_BADSTATE);
                 return;
             }
             catch (Exception e)

@@ -26,12 +26,11 @@ import static com.devicenut.pixelnutctrl.Main.CMD_BLUENAME;
 import static com.devicenut.pixelnutctrl.Main.CMD_PAUSE;
 import static com.devicenut.pixelnutctrl.Main.CMD_RESUME;
 import static com.devicenut.pixelnutctrl.Main.CMD_SEQ_END;
-import static com.devicenut.pixelnutctrl.Main.DEVSTAT_DISCONNECTED;
+import static com.devicenut.pixelnutctrl.Main.DEVSTAT_FAILED;
 import static com.devicenut.pixelnutctrl.Main.DEVSTAT_SUCCESS;
 import static com.devicenut.pixelnutctrl.Main.createViewCtrls;
 import static com.devicenut.pixelnutctrl.Main.createViewFavs;
 import static com.devicenut.pixelnutctrl.Main.doRefreshCache;
-import static com.devicenut.pixelnutctrl.Main.doUpdate;
 import static com.devicenut.pixelnutctrl.Main.helpActive;
 import static com.devicenut.pixelnutctrl.Main.numFragments;
 import static com.devicenut.pixelnutctrl.Main.pageControls;
@@ -61,6 +60,7 @@ public class Master extends AppCompatActivity implements FragFavs.FavoriteSelect
     private final String LOGNAME = "Master";
     private final Activity context = this;
 
+    private boolean doUpdate = true;
     private boolean isEditing = false;
     private String devNameSaved = "";
 
@@ -112,7 +112,7 @@ public class Master extends AppCompatActivity implements FragFavs.FavoriteSelect
             if (!doUpdate) // user had paused, so change the text
             {
                 pauseButton.setText(getResources().getString(R.string.name_pause));
-                doUpdate = false;
+                doUpdate = true;
             }
             // else already resumed
         }
@@ -394,13 +394,12 @@ public class Master extends AppCompatActivity implements FragFavs.FavoriteSelect
         if (status == DEVSTAT_SUCCESS)
             msgWriteEnable = true;
 
-        else if (status == DEVSTAT_DISCONNECTED)
-            Log.w(LOGNAME, "OnWrite: disconnected");
-        else
+        else if (status == DEVSTAT_FAILED)
         {
             Log.e(LOGNAME, "OnWrite: failed");
             DeviceDisconnect("Write");
         }
+        else Log.w(LOGNAME, "OnWrite: bad device state");
     }
 
     @Override public void onRead(String reply)

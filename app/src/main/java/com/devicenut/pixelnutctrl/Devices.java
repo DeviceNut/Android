@@ -22,7 +22,9 @@ import android.widget.Toast;
 
 import java.util.ArrayList;
 
+import static com.devicenut.pixelnutctrl.Main.CMD_RESUME;
 import static com.devicenut.pixelnutctrl.Main.CMD_SEQ_END;
+import static com.devicenut.pixelnutctrl.Main.DEVSTAT_BADSTATE;
 import static com.devicenut.pixelnutctrl.Main.DEVSTAT_SUCCESS;
 import static com.devicenut.pixelnutctrl.Main.CMD_GET_INFO;
 import static com.devicenut.pixelnutctrl.Main.TITLE_ADAFRUIT;
@@ -507,12 +509,19 @@ public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
 
     @Override public void onWrite(final int status)
     {
-        if (status != DEVSTAT_SUCCESS)
+        if (status == DEVSTAT_SUCCESS)
+            msgWriteEnable = true;
+
+        else if (status == DEVSTAT_BADSTATE)
+        {
+            Log.w(LOGNAME, "OnWrite: invalid state");
+            DeviceFailed("Device waiting for setup");
+        }
+        else
         {
             Log.e(LOGNAME, "OnWrite: status=" + status);
             DeviceFailed("Write Failed: Try Again");
         }
-        else msgWriteEnable = true;
     }
 
     @Override public void onRead(String rstr)
@@ -593,6 +602,8 @@ public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
         if (isDone)
         {
             Log.i(LOGNAME, ">>> Device Setup Successful <<<");
+            SendString(CMD_RESUME); // insure device is not paused
+
             InitVarsForDevice();
             cmdPauseEnable = false;
 

@@ -54,8 +54,9 @@ public class Main extends Application
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     static final int DEVSTAT_SUCCESS        =  0;
-    static final int DEVSTAT_DISCONNECTED   = -1;
-    static final int DEVSTAT_FAILED         = -2;
+    static final int DEVSTAT_FAILED         = -1;
+    static final int DEVSTAT_BADSTATE       = -2;   // wifi device not in correct state (waiting for credentials app)
+    static final int DEVSTAT_DISCONNECTED   = -3;
 
     static final int MAXLEN_BLE_CHUNK       = 20; // max chars that can be sent at once with BLE implementation
 
@@ -283,7 +284,6 @@ public class Main extends Application
     static int segPosStart[]        = new int[maxNumSegs];  // starting positions for each segment
     static int segPosCount[]        = new int[maxNumSegs];  // number of pixels for each segment
 
-    static boolean doUpdate = true;             // false if device output is in pause mode
     static boolean initPatterns = false;        // true if must initialize device with patterns at startup
     static boolean multiStrands = false;        // true if device has multiple physical pixel strands
                                                 // false means all segment info must be sent when changing patterns
