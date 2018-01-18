@@ -511,6 +511,7 @@ public class FragCtrls extends Fragment implements SeekBar.OnSeekBarChangeListen
                 int num = pnum+1;       // device pattern numbers start at 1
                 SendString("" + num);   // store current pattern number
 
+                SendString(CMD_RESUME);
                 SendString(CMD_SEQ_END);
                 return;
             }
@@ -548,6 +549,7 @@ public class FragCtrls extends Fragment implements SeekBar.OnSeekBarChangeListen
                 int seg = curSegment+1;
                 SendString(CMD_SEGS_ENABLE + seg);
 
+                SendString(CMD_RESUME);
                 SendString(CMD_SEQ_END);
                 return;
             }
@@ -565,7 +567,11 @@ public class FragCtrls extends Fragment implements SeekBar.OnSeekBarChangeListen
         int num = pnum+1;       // device pattern numbers start at 1
         SendString("" + num);   // store current pattern number
 
-        if (doend) SendString(CMD_SEQ_END);
+        if (doend)
+        {
+            SendString(CMD_RESUME);
+            SendString(CMD_SEQ_END);
+        }
     }
 
     // user just selected a favorite
