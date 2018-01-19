@@ -52,12 +52,12 @@ class ReplyStrs
 {
     private final String LOGNAME = "ReplyStrs";
 
-    private int replyState;
-    private int optionLines;
-    private boolean replyFail;
-    private boolean didFinishReading;
+    private int replyState = 0;
+    private boolean replyFail = false;
+    private boolean didFinishReading = false;
+    private boolean setPercentage = false;
 
-    private boolean setPercentage;
+    private int optionLines;
     private boolean getSegments;
     private boolean getPatterns;
     private boolean getPlugins;
@@ -65,14 +65,6 @@ class ReplyStrs
     double progressPercent;
     double progressPcentInc;
     String sendCmdStr;
-
-    ReplyStrs()
-    {
-        replyState = 0;
-        replyFail = false;
-        setPercentage = false;
-        didFinishReading = false;
-    }
 
     private boolean CheckValue(int val, int min, int max)
     {
@@ -363,7 +355,12 @@ class ReplyStrs
                     customPlugins   = Integer.parseInt(strs[4]);
                     maxlenCmdStrs   = Integer.parseInt(strs[5]);
 
-                    if (numSegments == -1) numSegments = 1; // older firmware did this
+                    if (numSegments == -1)
+                    {
+                        Log.w(LOGNAME, "Old firmware: segments = -1");
+                        numSegments = 1; // older firmware did this
+                    }
+
                     if (numSegments > 0)
                     {
                         multiStrands = false;

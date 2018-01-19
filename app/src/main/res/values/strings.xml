@@ -37,6 +37,7 @@
         You are connected to the PixelNut! device whose name is displayed in the upper left.
 
         \n\nYou can change this name anytime by selecting it, which opens an edit box.
+        The maxzimum length is 16, and the only symbols allowed are: \"!#$%*-$amp;\".
         Confirm your changes by pressing Done, or it will revert to its original name.
 
         \n\nAt any time you can press the Pause button to stop the animation, until you restart it with Resume.

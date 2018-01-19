@@ -3,6 +3,7 @@ package com.devicenut.pixelnutctrl;
 import android.content.Context;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.method.DigitsKeyListener;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
@@ -35,6 +36,9 @@ public class EditName extends AppCompatActivity
 
         saveName = devName;
         editName.setText(devName);
+
+        // why doesn't this work? but putting it into XML does!
+        //editName.setKeyListener(DigitsKeyListener.getInstance("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqurstuvwxyz0123456789-!#$%&*"));
 
         ((InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE)).toggleSoftInput(InputMethodManager.SHOW_FORCED, 0);
     }

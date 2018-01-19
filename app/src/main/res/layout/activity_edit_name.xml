@@ -18,6 +18,8 @@
         android:layout_height="wrap_content"
         android:padding="25dp"
         android:inputType="text"
+        android:maxLength="16"
+        android:digits="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890 -!#$%*&amp;"
         android:selectAllOnFocus="true"
         android:textAppearance="@style/TextAppearance.AppCompat.Large"
         android:id="@+id/edit_DevName"/>
