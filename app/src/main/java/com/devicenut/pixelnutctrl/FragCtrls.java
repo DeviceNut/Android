@@ -500,7 +500,7 @@ public class FragCtrls extends Fragment implements SeekBar.OnSeekBarChangeListen
 
                 for (int i = 0; i < numSegments; ++i)
                 {
-                    SendString("X" + segPosStart[i] + " Y" + segPosCount[i]);
+                    SendString(" X" + segPosStart[i] + " Y" + segPosCount[i] + " ");
                     SetupPatternArraysForSegment(i, false);
                     SendString(patternCmds[segPatterns[i]]);
                 }
