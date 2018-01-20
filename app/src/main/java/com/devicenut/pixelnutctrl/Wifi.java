@@ -67,16 +67,16 @@ class Wifi
         if (appContext.getPackageManager().hasSystemFeature(PackageManager.FEATURE_WIFI))
         {
             wifiManager = (WifiManager) appContext.getSystemService(Context.WIFI_SERVICE);
+            /*
             if (wifiManager != null)
             {
-                /*
                 if (!wifiManager.isWifiEnabled())
                 {
                     Toast.makeText(appContext, "Enabling WiFi now", Toast.LENGTH_LONG).show();
                     wifiManager.setWifiEnabled(true);
                 }
-                */
             }
+            */
         }
     }
 

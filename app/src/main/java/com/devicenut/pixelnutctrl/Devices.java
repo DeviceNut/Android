@@ -603,6 +603,7 @@ public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
         {
             Log.i(LOGNAME, ">>> Device Setup Successful <<<");
             SendString(CMD_RESUME); // insure device is not paused
+            SendString(CMD_SEQ_END);
 
             InitVarsForDevice();
             cmdPauseEnable = false;
@@ -613,7 +614,7 @@ public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
 
     private void SendString(String str)
     {
-        //Log.v(LOGNAME, "Queue command: " + str);
+        Log.v(LOGNAME, "Queue command: " + str);
         if (!msgWriteQueue.put(str))
             Log.e(LOGNAME, "Msg queue full: str=" + str + "\"");
     }
