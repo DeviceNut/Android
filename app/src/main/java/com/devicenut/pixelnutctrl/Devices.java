@@ -349,6 +349,8 @@ public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
             isScanning = true;
             SetupUserDisplay();
 
+            didFail = false; // reset for next scan/connect attempt
+
             if (blePresentAndEnabled)
                 ble.startScanning();
 
@@ -407,6 +409,7 @@ public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
                 }
             });
         }
+        else Log.w(LOGNAME, "Already failed once...");
     }
 
     @Override public void onScan(final String name, int id, boolean isble)
@@ -472,9 +475,7 @@ public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
             isConnected = true; // actually connected now
             // note: still have isConnecting set as well
             // until finished retrieving configuration
-
             isDone = false;
-            didFail = false;
 
             msgWriteQueue.clear();
             msgWriteEnable = true;
