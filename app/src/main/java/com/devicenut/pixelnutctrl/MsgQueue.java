@@ -156,7 +156,7 @@ class MsgQueue extends Thread
                 }
                 else
                 {
-                    if (cmdstr == null) // send entire sequence at once for wifi
+                    if ((cmdstr == null) && (bigstr.length() > 0)) // send entire sequence at once for wifi
                     {
                         msgWriteEnable = false;
                         String str = bigstr.toString();
@@ -164,7 +164,7 @@ class MsgQueue extends Thread
                         wifi.WriteString(str);
                         bigstr.delete(0, str.length());
                     }
-                    else
+                    else if (cmdstr != null)
                     {
                         Log.v(LOGNAME, ">Add command: \"" + cmdstr + "\"");
                         bigstr.append(cmdstr);
