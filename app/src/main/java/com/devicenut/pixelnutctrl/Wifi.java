@@ -161,7 +161,7 @@ class Wifi
                     if (IsConnected())
                     {
                         Log.d(LOGNAME, "Network connection complete");
-                        SleepMsecs(1000); // hack to help prevent reset on first write?
+                        SleepMsecs(2000); // hack to help prevent reset on first write?
                         wifiCB.onConnect(DEVSTAT_SUCCESS);
                         break;
                     }
@@ -178,6 +178,7 @@ class Wifi
         }
         .start();
 
+        Log.d(LOGNAME, "Connect thread ending...");
         stopScan = true;
         return success;
     }
