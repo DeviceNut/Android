@@ -7,8 +7,8 @@ android {
         applicationId "com.devicenut.pixelnutctrl"
         minSdkVersion 21
         targetSdkVersion 25
-        versionCode 42
-        versionName "4.2"
+        versionCode 43
+        versionName "4.3"
     }
     buildTypes {
         release {
