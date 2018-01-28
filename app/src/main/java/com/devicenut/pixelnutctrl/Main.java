@@ -190,7 +190,7 @@ public class Main extends Application
                     "The spokes periodically change colors, or can be modified with the ColorHue and Whiteness properties.\n\n" +
                     "The Count property determines the number of spokes. Triggering toggles the direction of the motion.",
 
-                    "The background is whitish noise, with the color modified by the ColorHue property.\n\n" +
+                    "The background is \"noise\" (randomly set pixels of random brightness), with the color modified by the ColorHue and Whiteness properties.\n\n" +
                     "A Trigger causes the background to slowly and continuously expand and contract, with the Force determining the extent of the expansion.",
 
                     "Random colored blinking that periodically surge in the rate of blinking. The Count property determines the number of blinking changes made at once.\n\n" +
@@ -219,7 +219,7 @@ public class Main extends Application
                     "E20 W25 C25 D30 Q7 I T E101 F100 T E20 U0 W25 C25 D20 Q7 I T E101 F200 T G",
                     "E40 C25 D20 Q4 T E111 A0 E40 U0 V1 H270 C5 D30 Q1 I E131 F1000 O5 T5 G",
                     "E30 C20 D60 Q7 T E160 I E111 F O3 T7 G",
-                    "E52 W65 C25 D60 Q1 T E150 I E120 F1000 I G",
+                    "E52 W35 C25 D60 Q3 T E150 I E120 I G",
                     "E51 C10 D60 Q4 T E112 T E131 F1 I T G",
                     "E0 B80 D10 Q3 T E111 F O10 T10 E142 F250 I T G",
                     "E0 H30 D30 T E110 F600 I T E111 A1 G",
@@ -236,7 +236,7 @@ public class Main extends Application
                     0x17,
                     0x15,
                     0x17,
-                    0x31,
+                    0x33,
                     0x34,
                     0x33,
                     0x30,
