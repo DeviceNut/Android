@@ -1,9 +1,3 @@
-/* TODO put permissions into manifest
-    <uses-permission android:name="android.permission.INTERNET"/>
-    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
-    <uses-permission android:name="android.permission.CHANGE_WIFI_STATE"/>
- */
-
 package com.devicenut.pixelnutctrl;
 
 import android.content.BroadcastReceiver;

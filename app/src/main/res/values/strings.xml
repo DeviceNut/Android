@@ -37,30 +37,30 @@
         You are connected to the PixelNut! device whose name is displayed in the upper left.
 
         \n\nYou can change this name anytime by selecting it, which opens an edit box.
-        The maxzimum length is 16, and the only symbols allowed are: \"!#$%*-$amp;\".
-        Confirm your changes by pressing Done, or it will revert to its original name.
+        The maximum length is 16, and the only symbols allowed are: \"!#$%&amp;*-\".
+        Confirm your changes by pressing Done, or it will revert back to its original name.
 
         \n\nAt any time you can press the Pause button to stop the animation, until you restart it with Resume.
     </string>
     <string name="text_help_favs">
         \n\nEach button shown on the Favorites page represents one particular pattern and all of its
-        associated settings (brightness, etc.).
+        associated settings (brightness, speed, etc.).
 
         \n\nSome are built into this application, and you can also create and save your own by pressing
         the \"F\" button next to the pattern on the Controls page, after you have adjusted all of the
         controls to their desired values.
 
-        \n\nTo remove one of these created favorites, press the \"X\" next to the button.
+        \n\nTo remove one of these created favorites, press the \"X\" button next to the pattern on the Favorites page.
     </string>
     <string name="text_help_segs_logical">
         \n\nSelect Segment to Control:
-        \n\nThese radio buttons selects the which segment the following controls apply to.
+        \n\nThese radio buttons select which segment the following controls apply to.
         Only one segment can be chosen at once, allowing for independent control of each segment.
     </string>
     <string name="text_help_segs_physical">
         \n\nSelect Segment to Control:
-        \n\nThese radio buttons selects which segment the following controls apply to.
-        Segments normally are independently controllable, unless you chain them together,
+        \n\nThese radio buttons select which segment the following controls apply to.
+        Segments normally are independently controllable unless you chain them together,
         in which case the controls apply to all the selected segments at the same time.
 
         \n\nPressing \"&amp;\" button enables chaining segments together, after which the segment radio buttons
@@ -69,12 +69,12 @@
     </string>
     <string name="text_help_tail">
         \n\nChoose Effect Pattern:
-        \n\nThis drop-down list allows the selection one of the built-in patterns.
-        You can then modify various settings with other controls described below.
+        \n\nThis drop-down list allows selecting one of the built-in patterns.
+        You can then modify various settings with the other controls described below.
 
         \n\nThe \"?\" button toggles the display of a full description of the pattern.
         The \"F\" button saves the current pattern and all of the other settings to a favorite,
-        and is displayed on the Favorites page.
+        which is then displayed on the Favorites page.
 
         \n\nAdjust Brightness and Speed:
         \n\nThese slider controls determine the overall brightness of the pixels,
@@ -88,9 +88,9 @@
         Note that some, or all, of these controls may not be active for any given pattern.
 
         \n\nSelect Force then Trigger:
-        \n\nTriggering a pattern causes the pattern to change somehow, depending on the pattern.
-        The amount of change is determined by the amount of force that is set with the slider.
+        \n\nTriggering a pattern causes the pattern to change, depending on the pattern.
+        The amount of change is determined by the amount of force that is set.
 
-        \n\nNot all patterns allow setting the force, and some cannot be triggered.
+        \n\nNot all patterns allow setting the force, and some cannot be triggered at all.
     </string>
 </resources>

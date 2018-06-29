@@ -7,8 +7,8 @@ android {
         applicationId "com.devicenut.pixelnutctrl"
         minSdkVersion 21
         targetSdkVersion 25
-        versionCode 43
-        versionName "4.3"
+        versionCode 44
+        versionName "4.4"
     }
     buildTypes {
         release {
@@ -26,7 +26,7 @@ dependencies {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
     compile 'com.android.support.constraint:constraint-layout:1.0.0-alpha9'
-    compile 'com.android.support:appcompat-v7:25.3.1'
-    compile 'com.android.support:support-v4:25.3.1'
+    compile 'com.android.support:appcompat-v7:25.4.0'
+    compile 'com.android.support:support-v4:25.4.0'
     testCompile 'junit:junit:4.12'
 }
