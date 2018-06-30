@@ -41,11 +41,10 @@ class Wifi
 
     //private static final String DEVICE_URL = "http://192.168.0.1:80/index";
     private static final String DEVICE_URL = "http://192.168.0.1/command";
-    private static URL wifiURL;
 
     interface WifiCallbacks
     {
-        void onScan(String name, int id, boolean isble);
+        void onScan(String name, int id);
         void onConnect(final int status);
         void onDisconnect();
         void onWrite(final int status);
@@ -60,7 +59,7 @@ class Wifi
 
         if (appContext.getPackageManager().hasSystemFeature(PackageManager.FEATURE_WIFI))
         {
-            wifiManager = (WifiManager) appContext.getSystemService(Context.WIFI_SERVICE);
+            wifiManager = (WifiManager) appContext.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
             /*
             if (wifiManager != null)
             {
@@ -121,7 +120,7 @@ class Wifi
         int p4 = (ip >> 24) & 0xFF;
         int p3 = (ip >> 16) & 0xFF;
         int p2 = (ip >> 8)  & 0xFF;
-        int p1 = (ip >> 0)  & 0xFF;
+        int p1 = (ip)       & 0xFF;
         Log.d(LOGNAME, "Info: SSID=" + ssid + " IP=" + p1 + "." + p2 + "." + p3 + "." + p4);
 
         if (info.getNetworkId() != deviceID) // if deviceID doesn't match then need to rescan
@@ -174,7 +173,7 @@ class Wifi
 
         Log.d(LOGNAME, "Connect thread ending...");
         stopScan = true;
-        return success;
+        return true;
     }
 
     void disconnect()
@@ -193,7 +192,7 @@ class Wifi
             try
             {
                 Log.v(LOGNAME, DEVICE_URL);
-                wifiURL = new URL(DEVICE_URL);
+                URL wifiURL = new URL(DEVICE_URL);
 
                 Log.v(LOGNAME, "Opening connection...");
                 HttpURLConnection devConnection = (HttpURLConnection) wifiURL.openConnection();
@@ -304,7 +303,7 @@ class Wifi
                             {
                                 Log.d(LOGNAME, "Success: ID=" + id + " Name=" + name);
                                 wifiNameList.add(name);
-                                wifiCB.onScan(name, id, false);
+                                wifiCB.onScan(name, id);
                             }
                             else if (!didadd)
                             {

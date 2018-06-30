@@ -70,7 +70,7 @@ public class Master extends AppCompatActivity implements FragFavs.FavoriteSelect
     private TextView nameText;
     private TextView leftText, rightText;
 
-    private Fragment[] myFragments = new Fragment[numFragments];
+    private final Fragment[] myFragments = new Fragment[numFragments];
     private boolean inLandscape;
 
     public void onFavoriteSelect(int seg, int pnum, String vals)
@@ -92,8 +92,7 @@ public class Master extends AppCompatActivity implements FragFavs.FavoriteSelect
 
     public boolean onPatternSelect(String name, int seg, int pnum, String vals)
     {
-        if (pageFavorites < 0) return false;
-        return ((FragFavs)myFragments[pageFavorites]).IsFavoritePattern(name, seg, pnum, vals);
+        return pageFavorites >= 0 && ((FragFavs) myFragments[pageFavorites]).IsFavoritePattern(name, seg, pnum, vals);
     }
 
     public void onDeviceCommand(String str)
@@ -140,19 +139,19 @@ public class Master extends AppCompatActivity implements FragFavs.FavoriteSelect
         if (inLandscape && getResources().getBoolean(R.bool.portrait_only))
             setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
 
-        masterPager = (MyPager)findViewById(R.id.myViewPager);
+        masterPager = findViewById(R.id.myViewPager);
         FragmentPagerAdapter adapterViewPager = new MasterAdapter(getSupportFragmentManager());
         masterPager.setAdapter(adapterViewPager);
         //masterPager.setOffscreenPageLimit(3);
 
-        llFragPages = (LinearLayout)findViewById(R.id.ll_FragPages);
-        llGoToText  = (RelativeLayout)findViewById(R.id.ll_GoToText);
+        llFragPages = findViewById(R.id.ll_FragPages);
+        llGoToText  = findViewById(R.id.ll_GoToText);
 
-        pauseButton = (Button)  findViewById(R.id.button_Pause);
-        helpButton  = (Button)  findViewById(R.id.button_HelpPage);
-        nameText    = (TextView)findViewById(R.id.text_Devname);
-        leftText    = (TextView)findViewById(R.id.text_GoLeft);
-        rightText   = (TextView)findViewById(R.id.text_GoRight);
+        pauseButton = findViewById(R.id.button_Pause);
+        helpButton  = findViewById(R.id.button_HelpPage);
+        nameText    = findViewById(R.id.text_Devname);
+        leftText    = findViewById(R.id.text_GoLeft);
+        rightText   = findViewById(R.id.text_GoRight);
 
         SetFragViewPageHeight(false);
         SetupGoToText();
@@ -373,7 +372,7 @@ public class Master extends AppCompatActivity implements FragFavs.FavoriteSelect
         }
     }
 
-    @Override public void onScan(String name, int id, boolean isble)
+    @Override public void onScan(String name, int id)
     {
         Log.e(LOGNAME, "Unexpected callback: onScan");
     }

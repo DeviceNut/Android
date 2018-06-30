@@ -17,7 +17,6 @@ import android.content.pm.PackageManager;
 import android.os.Build;
 import android.util.Log;
 
-import java.lang.reflect.Method;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
@@ -47,11 +46,11 @@ class Bluetooth
     private static final List<BluetoothDevice> bleDevList = new ArrayList<>();
     private static BluetoothGatt bleGatt = null;
     private static BluetoothGattCharacteristic bleTx, bleRx;
-    private static String strLine = "";
+    private static StringBuilder strLine = null;
 
     interface BleCallbacks
     {
-        void onScan(String name, int id, boolean isble);
+        void onScan(String name, int id);
         void onConnect(final int status);
         void onDisconnect();
         void onWrite(final int status);
@@ -137,8 +136,6 @@ class Bluetooth
 
     boolean connect()
     {
-        strLine = ""; // clear any read data
-
         BluetoothDevice bdev = bleDevList.get(deviceID);
         if (bdev == null) return false;
 
@@ -224,7 +221,7 @@ class Bluetooth
                 Log.d(LOGNAME, "Found #" + id + ": " + name);
 
                 if (bleCB == null) Log.e(LOGNAME, "BLE CB is null!!!"); // have seen this happen, but how???
-                else bleCB.onScan(name, id, true);
+                else bleCB.onScan(name, id);
             }
         }
 
@@ -291,11 +288,13 @@ class Bluetooth
                     }
 
                     Log.v(LOGNAME, "Found RX and TX Chars");
+                    /*
                     if (BuildConfig.DEBUG)
                     {
-                        //ShowProperties("TX", bleTx);
-                        //ShowProperties("RX", bleRx);
+                        ShowProperties("TX", bleTx);
+                        ShowProperties("RX", bleRx);
                     }
+                    */
 
                     BluetoothGattDescriptor config = bleRx.getDescriptor(UUID.fromString(CH_CONFIG));
                     if (config == null)
@@ -343,18 +342,19 @@ class Bluetooth
             String str = new String(bytes, Charset.forName("UTF-8"));
             Log.v(LOGNAME, "ReadBytes=\"" + str + "\"");
 
+            if (strLine == null) strLine = new StringBuilder(100); // clear any read data
             while(true)
             {
                 int i = str.indexOf("\n");
                 if (i < 0)
                 {
-                    strLine += str;
+                    strLine.append(str);
                     break;
                 }
 
-                strLine += str.substring(0,i);
-                bleCB.onRead(strLine);
-                strLine = "";
+                strLine.append( str.substring(0,i) );
+                bleCB.onRead(strLine.toString());
+                strLine = null;
                 str = str.substring(i+1);
             }
         }

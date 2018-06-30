@@ -97,13 +97,13 @@ public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_devices);
 
-        textSelectDevice = (TextView) findViewById(R.id.text_SelectDevice);
-        textConnecting = (TextView) findViewById(R.id.text_Connecting);
-        buttonScan = (Button) findViewById(R.id.button_ScanStop);
-        scrollDevices = (ScrollView) findViewById(R.id.scroll_Devices);
+        textSelectDevice = findViewById(R.id.text_SelectDevice);
+        textConnecting = findViewById(R.id.text_Connecting);
+        buttonScan = findViewById(R.id.button_ScanStop);
+        scrollDevices = findViewById(R.id.scroll_Devices);
 
-        progressBar = (ProgressBar) findViewById(R.id.progress_Scanner);
-        progressLine = (ProgressBar) findViewById(R.id.progress_Loader);
+        progressBar = findViewById(R.id.progress_Scanner);
+        progressLine = findViewById(R.id.progress_Loader);
 
         ble = new Bluetooth();
         blePresentAndEnabled = ble.checkForPresence();
@@ -297,7 +297,7 @@ public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
     {
         for (int listButton : listButtons)
         {
-            Button b = (Button) findViewById(listButton);
+            Button b = findViewById(listButton);
             b.setVisibility(View.GONE);
         }
 
@@ -412,14 +412,14 @@ public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
         else Log.w(LOGNAME, "Already failed once...");
     }
 
-    @Override public void onScan(final String name, int id, boolean isble)
+    @Override public void onScan(final String name, int id)
     {
         if (isScanning && !isConnecting && !isConnected && (name != null))
         {
             String dspname = "";
             boolean haveone = false;
 
-            Log.v(LOGNAME, "OnScan: name=" + name + " id=" + id + " isble=" + isble);
+            Log.v(LOGNAME, "OnScan: name=" + name + " id=" + id + " isble=" + devIsBLE);
 
             if (name.startsWith(TITLE_PIXELNUT))
             {
@@ -436,14 +436,14 @@ public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
             {
                 if (buttonCount < listButtons.length)
                 {
-                    Button b = (Button) findViewById(listButtons[buttonCount]);
+                    Button b = findViewById(listButtons[buttonCount]);
                     b.setText(dspname);
                     b.setVisibility(View.VISIBLE);
 
                     ++buttonCount;
                     deviceIDs.add(id);
                     deviceNames.add(dspname);
-                    deviceIsBLE.add(isble);
+                    deviceIsBLE.add(devIsBLE);
 
                     scrollDevices.post(new Runnable()
                     {

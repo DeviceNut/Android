@@ -22,17 +22,18 @@
             android:theme="@style/DialogTheme">
         </activity>
         <activity
+            android:name=".EditName"
+            android:theme="@style/DialogTheme">
+        </activity>
+        <activity
             android:name=".Devices">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
-        <activity android:name=".Master">
-        </activity>
         <activity
-            android:name=".EditName"
-            android:theme="@style/DialogTheme">
+            android:name=".Master">
         </activity>
     </application>
 

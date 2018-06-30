@@ -3,6 +3,7 @@ package com.devicenut.pixelnutctrl;
 import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -23,14 +24,12 @@ public class FragAdv extends Fragment
         super.onCreate(savedInstanceState);
     }
 
-    @Override public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
+    @Override public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
     {
         Log.d(LOGNAME, ">>onCreateView");
         context = this.getActivity(); // not valid until now
 
-        View v = inflater.inflate(R.layout.fragment_adv, container, false);
-
-        return v;
+        return inflater.inflate(R.layout.fragment_adv, container, false);
     }
 
     @Override public void onAttach(Context context)

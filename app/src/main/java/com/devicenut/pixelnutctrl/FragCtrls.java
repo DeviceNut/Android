@@ -13,8 +13,10 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.RadioButton;
+import android.widget.RelativeLayout;
 import android.widget.ScrollView;
 import android.widget.SeekBar;
 import android.widget.Spinner;
@@ -41,13 +43,11 @@ import static com.devicenut.pixelnutctrl.Main.MAXVAL_WHT;
 import static com.devicenut.pixelnutctrl.Main.NUM_FAVSTR_VALS;
 
 import static com.devicenut.pixelnutctrl.Main.appContext;
-import static com.devicenut.pixelnutctrl.Main.createViewFavs;
 import static com.devicenut.pixelnutctrl.Main.curBright;
 import static com.devicenut.pixelnutctrl.Main.curDelay;
 import static com.devicenut.pixelnutctrl.Main.curSegment;
 import static com.devicenut.pixelnutctrl.Main.devicePatterns;
 import static com.devicenut.pixelnutctrl.Main.initPatterns;
-import static com.devicenut.pixelnutctrl.Main.isConnected;
 import static com.devicenut.pixelnutctrl.Main.multiStrands;
 import static com.devicenut.pixelnutctrl.Main.basicPatternsCount;
 import static com.devicenut.pixelnutctrl.Main.haveBasicSegs;
@@ -113,6 +113,8 @@ public class FragCtrls extends Fragment implements SeekBar.OnSeekBarChangeListen
     private static SeekBar seekPropColor, seekPropWhite, seekPropCount;
     private static SeekBar seekTrigForce;
 
+    private static EditText cmdText;
+
     private static boolean useSegEnables = false;
     private static final boolean segEnables[] = {false, false, false, false, false};
 
@@ -160,36 +162,36 @@ public class FragCtrls extends Fragment implements SeekBar.OnSeekBarChangeListen
     public static FragCtrls newInstance() { return new FragCtrls(); }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
     {
         Log.d(LOGNAME, ">>onCreateView");
 
         View v = inflater.inflate(R.layout.fragment_ctrls, container, false);
 
-        viewCtrls = (ScrollView) v.findViewById(R.id.scroll_Controls);
-        helpPage = (ScrollView) v.findViewById(R.id.ll_HelpPage_Ctrls);
-        helpText = (TextView) v.findViewById(R.id.view_HelpText_Ctrls);
+        viewCtrls       = v.findViewById(R.id.scroll_Controls);
+        helpPage        = v.findViewById(R.id.ll_HelpPage_Ctrls);
+        helpText        = v.findViewById(R.id.view_HelpText_Ctrls);
 
-        llPatternHelp = (LinearLayout) v.findViewById(R.id.ll_PatternHelp);
-        llDelayControl = (LinearLayout) v.findViewById(R.id.ll_DelayControl);
-        llProperties = (LinearLayout) v.findViewById(R.id.ll_Properties);
-        llAutoControls = (LinearLayout) v.findViewById(R.id.ll_AutoControls);
-        llPropColor = (LinearLayout) v.findViewById(R.id.ll_PropColor);
-        llPropWhite = (LinearLayout) v.findViewById(R.id.ll_PropWhite);
-        llPropCount = (LinearLayout) v.findViewById(R.id.ll_PropCount);
-        llTrigControls = (LinearLayout) v.findViewById(R.id.ll_TrigControls);
-        llTrigForce = (LinearLayout) v.findViewById(R.id.ll_TrigForce);
+        llPatternHelp   = v.findViewById(R.id.ll_PatternHelp);
+        llDelayControl  = v.findViewById(R.id.ll_DelayControl);
+        llProperties    = v.findViewById(R.id.ll_Properties);
+        llAutoControls  = v.findViewById(R.id.ll_AutoControls);
+        llPropColor     = v.findViewById(R.id.ll_PropColor);
+        llPropWhite     = v.findViewById(R.id.ll_PropWhite);
+        llPropCount     = v.findViewById(R.id.ll_PropCount);
+        llTrigControls  = v.findViewById(R.id.ll_TrigControls);
+        llTrigForce     = v.findViewById(R.id.ll_TrigForce);
 
-        selectPattern = (Spinner) v.findViewById(R.id.spinner_Pattern);
-        textTrigger = (TextView) v.findViewById(R.id.text_Trigger);
-        helpText2 = (TextView) v.findViewById(R.id.text_PatternHelp);
+        selectPattern   = v.findViewById(R.id.spinner_Pattern);
+        textTrigger     = v.findViewById(R.id.text_Trigger);
+        helpText2       = v.findViewById(R.id.text_PatternHelp);
 
-        seekBright = (SeekBar) v.findViewById(R.id.seek_Bright);
-        seekDelay = (SeekBar) v.findViewById(R.id.seek_Delay);
-        seekPropColor = (SeekBar) v.findViewById(R.id.seek_PropColor);
-        seekPropWhite = (SeekBar) v.findViewById(R.id.seek_PropWhite);
-        seekPropCount = (SeekBar) v.findViewById(R.id.seek_PropCount);
-        seekTrigForce = (SeekBar) v.findViewById(R.id.seek_TrigForce);
+        seekBright      = v.findViewById(R.id.seek_Bright);
+        seekDelay       = v.findViewById(R.id.seek_Delay);
+        seekPropColor   = v.findViewById(R.id.seek_PropColor);
+        seekPropWhite   = v.findViewById(R.id.seek_PropWhite);
+        seekPropCount   = v.findViewById(R.id.seek_PropCount);
+        seekTrigForce   = v.findViewById(R.id.seek_TrigForce);
 
         seekBright.setOnSeekBarChangeListener(this);
         seekDelay.setOnSeekBarChangeListener(this);
@@ -200,27 +202,35 @@ public class FragCtrls extends Fragment implements SeekBar.OnSeekBarChangeListen
 
         if (pageFavorites >= 0)
         {
-            favButton = (Button) v.findViewById(R.id.button_Favorite);
+            favButton = v.findViewById(R.id.button_Favorite);
             favButton.setOnClickListener(mClicker);
         }
 
-        manualButton = (Button) v.findViewById(R.id.button_AutoProp);
+        manualButton = v.findViewById(R.id.button_AutoProp);
         manualButton.setOnClickListener(mClicker);
 
-        segAddButton = (Button) v.findViewById(R.id.button_SegAdd);
+        segAddButton = v.findViewById(R.id.button_SegAdd);
         segAddButton.setOnClickListener(mClicker);
 
-        helpButton = (Button) v.findViewById(R.id.button_PatternHelp);
+        helpButton = v.findViewById(R.id.button_PatternHelp);
         helpButton.setOnClickListener(mClicker);
 
-        Button triggerButton = (Button) v.findViewById(R.id.button_TrigAction);
+        Button triggerButton = v.findViewById(R.id.button_TrigAction);
         triggerButton.setOnClickListener(mClicker);
+
+        if (BuildConfig.DEBUG)
+        {
+            cmdText = v.findViewById(R.id.edit_CmdStr);
+            Button sendButton = v.findViewById(R.id.button_SendCmd);
+            sendButton.setOnClickListener(mClicker);
+        }
+        else ((RelativeLayout)(v.findViewById(R.id.rl_SendCmdStr))).setVisibility(GONE);
 
         segRadioButtons = new RadioButton[segRadioIds.length];
         for (int i = 0; i < segRadioIds.length; ++i)
-            segRadioButtons[i] = (RadioButton) v.findViewById(segRadioIds[i]);
+            segRadioButtons[i] = v.findViewById(segRadioIds[i]);
 
-        LinearLayout llSelectSegs = (LinearLayout) v.findViewById(R.id.ll_SelectSegments);
+        LinearLayout llSelectSegs = v.findViewById(R.id.ll_SelectSegments);
         if (numSegments > 1)
         {
             llSelectSegs.setVisibility(VISIBLE);
@@ -347,14 +357,17 @@ public class FragCtrls extends Fragment implements SeekBar.OnSeekBarChangeListen
                 {
                     Context mContext = this.getContext();
                     LayoutInflater vi = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-                    v = vi.inflate(R.layout.layout_spinner, null);
+                    if (vi != null) v = vi.inflate(R.layout.layout_spinner, null);
                 }
 
-                TextView tv = (TextView) v.findViewById(R.id.spinnerText);
-                tv.setText(listNames_Basic[position]);
+                if (v != null)
+                {
+                    TextView tv = (TextView) v.findViewById(R.id.spinnerText);
+                    tv.setText(listNames_Basic[position]);
 
-                if (!listEnables_Basic[position]) tv.setTextColor(Color.GRAY);
-                else tv.setTextColor(ContextCompat.getColor(appContext, R.color.UserChoice));
+                    if (!listEnables_Basic[position]) tv.setTextColor(Color.GRAY);
+                    else tv.setTextColor(ContextCompat.getColor(appContext, R.color.UserChoice));
+                }
 
                 return v;
             }
@@ -381,21 +394,24 @@ public class FragCtrls extends Fragment implements SeekBar.OnSeekBarChangeListen
                 {
                     Context mContext = this.getContext();
                     LayoutInflater vi = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-                    v = vi.inflate(R.layout.layout_spinner, null);
+                    if (vi != null) v = vi.inflate(R.layout.layout_spinner, null);
                 }
 
-                TextView tv = (TextView) v.findViewById(R.id.spinnerText);
-                tv.setText(listNames_All[position]);
+                if (v != null)
+                {
+                    TextView tv = (TextView) v.findViewById(R.id.spinnerText);
+                    tv.setText(listNames_All[position]);
 
-                if (!listEnables_All[position]) tv.setTextColor(Color.GRAY);
-                else tv.setTextColor(ContextCompat.getColor(appContext, R.color.UserChoice));
+                    if (!listEnables_All[position]) tv.setTextColor(Color.GRAY);
+                    else tv.setTextColor(ContextCompat.getColor(appContext, R.color.UserChoice));
+                }
 
                 return v;
             }
         };
     }
 
-    private AdapterView.OnItemSelectedListener patternListener = new AdapterView.OnItemSelectedListener()
+    private final AdapterView.OnItemSelectedListener patternListener = new AdapterView.OnItemSelectedListener()
     {
         @Override
         public void onNothingSelected(AdapterView<?> parent) {}
@@ -759,10 +775,10 @@ public class FragCtrls extends Fragment implements SeekBar.OnSeekBarChangeListen
 
                 if (segPatterns[index] >= devicePatterns)
                 {
-                    SendString(CMD_START_END);; // start sequence
+                    SendString(CMD_START_END);  // start sequence
                     SendString(CMD_POP_PATTERN);
                     SendString(patternCmds[ segPatterns[index] ]);
-                    SendString(CMD_START_END);; // end sequence
+                    SendString(CMD_START_END);  // end sequence
                 }
                 SendString("" + pnum); // store pattern number
 
@@ -868,6 +884,7 @@ public class FragCtrls extends Fragment implements SeekBar.OnSeekBarChangeListen
         segAddButton.setText(useSegEnables ? "X" : "&");
         if (!useSegEnables) ClearSegEnables();
     }
+
     private final View.OnClickListener mClicker = new View.OnClickListener()
     {
         @Override public void onClick(View v)
@@ -1001,6 +1018,18 @@ public class FragCtrls extends Fragment implements SeekBar.OnSeekBarChangeListen
                     else SendString(CMD_TRIGGER + 0);
 
                     SendString(CMD_SEQ_END);
+                    break;
+                }
+                case R.id.button_SendCmd:
+                {
+                    String cmdstr = cmdText.getText().toString();
+                    Log.d(LOGNAME, "Command: \"" + cmdstr + "\"");
+                    if (!cmdstr.isEmpty())
+                    {
+                        cmdText.setText("");
+                        SendString(cmdstr);
+                        SendString(CMD_SEQ_END);
+                    }
                     break;
                 }
             }

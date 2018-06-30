@@ -12,7 +12,7 @@ public class Main extends Application
     static Bluetooth ble;
     static int deviceID;
     static String devName;
-    static boolean enableWiFi = true;
+    static final boolean enableWiFi = true;
     static boolean devIsBLE = true;
     static boolean blePresentAndEnabled = false;
     static boolean wifiPresentAndEnabled = false;
@@ -36,10 +36,10 @@ public class Main extends Application
         appContext = getApplicationContext();
 
         maxlenAdvPatterns = 0;
-        for (int i = 0; i < advPatternCmds.length; ++i)
+        for (String advPatternCmd : advPatternCmds)
         {
-            if (maxlenAdvPatterns < advPatternCmds[i].length())
-                maxlenAdvPatterns = advPatternCmds[i].length();
+            if (maxlenAdvPatterns < advPatternCmd.length())
+                maxlenAdvPatterns = advPatternCmd.length();
         }
     }
 
@@ -91,7 +91,7 @@ public class Main extends Application
     static final int MINLEN_CMDSTR           = 100;     // minimum length of the command/pattern string
     static final int MINLEN_SEGLEN_FORADV    = 20;      // minimum length of each segment to be able to use the advanced patterns
 
-    static final String[] basicPatternNames =
+    private static final String[] basicPatternNames =
             {
                     "Solid",
                     "Waves",
@@ -102,7 +102,7 @@ public class Main extends Application
                     "Comet",
             };
 
-    static final String[] basicPatternHelp =
+    private static final String[] basicPatternHelp =
             {
                     "A solid color which can be modified with the ColorHue and Whiteness properties.",
 
@@ -125,7 +125,7 @@ public class Main extends Application
                     "Both the color and length of the tail can be modified with the ColorHue, Whiteness, and Count properties.",
             };
 
-    static final String[] basicPatternCmds =
+    private static final String[] basicPatternCmds =
             {
                     "E0 H258 Q3 T G",
                     "E10 D60 Q7 T G",
@@ -136,7 +136,7 @@ public class Main extends Application
                     "E20 H30 C25 D30 Q7 T G",
             };
 
-    static final int[] basicPatternBits =
+    private static final int[] basicPatternBits =
             {
                     0x83, // disable Delay control
                     0x07,
@@ -147,7 +147,7 @@ public class Main extends Application
                     0x07,
             };
 
-    static final String[] advPatternNames =
+    private static final String[] advPatternNames =
             {
                     "Rainbow Ripple",
                     "Rainbow Roll",
@@ -210,7 +210,7 @@ public class Main extends Application
                     "The ColorHue property only affects the color of the twinkling."
             };
 
-    static final String[] advPatternCmds =
+    private static final String[] advPatternCmds =
             {
                     "E2 D20 T E101 F1000 I T G",
                     "E1 D20 F1 I T E101 F1000 I T G",
@@ -227,7 +227,7 @@ public class Main extends Application
                     "E50 V1 B65 W30 H100 D10 Q1 T E40 H270 C10 D50 T E20 C20 D15 A1 F0 I T G"
             };
 
-    static final int[] advPatternBits =
+    private static final int[] advPatternBits =
             {
                     0x30,
                     0x30,
@@ -261,28 +261,28 @@ public class Main extends Application
     static int devicePatterns = 0;              // number of custom patterns defined by device
     static int customPlugins = 0;               // number of custom plugins defined by device
     static int maxlenCmdStrs = 0;               // max length of command string that can be sent
-    static int rangeDelay = MINVAL_DELAYRANGE;  // default range of delay offsets
+    static final int rangeDelay = MINVAL_DELAYRANGE;  // default range of delay offsets
 
     static int featureBits = 0;                 // bits that enable extended features
     static final int FEATURE_INT_PATTERNS = 0x01;   // set if cannot use external patterns
     static final int FEATURE_BASIC_PATTERNS = 0x02; // set if cannot use advanced patterns
 
-    static final int maxNumSegs = 5;            // limited because of layout
-    static int segPatterns[]        = new int[maxNumSegs];   // current pattern for each segment (index from 0)
-    static int curBright[]          = new int[maxNumSegs];
-    static int curDelay[]           = new int[maxNumSegs];
-    static boolean segXmodeEnb[]    = new boolean[maxNumSegs];
-    static int segXmodeHue[]        = new int[maxNumSegs];
-    static int segXmodeWht[]        = new int[maxNumSegs];
-    static int segXmodeCnt[]        = new int[maxNumSegs];
-    static int segTrigForce[]       = new int[maxNumSegs];
-    static int segPixels[]          = new int[maxNumSegs];
-    static int segTracks[]          = new int[maxNumSegs];
-    static int segLayers[]          = new int[maxNumSegs];
+    private static final int maxNumSegs = 5;  // limited because of layout
+    static final int[] segPatterns      = new int[maxNumSegs];   // current pattern for each segment (index from 0)
+    static final int[] curBright        = new int[maxNumSegs];
+    static final int[] curDelay         = new int[maxNumSegs];
+    static final boolean segXmodeEnb[]  = new boolean[maxNumSegs];
+    static final int segXmodeHue[]      = new int[maxNumSegs];
+    static final int segXmodeWht[]      = new int[maxNumSegs];
+    static final int segXmodeCnt[]      = new int[maxNumSegs];
+    static final int segTrigForce[]     = new int[maxNumSegs];
+    static final int segPixels[]        = new int[maxNumSegs];
+    static final int segTracks[]        = new int[maxNumSegs];
+    static final int segLayers[]        = new int[maxNumSegs];
 
     // only used for multiple segments on the same physical strand:
-    static int segPosStart[]        = new int[maxNumSegs];  // starting positions for each segment
-    static int segPosCount[]        = new int[maxNumSegs];  // number of pixels for each segment
+    static final int[] segPosStart      = new int[maxNumSegs];  // starting positions for each segment
+    static final int[] segPosCount      = new int[maxNumSegs];  // number of pixels for each segment
 
     static boolean initPatterns = false;        // true if must initialize device with patterns at startup
     static boolean multiStrands = false;        // true if device has multiple physical pixel strands
@@ -295,10 +295,10 @@ public class Main extends Application
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     static final int MAXNUM_FAVORITIES = 6; // limited by layout
-    static final int FAVTYPE_DEVICE = 0;
-    static final int FAVTYPE_BASIC = 1;
-    static final int FAVTYPE_ADV = 2;
-    static final int FAVTYPE_STORED = 3;  // TODO: not implemented
+    private static final int FAVTYPE_DEVICE = 0;
+    private static final int FAVTYPE_BASIC = 1;
+    private static final int FAVTYPE_ADV = 2;
+    private static final int FAVTYPE_STORED = 3;  // TODO: not implemented
     static final int NUM_FAVSTR_VALS = 7; // number of values in vals string (bright, delay, auto/manual, color, white, count, trigger)
 
     static class FavoriteInfo
@@ -517,11 +517,11 @@ public class Main extends Application
     static int numFavorites = 0;
     static int curFavorite = -1;
 
-    static final FavoriteInfo defFav_Purple = new FavoriteInfo("Purple", FAVTYPE_BASIC, 0, "60 0 0 0 0 0 0");
-    static final FavoriteInfo defFav_Rainbow = new FavoriteInfo("Rainbow", FAVTYPE_ADV, 0, "90 0 0 0 0 0 500");
-    static final FavoriteInfo defFav_Holiday = new FavoriteInfo("Christmas", FAVTYPE_ADV, 11, "100 -20 11 0 50 0 1000");
+    private static final FavoriteInfo defFav_Purple  = new FavoriteInfo("Purple", FAVTYPE_BASIC, 0, "60 0 0 0 0 0 0");
+    private static final FavoriteInfo defFav_Rainbow = new FavoriteInfo("Rainbow", FAVTYPE_ADV, 0, "90 0 0 0 0 0 500");
+    private static final FavoriteInfo defFav_Holiday = new FavoriteInfo("Christmas", FAVTYPE_ADV, 11, "100 -20 11 0 50 0 1000");
 
-    static void AddDefaultFavorites()
+    private static void AddDefaultFavorites()
     {
         listFavorites[0] = defFav_Purple;
         numFavorites = 1;
@@ -537,7 +537,7 @@ public class Main extends Application
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     // used to determine which patterns are allowed on which segments
-    static boolean segBasicOnly[] = new boolean[maxNumSegs];
+    static final boolean[] segBasicOnly = new boolean[maxNumSegs];
     static boolean haveBasicSegs = false;       // true if some segments too small for advanced patterns
     static boolean useAdvPatterns = true;       // false if limited flash space to receive commands
     static boolean useExtPatterns;              // false if can use only device internal patterns

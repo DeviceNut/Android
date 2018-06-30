@@ -11,7 +11,7 @@ public class About extends AppCompatActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.dialog_about);
 
-        TextView mVersion = (TextView) findViewById(R.id.Text_Version);
+        TextView mVersion = findViewById(R.id.Text_Version);
         mVersion.setText( BuildConfig.VERSION_NAME );
     }
 }

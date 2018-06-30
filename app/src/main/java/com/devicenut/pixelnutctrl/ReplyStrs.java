@@ -68,9 +68,7 @@ class ReplyStrs
 
     private boolean CheckValue(int val, int min, int max)
     {
-        if (val < min) return false;
-        if ((0 < max) && (max < val)) return false;
-        return true;
+        return val >= min && !((0 < max) && (max < val));
     }
 
     private void CheckSegVals(int i)
@@ -272,19 +270,19 @@ class ReplyStrs
                     boolean haveforce = false;
                     String[] strs = reply.split("\\s+"); // remove ALL spaces
 
-                    for (int i = 0; i < strs.length; ++i)
+                    for (String str : strs)
                     {
-                        if (strs[i].length() <= 0) continue; // shouldn't happen?
+                        if (str.length() <= 0) continue; // shouldn't happen?
 
-                        if ((strs[i].charAt(0) == 'Q') && (strs[i].length() > 1))
+                        if ((str.charAt(0) == 'Q') && (str.length() > 1))
                         {
-                            int val = Integer.parseInt(strs[i].substring(1));
+                            int val = Integer.parseInt(str.substring(1));
                             patternBits_Device[index] |= val;
                         }
-                        else if ((strs[i].charAt(0) == 'F') && (strs[i].length() > 1) && (strs[i].charAt(1) != '0')) // ignore zero-force setting
+                        else if ((str.charAt(0) == 'F') && (str.length() > 1) && (str.charAt(1) != '0')) // ignore zero-force setting
                             haveforce = true;
 
-                        else if (strs[i].charAt(0) == 'I')
+                        else if (str.charAt(0) == 'I')
                         {
                             patternBits_Device[index] |= 0x10;
                             if (haveforce) patternBits_Device[index] |= 0x20;

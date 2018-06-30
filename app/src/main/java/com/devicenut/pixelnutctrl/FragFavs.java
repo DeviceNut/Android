@@ -3,6 +3,7 @@ package com.devicenut.pixelnutctrl;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
 import android.util.Log;
@@ -86,15 +87,15 @@ public class FragFavs extends Fragment
         mySettings = appContext.getSharedPreferences(getString(R.string.app_name), 0);
     }
 
-    @Override public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
+    @Override public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
     {
         Log.d(LOGNAME, ">>onCreateView");
 
         masterView = inflater.inflate(R.layout.fragment_favs, container, false);
 
-        llViewFavs  = (LinearLayout) masterView.findViewById(R.id.ll_Favorites);
-        helpPage    = (ScrollView)   masterView.findViewById(R.id.ll_HelpPage_Favs);
-        helpText    = (TextView)     masterView.findViewById(R.id.view_HelpText_Favs);
+        llViewFavs  = masterView.findViewById(R.id.ll_Favorites);
+        helpPage    = masterView.findViewById(R.id.ll_HelpPage_Favs);
+        helpText    = masterView.findViewById(R.id.view_HelpText_Favs);
 
         curFavorite = -1; // clear current choice
 
@@ -138,19 +139,19 @@ public class FragFavs extends Fragment
 
         for (int i = 0; i < idsLayout.length; ++i)
         {
-            LinearLayout ll = (LinearLayout)masterView.findViewById(idsLayout[i]);
+            LinearLayout ll = masterView.findViewById(idsLayout[i]);
 
             if (i < numFavorites)
             {
                 Log.d(LOGNAME, "Listing favorite: " + listFavorites[i].getPatternName());
 
-                Button b = (Button)masterView.findViewById(idsChoose[i]);
+                Button b = masterView.findViewById(idsChoose[i]);
                 b.setTextColor(ContextCompat.getColor(appContext, R.color.UserChoice));
                 b.setText(listFavorites[i].getPatternName());
                 b.setOnClickListener(mClicker);
                 objsChoose[i] = b;
 
-                b = (Button)masterView.findViewById(idsCancel[i]);
+                b = masterView.findViewById(idsCancel[i]);
                 if (listFavorites[i].userCreated())
                 {
                     b.setVisibility(VISIBLE);
@@ -338,7 +339,7 @@ public class FragFavs extends Fragment
     // check if newly selected pattern is the same as one of the favorites
     // if so, then select that favorite, otherwise deselect the current one
     // return false if failed to match any of the current favorites
-    static Main.FavoriteInfo savedFavorite;
+    private static Main.FavoriteInfo savedFavorite;
     public boolean IsFavoritePattern(String name, int seg, int pnum, String vals)
     {
         Log.d(LOGNAME, "IsFavoritePattern: name=" + name + " seg=" + seg + " pnm=" + pnum + " vals=" + vals);

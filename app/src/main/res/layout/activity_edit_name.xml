@@ -2,7 +2,6 @@
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/activity_about"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:paddingBottom="@dimen/activity_vertical_margin"
@@ -11,7 +10,7 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     android:orientation="vertical"
     android:background="@color/DarkHeader"
-    tools:context="com.devicenut.pixelnutctrl.About">
+    tools:context=".EditName">
 
     <EditText
         android:layout_width="wrap_content"
@@ -25,10 +24,11 @@
         android:id="@+id/edit_DevName"/>
 
     <LinearLayout
-        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
         style="?android:attr/buttonBarStyle"
-        android:layout_width="wrap_content"
-        android:layout_height="match_parent">
+        android:gravity="center"
+        android:orientation="horizontal">
 
         <Button
             android:layout_width="wrap_content"
@@ -51,6 +51,27 @@
             android:textSize="20sp"
             android:onClick="onClick"
             android:id="@+id/button_EditDone"/>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:id="@+id/ll_AddNetwork">
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            style="?android:attr/actionButtonStyle"
+            android:text="Add Network"
+            android:textAllCaps="false"
+            android:textColor="@color/UserChoice"
+            android:textSize="15sp"
+            android:textStyle="italic"
+            android:onClick="onClick"
+            android:id="@+id/button_AddNetwork"/>
 
     </LinearLayout>
 </LinearLayout>
