@@ -27,9 +27,6 @@ import static com.devicenut.pixelnutctrl.Main.CMD_SEQ_END;
 import static com.devicenut.pixelnutctrl.Main.DEVSTAT_BADSTATE;
 import static com.devicenut.pixelnutctrl.Main.DEVSTAT_SUCCESS;
 import static com.devicenut.pixelnutctrl.Main.CMD_GET_INFO;
-import static com.devicenut.pixelnutctrl.Main.TITLE_ADAFRUIT;
-import static com.devicenut.pixelnutctrl.Main.TITLE_NONAME;
-import static com.devicenut.pixelnutctrl.Main.TITLE_PIXELNUT;
 import static com.devicenut.pixelnutctrl.Main.URL_PIXELNUT;
 import static com.devicenut.pixelnutctrl.Main.appContext;
 import static com.devicenut.pixelnutctrl.Main.blePresentAndEnabled;
@@ -365,13 +362,20 @@ public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
         {
             Log.d(LOGNAME, "Stop scanning...");
             isScanning = false;
-            SetupUserDisplay();
 
             if (blePresentAndEnabled)
                 ble.stopScanning();
 
             if (wifiPresentAndEnabled)
                 wifi.stopScanning();
+
+            context.runOnUiThread(new Runnable()
+            {
+                public void run()
+                {
+                    SetupUserDisplay();
+                }
+            });
 
             return true;
         }
@@ -412,58 +416,31 @@ public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
         else Log.w(LOGNAME, "Already failed once...");
     }
 
-    @Override public void onScan(final String name, int id)
+    @Override public void onScan(final String name, int id, boolean isble)
     {
         if (isScanning && !isConnecting && !isConnected && (name != null))
         {
-            String dspname = "";
-            boolean haveone = false;
+            Log.v(LOGNAME, "OnScan: name=" + name + " id=" + id + " isble=" + isble);
 
-            Log.v(LOGNAME, "OnScan: name=" + name + " id=" + id + " isble=" + devIsBLE);
+            if (buttonCount < listButtons.length)
+            {
+                Button b = findViewById(listButtons[buttonCount]);
+                b.setText(name);
+                b.setVisibility(View.VISIBLE);
 
-            if (name.startsWith(TITLE_PIXELNUT))
-            {
-                haveone = true;
-                dspname = name.substring(2);
-            }
-            else if (name.startsWith(TITLE_ADAFRUIT))
-            {
-                haveone = true;
-                dspname = TITLE_NONAME;
-            }
+                ++buttonCount;
+                deviceIDs.add(id);
+                deviceNames.add(name);
+                deviceIsBLE.add(isble);
 
-            if (haveone)
-            {
-                if (buttonCount < listButtons.length)
+                scrollDevices.post(new Runnable()
                 {
-                    Button b = findViewById(listButtons[buttonCount]);
-                    b.setText(dspname);
-                    b.setVisibility(View.VISIBLE);
-
-                    ++buttonCount;
-                    deviceIDs.add(id);
-                    deviceNames.add(dspname);
-                    deviceIsBLE.add(devIsBLE);
-
-                    scrollDevices.post(new Runnable()
-                    {
-                        @Override public void run() {
-                            scrollDevices.scrollTo(0, scrollDevices.getBottom());
-                        }
-                    });
-                }
-                else StopScanning();
+                    @Override public void run() {
+                        scrollDevices.scrollTo(0, scrollDevices.getBottom());
+                    }
+                });
             }
-            /*
-            else context.runOnUiThread(new Runnable()
-            {
-                public void run()
-                {
-                    myToast = Toast.makeText(context, name, Toast.LENGTH_SHORT);
-                    myToast.show();
-                }
-            });
-            */
+            else StopScanning();
         }
     }
 
