@@ -60,10 +60,11 @@ public class Main extends Application
 
     static final int MAXLEN_BLE_CHUNK       = 20; // max chars that can be sent at once with BLE implementation
 
-    static final String TITLE_PIXELNUT       = "P!";
-    static final String TITLE_PHOTON         = "Photon-";
-    static final String TITLE_ADAFRUIT       = "Adafruit";
-    static final String TITLE_NONAME         = "NoName";
+    static final String PREFIX_PIXELNUT      = "P!";
+    static final String PREFIX_PHOTON        = "PHOTON-";
+    static final String POSTFIX_WIFI         = "---!P";
+    static final String PREFIX_ADAFRUIT      = "ADAFRUIT";
+    static final String DEVNAME_NONE         = "NoName";
     static final String URL_PIXELNUT         = "http://www.pixelnut.io";
 
     static final String CMD_GET_INFO         = "?";

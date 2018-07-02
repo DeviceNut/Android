@@ -3,7 +3,6 @@ package com.devicenut.pixelnutctrl;
 import android.util.Log;
 
 import static com.devicenut.pixelnutctrl.Main.FEATURE_BASIC_PATTERNS;
-import static com.devicenut.pixelnutctrl.Main.TITLE_PIXELNUT;
 import static com.devicenut.pixelnutctrl.Main.CMD_GET_PATTERNS;
 import static com.devicenut.pixelnutctrl.Main.CMD_GET_PLUGINS;
 import static com.devicenut.pixelnutctrl.Main.CMD_GET_SEGMENTS;
@@ -14,6 +13,7 @@ import static com.devicenut.pixelnutctrl.Main.MAXVAL_PERCENT;
 import static com.devicenut.pixelnutctrl.Main.MAXVAL_WHT;
 import static com.devicenut.pixelnutctrl.Main.MINLEN_CMDSTR;
 import static com.devicenut.pixelnutctrl.Main.MINLEN_SEGLEN_FORADV;
+import static com.devicenut.pixelnutctrl.Main.PREFIX_PIXELNUT;
 import static com.devicenut.pixelnutctrl.Main.advPatternsCount;
 import static com.devicenut.pixelnutctrl.Main.basicPatternsCount;
 import static com.devicenut.pixelnutctrl.Main.featureBits;
@@ -306,7 +306,7 @@ class ReplyStrs
                 String[] strs = reply.split("\\s+"); // remove ALL spaces
                 if (strs.length >= 2)
                 {
-                    if (strs[0].contains(TITLE_PIXELNUT))
+                    if (strs[0].contains(PREFIX_PIXELNUT))
                     {
                         optionLines = Integer.parseInt(strs[1]);
                         Log.v(LOGNAME, ">> Option lines = " + optionLines);

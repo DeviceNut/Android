@@ -25,13 +25,13 @@ import java.util.UUID;
 import static android.bluetooth.le.ScanSettings.MATCH_MODE_AGGRESSIVE;
 import static android.bluetooth.le.ScanSettings.MATCH_NUM_ONE_ADVERTISEMENT;
 import static android.bluetooth.le.ScanSettings.SCAN_MODE_LOW_LATENCY;
+import static com.devicenut.pixelnutctrl.Main.DEVNAME_NONE;
 import static com.devicenut.pixelnutctrl.Main.DEVSTAT_DISCONNECTED;
 import static com.devicenut.pixelnutctrl.Main.DEVSTAT_FAILED;
 import static com.devicenut.pixelnutctrl.Main.DEVSTAT_SUCCESS;
+import static com.devicenut.pixelnutctrl.Main.PREFIX_ADAFRUIT;
+import static com.devicenut.pixelnutctrl.Main.PREFIX_PIXELNUT;
 import static com.devicenut.pixelnutctrl.Main.SleepMsecs;
-import static com.devicenut.pixelnutctrl.Main.TITLE_ADAFRUIT;
-import static com.devicenut.pixelnutctrl.Main.TITLE_NONAME;
-import static com.devicenut.pixelnutctrl.Main.TITLE_PIXELNUT;
 import static com.devicenut.pixelnutctrl.Main.appContext;
 import static com.devicenut.pixelnutctrl.Main.deviceID;
 import static com.devicenut.pixelnutctrl.Main.doRefreshCache;
@@ -228,15 +228,15 @@ class Bluetooth
                     String dspname = "";
                     boolean haveone = false;
 
-                    if (name.startsWith(TITLE_PIXELNUT))
+                    if (name.startsWith(PREFIX_PIXELNUT))
                     {
                         haveone = true;
-                        dspname = name.substring( TITLE_PIXELNUT.length() );
+                        dspname = name.substring( PREFIX_PIXELNUT.length() );
                     }
-                    else if (name.startsWith(TITLE_ADAFRUIT))
+                    else if (name.toUpperCase().startsWith(PREFIX_ADAFRUIT))
                     {
                         haveone = true;
-                        dspname = TITLE_NONAME;
+                        dspname = DEVNAME_NONE;
                     }
 
                     if (haveone) bleCB.onScan(dspname, id, true);

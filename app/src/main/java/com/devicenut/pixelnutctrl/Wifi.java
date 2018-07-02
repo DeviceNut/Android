@@ -25,9 +25,10 @@ import static android.os.Process.setThreadPriority;
 import static com.devicenut.pixelnutctrl.Main.DEVSTAT_BADSTATE;
 import static com.devicenut.pixelnutctrl.Main.DEVSTAT_FAILED;
 import static com.devicenut.pixelnutctrl.Main.DEVSTAT_SUCCESS;
+import static com.devicenut.pixelnutctrl.Main.POSTFIX_WIFI;
+import static com.devicenut.pixelnutctrl.Main.PREFIX_PHOTON;
+import static com.devicenut.pixelnutctrl.Main.PREFIX_PIXELNUT;
 import static com.devicenut.pixelnutctrl.Main.SleepMsecs;
-import static com.devicenut.pixelnutctrl.Main.TITLE_PHOTON;
-import static com.devicenut.pixelnutctrl.Main.TITLE_PIXELNUT;
 import static com.devicenut.pixelnutctrl.Main.appContext;
 import static com.devicenut.pixelnutctrl.Main.deviceID;
 
@@ -274,73 +275,70 @@ class Wifi
                 String matchstr = "\"" + result.SSID + "\"";
                 Log.v(LOGNAME, "Result " + i + ") SSID=" + matchstr);
 
-                String ssid = result.SSID.trim(); // remove spaces first
-                if (ssid.startsWith("P!") && ssid.endsWith("-!")) // one or our devices
+                String name = result.SSID.trim(); // remove spaces first
+                String dspname = "";
+                boolean haveone = false;
+
+                int index = name.indexOf(POSTFIX_WIFI);
+                if (name.startsWith(PREFIX_PIXELNUT) && (index > 0))
                 {
-                    String name = ssid.substring(0, ssid.length()-2); // remove ending crap
-                    if (!wifiNameList.contains(name)) // have not already seen this
+                    haveone = true;
+                    dspname = name.substring(PREFIX_PIXELNUT.length(), index);
+                }
+                else if (name.toUpperCase().startsWith(PREFIX_PHOTON))
+                {
+                    haveone = true;
+                    dspname = name.substring( PREFIX_PHOTON.length() );
+                }
+
+                if (haveone && !wifiNameList.contains(dspname)) // have not already seen this
+                {
+                    Log.d(LOGNAME, "Found device: " + dspname);
+                    int id = 0; // needed for connection call
+                    boolean haveid = false;
+                    boolean didadd = false;
+
+                    while (!haveid)
                     {
-                        Log.d(LOGNAME, "Found device: " + name);
-                        int id = 0; // needed for connection call
-                        boolean haveid = false;
-                        boolean didadd = false;
-
-                        while (!haveid)
+                        for (WifiConfiguration entry: configlist)
                         {
-                            for (WifiConfiguration entry: configlist)
+                            // the config SSID string *includes* beginning/ending quotes
+                            //Log.v(LOGNAME, "  Entry " + j + ") SSID=" + entry.SSID + " ID=" + entry.networkId);
+
+                            if ((entry.SSID != null) && (entry.SSID.equals(matchstr)))
                             {
-                                // the config SSID string *includes* beginning/ending quotes
-                                //Log.v(LOGNAME, "  Entry " + j + ") SSID=" + entry.SSID + " ID=" + entry.networkId);
-
-                                if ((entry.SSID != null) && (entry.SSID.equals(matchstr)))
-                                {
-                                    haveid = true;
-                                    id = entry.networkId;
-                                    Log.v(LOGNAME, "==> matches ID=" + id);
-                                    break;
-                                }
-                            }
-
-                            if (haveid)
-                            {
-                                Log.d(LOGNAME, "Success: ID=" + id + " Name=" + name);
-                                wifiNameList.add(name); // add to "have seen" list
-
-                                if (wifiCB != null)
-                                {
-                                    String dspname = "";
-                                    boolean haveone = false;
-
-                                    if (name.startsWith(TITLE_PIXELNUT))
-                                    {
-                                        haveone = true;
-                                        dspname = name.substring( TITLE_PIXELNUT.length() );
-                                    }
-                                    else if (name.startsWith(TITLE_PHOTON))
-                                    {
-                                        haveone = true;
-                                        dspname = name.substring( TITLE_PHOTON.length() );
-                                    }
-
-                                    if (haveone) wifiCB.onScan(dspname, id, false);
-                                }
-                                else Log.e(LOGNAME, "WiFi CB is null!!!");
-                            }
-                            else if (!didadd)
-                            {
-                                Log.v(LOGNAME, "Adding configuration...");
-                                WifiConfiguration conf = new WifiConfiguration();
-                                conf.SSID = matchstr;
-                                conf.allowedKeyManagement.set(WifiConfiguration.KeyMgmt.NONE);
-                                wifiManager.addNetwork(conf);
-                                configlist = wifiManager.getConfiguredNetworks(); // refresh list
-                                didadd = true;
-                            }
-                            else
-                            {
-                                Log.w(LOGNAME, "Failed to add configuration!");
+                                haveid = true;
+                                id = entry.networkId;
+                                Log.v(LOGNAME, "==> matches ID=" + id);
                                 break;
                             }
+                        }
+
+                        if (haveid)
+                        {
+                            Log.d(LOGNAME, "Success: ID=" + id + " Name=" + dspname);
+                            wifiNameList.add(dspname); // add to "have seen" list
+
+                            if (wifiCB != null)
+                            {
+                                wifiCB.onScan(dspname, id, false);
+                            }
+                            else Log.e(LOGNAME, "WiFi CB is null!!!");
+                        }
+                        else if (!didadd)
+                        {
+                            Log.v(LOGNAME, "Adding configuration...");
+                            WifiConfiguration conf = new WifiConfiguration();
+                            conf.SSID = matchstr;
+                            conf.allowedKeyManagement.set(WifiConfiguration.KeyMgmt.NONE);
+                            wifiManager.addNetwork(conf);
+                            configlist = wifiManager.getConfiguredNetworks(); // refresh list
+                            didadd = true;
+                        }
+                        else
+                        {
+                            Log.w(LOGNAME, "Failed to add configuration!");
+                            break;
                         }
                     }
                 }

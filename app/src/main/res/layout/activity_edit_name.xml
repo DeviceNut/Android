@@ -15,7 +15,6 @@
     <EditText
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="25dp"
         android:inputType="text"
         android:maxLength="16"
         android:digits="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890 -!#$%*&amp;"
