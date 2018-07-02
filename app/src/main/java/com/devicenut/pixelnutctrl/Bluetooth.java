@@ -29,6 +29,9 @@ import static com.devicenut.pixelnutctrl.Main.DEVSTAT_DISCONNECTED;
 import static com.devicenut.pixelnutctrl.Main.DEVSTAT_FAILED;
 import static com.devicenut.pixelnutctrl.Main.DEVSTAT_SUCCESS;
 import static com.devicenut.pixelnutctrl.Main.SleepMsecs;
+import static com.devicenut.pixelnutctrl.Main.TITLE_ADAFRUIT;
+import static com.devicenut.pixelnutctrl.Main.TITLE_NONAME;
+import static com.devicenut.pixelnutctrl.Main.TITLE_PIXELNUT;
 import static com.devicenut.pixelnutctrl.Main.appContext;
 import static com.devicenut.pixelnutctrl.Main.deviceID;
 import static com.devicenut.pixelnutctrl.Main.doRefreshCache;
@@ -50,7 +53,7 @@ class Bluetooth
 
     interface BleCallbacks
     {
-        void onScan(String name, int id);
+        void onScan(String name, int id, boolean isble);
         void onConnect(final int status);
         void onDisconnect();
         void onWrite(final int status);
@@ -220,8 +223,25 @@ class Bluetooth
                 int id = bleDevList.indexOf(dev);
                 Log.d(LOGNAME, "Found #" + id + ": " + name);
 
-                if (bleCB == null) Log.e(LOGNAME, "BLE CB is null!!!"); // have seen this happen, but how???
-                else bleCB.onScan(name, id);
+                if (bleCB != null)
+                {
+                    String dspname = "";
+                    boolean haveone = false;
+
+                    if (name.startsWith(TITLE_PIXELNUT))
+                    {
+                        haveone = true;
+                        dspname = name.substring( TITLE_PIXELNUT.length() );
+                    }
+                    else if (name.startsWith(TITLE_ADAFRUIT))
+                    {
+                        haveone = true;
+                        dspname = TITLE_NONAME;
+                    }
+
+                    if (haveone) bleCB.onScan(dspname, id, true);
+                }
+                else Log.e(LOGNAME, "BLE CB is null!!!"); // have seen this happen, but how???
             }
         }
 

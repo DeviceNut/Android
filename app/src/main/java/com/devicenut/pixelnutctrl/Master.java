@@ -372,7 +372,7 @@ public class Master extends AppCompatActivity implements FragFavs.FavoriteSelect
         }
     }
 
-    @Override public void onScan(String name, int id)
+    @Override public void onScan(String name, int id, boolean isble)
     {
         Log.e(LOGNAME, "Unexpected callback: onScan");
     }

@@ -26,6 +26,8 @@ import static com.devicenut.pixelnutctrl.Main.DEVSTAT_BADSTATE;
 import static com.devicenut.pixelnutctrl.Main.DEVSTAT_FAILED;
 import static com.devicenut.pixelnutctrl.Main.DEVSTAT_SUCCESS;
 import static com.devicenut.pixelnutctrl.Main.SleepMsecs;
+import static com.devicenut.pixelnutctrl.Main.TITLE_PHOTON;
+import static com.devicenut.pixelnutctrl.Main.TITLE_PIXELNUT;
 import static com.devicenut.pixelnutctrl.Main.appContext;
 import static com.devicenut.pixelnutctrl.Main.deviceID;
 
@@ -44,7 +46,7 @@ class Wifi
 
     interface WifiCallbacks
     {
-        void onScan(String name, int id);
+        void onScan(String name, int id, boolean isble);
         void onConnect(final int status);
         void onDisconnect();
         void onWrite(final int status);
@@ -302,8 +304,27 @@ class Wifi
                             if (haveid)
                             {
                                 Log.d(LOGNAME, "Success: ID=" + id + " Name=" + name);
-                                wifiNameList.add(name);
-                                wifiCB.onScan(name, id);
+                                wifiNameList.add(name); // add to "have seen" list
+
+                                if (wifiCB != null)
+                                {
+                                    String dspname = "";
+                                    boolean haveone = false;
+
+                                    if (name.startsWith(TITLE_PIXELNUT))
+                                    {
+                                        haveone = true;
+                                        dspname = name.substring( TITLE_PIXELNUT.length() );
+                                    }
+                                    else if (name.startsWith(TITLE_PHOTON))
+                                    {
+                                        haveone = true;
+                                        dspname = name.substring( TITLE_PHOTON.length() );
+                                    }
+
+                                    if (haveone) wifiCB.onScan(dspname, id, false);
+                                }
+                                else Log.e(LOGNAME, "WiFi CB is null!!!");
                             }
                             else if (!didadd)
                             {
