@@ -258,6 +258,7 @@ public class Master extends AppCompatActivity implements FragFavs.FavoriteSelect
         {
             if (isConnected)
             {
+                Log.d(LOGNAME, "Disconnecting...");
                 if (devIsBLE)
                      ble.disconnect();
                 else wifi.disconnect();

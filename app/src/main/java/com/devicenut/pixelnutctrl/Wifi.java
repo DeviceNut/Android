@@ -42,8 +42,9 @@ class Wifi
     private static boolean stopConnect = false;
     private static final List<String> wifiNameList = new ArrayList<>();
 
-    //private static final String DEVICE_URL = "http://192.168.0.1:80/index";
     private static final String DEVICE_URL = "http://192.168.0.1/command";
+
+    private static int saveDeviceID;
 
     interface WifiCallbacks
     {
@@ -59,20 +60,18 @@ class Wifi
     {
         wifiCB = null;
         wifiReceiver = new WifiReceiver();
+        saveDeviceID = 0;
 
         if (appContext.getPackageManager().hasSystemFeature(PackageManager.FEATURE_WIFI))
         {
             wifiManager = (WifiManager) appContext.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
-            /*
-            if (wifiManager != null)
+            if ((wifiManager != null) && wifiManager.isWifiEnabled())
             {
-                if (!wifiManager.isWifiEnabled())
-                {
-                    Toast.makeText(appContext, "Enabling WiFi now", Toast.LENGTH_LONG).show();
-                    wifiManager.setWifiEnabled(true);
-                }
+                WifiInfo info = wifiManager.getConnectionInfo();
+                ShowConnectionInfo(info);
+
+                saveDeviceID = info.getNetworkId();
             }
-            */
         }
     }
 
@@ -115,9 +114,8 @@ class Wifi
         stopConnect = true;
     }
 
-    private boolean IsConnected()
+    private void ShowConnectionInfo(WifiInfo info)
     {
-        WifiInfo info = wifiManager.getConnectionInfo();
         String ssid = info.getSSID();
         int ip = info.getIpAddress();
         int p4 = (ip >> 24) & 0xFF;
@@ -125,6 +123,12 @@ class Wifi
         int p2 = (ip >> 8)  & 0xFF;
         int p1 = (ip)       & 0xFF;
         Log.d(LOGNAME, "Info: SSID=" + ssid + " IP=" + p1 + "." + p2 + "." + p3 + "." + p4);
+    }
+
+    private boolean IsConnected()
+    {
+        WifiInfo info = wifiManager.getConnectionInfo();
+        ShowConnectionInfo(info);
 
         if (info.getNetworkId() != deviceID) // if deviceID doesn't match then need to rescan
         {
@@ -132,13 +136,14 @@ class Wifi
             wifiCB.onConnect(DEVSTAT_FAILED);
             return false;
         }
-        return(ip != 0);
+
+        return(info.getIpAddress() != 0);
     }
 
     boolean connect()
     {
         boolean success = wifiManager.enableNetwork(deviceID, true);
-        Log.i(LOGNAME, "Connection to NetID=" + deviceID + ": " + (success ? "success" : "failed"));
+        Log.i(LOGNAME, "Connection to network: ID=" + deviceID + ": " + (success ? "success" : "failed"));
         if (!success) return false;
 
         stopConnect = false;
@@ -184,6 +189,12 @@ class Wifi
         Log.d(LOGNAME, "Disconnect network");
         stopConnect = true;
         wifiManager.disconnect();
+
+        if (saveDeviceID != 0)
+        {
+            boolean success = wifiManager.enableNetwork(saveDeviceID, true);
+            Log.i(LOGNAME, "Reconnect to previous network: ID=" + saveDeviceID + ": " + (success ? "success" : "failed"));
+        }
     }
 
     // this must be called on a non-UI thread

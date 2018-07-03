@@ -384,11 +384,12 @@ public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
 
     private void DoDisconnect()
     {
-        Log.d(LOGNAME, "Disconnecting...");
         isConnecting = false;
         isConnected = false;
+
         StopScanning();
 
+        Log.d(LOGNAME, "Disconnecting...");
         if (devIsBLE) ble.disconnect();
         else          wifi.disconnect();
     }
