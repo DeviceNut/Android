@@ -198,7 +198,7 @@
                         android:layout_alignParentStart="true"
                         android:textColor="@color/UserChoice"
                         android:background="@drawable/roundbutton"
-                        android:text="\?"
+                        android:text="@string/name_help"
                         android:textStyle="bold"
                         android:textSize="22sp"
                         android:id="@+id/button_PatternHelp"/>

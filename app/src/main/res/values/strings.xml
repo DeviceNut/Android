@@ -7,8 +7,8 @@
     <string name="name_wait">Wait</string>
     <string name="name_done">Done</string>
     <string name="name_cancel">Cancel</string>
-    <string name="name_help">Help</string>
-    <string name="name_action">End Help</string>
+    <string name="name_continue">Continue</string>
+    <string name="name_help">\?</string>
     <string name="name_pause">Pause</string>
     <string name="name_resume">Resume</string>
     <string name="name_disable">Disable</string>
@@ -25,6 +25,7 @@
     <string name="title_modify">Modify effect properties</string>
     <string name="title_trigforce">Select force then trigger</string>
     <string name="title_dotrigger">Press to trigger pattern</string>
+    <string name="title_networks">Networks</string>
     <string name="title_help_favs">Favorites Help</string>
     <string name="title_help_ctrls">Controls Help</string>
     <string name="title_favs">Favorites</string>
@@ -32,6 +33,18 @@
     <string name="action_ctrls_rite">Controls &gt;&gt;&gt;</string>
     <string name="action_ctrls_left">&lt;&lt;&lt; Controls</string>
     <string name="action_details">Details &gt;&gt;&gt;</string>
+    <string name="text_addnetwork">
+        This will clear ALL stored network configurations.
+    </string>
+    <string name="text_connectnetwork">
+        This will restart the device to connect it to one of the store networks.
+        This application will then return to the beginning Devices screen.
+    </string>
+    <string name="list_networks">
+          1) Name1    WEP   XXX
+        \n2) Name2    WPA   YYY
+        \n3) Name3    WPA2  ZZZ
+    </string>
     <string name="text_help_head">
         You are connected to the PixelNut! device whose name is displayed in the upper left.
 

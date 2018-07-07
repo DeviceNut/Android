@@ -55,7 +55,6 @@
             android:layout_marginBottom="8dp"
             android:text="@string/title_favs"
             android:textAlignment="center"
-            android:textAppearance="@style/TextAppearance.AppCompat.Large"
             android:textColor="@color/UserChoice"
             android:textSize="28sp"
             android:textStyle="italic|bold"/>
