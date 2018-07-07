@@ -91,6 +91,7 @@ public class Main extends Application
     static final int MINVAL_DELAYRANGE       = 80;      // use this for patterns defined here, and is minimal value for custom patterns
 
     static final int MINLEN_CMDSTR           = 100;     // minimum length of the command/pattern string
+    static final int MINLEN_REPLYSTR         = 300;     // minimum length to alloc for reply string from device
     static final int MINLEN_SEGLEN_FORADV    = 20;      // minimum length of each segment to be able to use the advanced patterns
 
     private static final String[] basicPatternNames =
@@ -166,7 +167,7 @@ public class Main extends Application
                     "MashUp",
             };
 
-    static final String[] advPatternHelp =
+    private static final String[] advPatternHelp =
             {
                     "Color hue changes \"ripple\" down the strip. The colors move through the spectrum, and appear stationary until Triggered.\n\n" +
                     "The Force applied changes the amount of color change per pixel. At maximum Force the entire spectrum is displayed again.",
@@ -293,6 +294,8 @@ public class Main extends Application
     static boolean createViewFavs = false;      // true when views have been created, false when it's deleted
     static boolean createViewCtrls = false;
     static boolean helpActive = false;
+
+    static StringBuilder replyString = new StringBuilder(MINLEN_REPLYSTR);
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 

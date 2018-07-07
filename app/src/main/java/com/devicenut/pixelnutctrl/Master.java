@@ -42,6 +42,7 @@ import static com.devicenut.pixelnutctrl.Main.pixelDensity;
 import static com.devicenut.pixelnutctrl.Main.pixelHeight;
 
 import static com.devicenut.pixelnutctrl.Main.ble;
+import static com.devicenut.pixelnutctrl.Main.replyString;
 import static com.devicenut.pixelnutctrl.Main.wifi;
 import static com.devicenut.pixelnutctrl.Main.devName;
 import static com.devicenut.pixelnutctrl.Main.devIsBLE;
@@ -131,6 +132,8 @@ public class Master extends AppCompatActivity implements FragFavs.FavoriteSelect
 
         setContentView(R.layout.activity_master);
 
+        if (devIsBLE) findViewById(R.id.button_Networks).setVisibility(GONE);
+
         if (pageFavorites >= 0) myFragments[pageFavorites] = FragFavs.newInstance();
         myFragments[pageControls] = FragCtrls.newInstance();
         //FIXME myFragments[pageDetails] = FragAdv.newInstance();
@@ -148,10 +151,11 @@ public class Master extends AppCompatActivity implements FragFavs.FavoriteSelect
         llGoToText  = findViewById(R.id.ll_GoToText);
 
         pauseButton = findViewById(R.id.button_Pause);
-        helpButton  = findViewById(R.id.button_HelpPage);
         nameText    = findViewById(R.id.text_Devname);
         leftText    = findViewById(R.id.text_GoLeft);
         rightText   = findViewById(R.id.text_GoRight);
+
+        replyString.setLength(0);
 
         SetFragViewPageHeight(false);
         SetupGoToText();
@@ -282,7 +286,6 @@ public class Master extends AppCompatActivity implements FragFavs.FavoriteSelect
                 ((FragFavs)myFragments[pageFavorites]).setHelpMode(true);
                 ((FragCtrls)myFragments[pageControls]).setHelpMode(true);
 
-                helpButton.setText(getResources().getString(R.string.name_action));
                 helpActive = true;
             }
             else
@@ -290,7 +293,6 @@ public class Master extends AppCompatActivity implements FragFavs.FavoriteSelect
                 ((FragFavs)myFragments[pageFavorites]).setHelpMode(false);
                 ((FragCtrls)myFragments[pageControls]).setHelpMode(false);
 
-                helpButton.setText(getResources().getString(R.string.name_help));
                 helpActive = false;
 
                 llGoToText.setVisibility(VISIBLE);
@@ -342,6 +344,12 @@ public class Master extends AppCompatActivity implements FragFavs.FavoriteSelect
             {
                 masterPager.setCurrentItem(++pageCurrent);
                 SetupGoToText();
+                break;
+            }
+            case R.id.button_Networks:
+            {
+                Log.d(LOGNAME, "Handle WiFi networks");
+                startActivity( new Intent(this, Network.class) );
                 break;
             }
         }
@@ -404,7 +412,8 @@ public class Master extends AppCompatActivity implements FragFavs.FavoriteSelect
 
     @Override public void onRead(String reply)
     {
-        Log.e(LOGNAME, "Unexpected onRead");
+        Log.d(LOGNAME, "WiFi reply: " + reply);
+        replyString.append(reply);
     }
 
     private class MasterAdapter extends FragmentPagerAdapter

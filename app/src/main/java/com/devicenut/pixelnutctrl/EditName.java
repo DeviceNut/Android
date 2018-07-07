@@ -3,7 +3,6 @@ package com.devicenut.pixelnutctrl;
 import android.content.Context;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
@@ -11,20 +10,17 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.TextView;
 
-import static android.view.View.GONE;
-import static com.devicenut.pixelnutctrl.Main.devIsBLE;
 import static com.devicenut.pixelnutctrl.Main.devName;
 
 public class EditName extends AppCompatActivity
 {
-    private final String LOGNAME = "EditName";
     private EditText editName;
     private String saveName;
 
     @Override protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_edit_name);
+        setContentView(R.layout.dialog_editname);
 
         editName = findViewById(R.id.edit_DevName);
         editName.setOnEditorActionListener(new TextView.OnEditorActionListener()
@@ -39,8 +35,6 @@ public class EditName extends AppCompatActivity
 
         saveName = devName;
         editName.setText(devName);
-
-        if (devIsBLE) findViewById(R.id.ll_AddNetwork).setVisibility(GONE);
 
         InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
         if (imm != null) imm.toggleSoftInput(InputMethodManager.SHOW_FORCED, 0);
@@ -75,12 +69,6 @@ public class EditName extends AppCompatActivity
                 DoExit();
                 break;
             }
-            case R.id.button_AddNetwork:
-            {
-                Log.d(LOGNAME, "Add network SSID and Passphrase");
-                break;
-            }
         }
     }
-
 }

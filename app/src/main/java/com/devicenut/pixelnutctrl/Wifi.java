@@ -194,6 +194,7 @@ class Wifi
         {
             boolean success = wifiManager.enableNetwork(saveDeviceID, true);
             Log.i(LOGNAME, "Reconnect to previous network: ID=" + saveDeviceID + ": " + (success ? "success" : "failed"));
+            saveDeviceID = 0;
         }
     }
 
