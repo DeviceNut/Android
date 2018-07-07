@@ -1,14 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-          package="com.devicenut.pixelnutctrl">
+    package="com.devicenut.pixelnutctrl">
 
-    <uses-permission android:name="android.permission.BLUETOOTH"/>
-    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN"/>
-    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
-
-    <uses-permission android:name="android.permission.INTERNET"/>
-    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
-    <uses-permission android:name="android.permission.CHANGE_WIFI_STATE"/>
+    <uses-permission android:name="android.permission.BLUETOOTH" />
+    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
 
     <application
         android:name=".Main"
@@ -19,22 +18,24 @@
         android:theme="@style/AppTheme">
         <activity
             android:name=".About"
-            android:theme="@style/DialogTheme">
-        </activity>
+            android:theme="@style/DialogTheme" />
         <activity
             android:name=".EditName"
-            android:theme="@style/DialogTheme">
-        </activity>
-        <activity
-            android:name=".Devices">
+            android:theme="@style/DialogTheme" />
+        <activity android:name=".Devices">
             <intent-filter>
-                <action android:name="android.intent.action.MAIN"/>
-                <category android:name="android.intent.category.LAUNCHER"/>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity android:name=".Master" />
+        <activity android:name=".Network" />
         <activity
-            android:name=".Master">
-        </activity>
+            android:name=".Confirm"
+            android:theme="@style/DialogTheme" />
+        <activity
+            android:name=".Failed"
+            android:theme="@style/DialogTheme" />
     </application>
 
 </manifest>
