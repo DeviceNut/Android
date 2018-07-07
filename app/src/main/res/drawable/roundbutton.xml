@@ -10,8 +10,4 @@
     <solid
         android:color="@color/Background"
         />
-    <size
-        android:width="30dp"
-        android:height="30dp"
-        />
 </shape>
