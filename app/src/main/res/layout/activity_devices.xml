@@ -73,11 +73,13 @@
                 tools:ignore="RtlHardcoded"/>
 
             <Button
-                android:layout_width="wrap_content"
+                android:layout_width="80dp"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="5dp"
-                android:layout_marginBottom="5dp"
+                android:layout_marginTop="7dp"
+                android:layout_marginBottom="7dp"
+                android:layout_marginRight="5dp"
                 android:layout_alignParentEnd="true"
+                android:background="@drawable/roundbutton"
                 android:text="@string/name_website"
                 android:textAppearance="@style/TextAppearance.AppCompat.Small"
                 android:textColor="@color/UserChoice"
@@ -85,11 +87,13 @@
                 android:id="@+id/button_Website"/>
 
             <Button
-                android:layout_width="wrap_content"
+                android:layout_width="70dp"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="5dp"
-                android:layout_marginBottom="5dp"
+                android:layout_marginTop="7dp"
+                android:layout_marginBottom="7dp"
+                android:layout_marginRight="3dp"
                 android:layout_toLeftOf="@id/button_Website"
+                android:background="@drawable/roundbutton"
                 android:text="@string/name_scan"
                 android:textAppearance="@style/TextAppearance.AppCompat.Small"
                 android:textColor="@color/UserChoice"

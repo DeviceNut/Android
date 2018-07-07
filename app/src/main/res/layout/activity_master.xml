@@ -5,6 +5,8 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:padding="0dp"
+    android:focusable="true"
+    android:focusableInTouchMode="true"
     android:background="@color/Background"
     android:orientation="vertical"
     tools:context=".Master">
@@ -22,8 +24,6 @@
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="50dp"
-            android:focusable="true"
-            android:focusableInTouchMode="true"
             android:background="@color/DarkHeader"
             android:orientation="horizontal">
 
@@ -41,23 +41,43 @@
                 tools:ignore="RtlHardcoded"/>
 
             <Button
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_width="35dp"
+                android:layout_height="35dp"
                 android:layout_marginTop="5dp"
                 android:layout_marginBottom="5dp"
+                android:layout_marginRight="8dp"
                 android:layout_alignParentEnd="true"
+                android:background="@drawable/roundbutton"
                 android:text="@string/name_help"
-                android:textAppearance="@style/TextAppearance.AppCompat.Small"
+                android:textStyle="bold"
+                android:textSize="22sp"
                 android:textColor="@color/UserChoice"
                 android:onClick="onClick"
                 android:id="@+id/button_HelpPage"/>
 
             <Button
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_width="35dp"
+                android:layout_height="35dp"
                 android:layout_marginTop="5dp"
                 android:layout_marginBottom="5dp"
+                android:layout_marginRight="8dp"
                 android:layout_toLeftOf="@id/button_HelpPage"
+                android:background="@drawable/roundbutton"
+                android:text="N"
+                android:textSize="22sp"
+                android:textStyle="bold"
+                android:textColor="@color/UserChoice"
+                android:onClick="onClick"
+                android:id="@+id/button_Networks"/>
+
+            <Button
+                android:layout_width="70dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="7dp"
+                android:layout_marginBottom="7dp"
+                android:layout_marginRight="5dp"
+                android:layout_toLeftOf="@id/button_Networks"
+                android:background="@drawable/roundbutton"
                 android:text="@string/name_pause"
                 android:textAppearance="@style/TextAppearance.AppCompat.Small"
                 android:textColor="@color/UserChoice"
