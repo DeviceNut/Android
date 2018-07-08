@@ -71,6 +71,7 @@ class Wifi
                 ShowConnectionInfo(info);
 
                 saveDeviceID = info.getNetworkId();
+                Log.d(LOGNAME, "Saving previous network ID=" + saveDeviceID);
             }
         }
     }
@@ -130,14 +131,15 @@ class Wifi
         WifiInfo info = wifiManager.getConnectionInfo();
         ShowConnectionInfo(info);
 
-        if (info.getNetworkId() != deviceID) // if deviceID doesn't match then need to rescan
-        {
-            stopConnect = true;
-            wifiCB.onConnect(DEVSTAT_FAILED);
-            return false;
-        }
+        if (info.getIpAddress() == 0) return false;
 
-        return(info.getIpAddress() != 0);
+        if (info.getNetworkId() == deviceID) return true;
+
+        // if deviceID doesn't match then need to rescan
+        Log.w(LOGNAME, "DeviceID mismatch: " + info.getNetworkId() + " != " + deviceID);
+        stopConnect = true;
+        wifiCB.onConnect(DEVSTAT_FAILED);
+        return false;
     }
 
     boolean connect()
@@ -175,11 +177,12 @@ class Wifi
                         break;
                     }
                 }
+
+                Log.d(LOGNAME, "Connect thread ending...");
             }
         }
         .start();
 
-        Log.d(LOGNAME, "Connect thread ending...");
         stopScan = true;
         return true;
     }

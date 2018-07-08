@@ -295,8 +295,6 @@ public class Main extends Application
     static boolean createViewCtrls = false;
     static boolean helpActive = false;
 
-    static StringBuilder replyString = new StringBuilder(MINLEN_REPLYSTR);
-
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     static final int MAXNUM_FAVORITIES = 6; // limited by layout
@@ -767,5 +765,12 @@ public class Main extends Application
             ++j;
             ++k;
         }
+    }
+
+    static void SendCommandString(String str)
+    {
+        Log.v(LOGNAME, "Queue command: \"" + str + "\"");
+        if (isConnected && !msgWriteQueue.put(str))
+            Log.e(LOGNAME, "Msg queue full: str=\"" + str + "\"");
     }
 }

@@ -28,6 +28,7 @@ import static com.devicenut.pixelnutctrl.Main.CMD_RESUME;
 import static com.devicenut.pixelnutctrl.Main.CMD_SEQ_END;
 import static com.devicenut.pixelnutctrl.Main.DEVSTAT_FAILED;
 import static com.devicenut.pixelnutctrl.Main.DEVSTAT_SUCCESS;
+import static com.devicenut.pixelnutctrl.Main.SendCommandString;
 import static com.devicenut.pixelnutctrl.Main.createViewCtrls;
 import static com.devicenut.pixelnutctrl.Main.createViewFavs;
 import static com.devicenut.pixelnutctrl.Main.doRefreshCache;
@@ -42,12 +43,10 @@ import static com.devicenut.pixelnutctrl.Main.pixelDensity;
 import static com.devicenut.pixelnutctrl.Main.pixelHeight;
 
 import static com.devicenut.pixelnutctrl.Main.ble;
-import static com.devicenut.pixelnutctrl.Main.replyString;
 import static com.devicenut.pixelnutctrl.Main.wifi;
 import static com.devicenut.pixelnutctrl.Main.devName;
 import static com.devicenut.pixelnutctrl.Main.devIsBLE;
 import static com.devicenut.pixelnutctrl.Main.msgWriteEnable;
-import static com.devicenut.pixelnutctrl.Main.msgWriteQueue;
 import static com.devicenut.pixelnutctrl.Main.isConnected;
 
 public class Master extends AppCompatActivity implements FragFavs.FavoriteSelectInterface,
@@ -154,8 +153,6 @@ public class Master extends AppCompatActivity implements FragFavs.FavoriteSelect
         nameText    = findViewById(R.id.text_Devname);
         leftText    = findViewById(R.id.text_GoLeft);
         rightText   = findViewById(R.id.text_GoRight);
-
-        replyString.setLength(0);
 
         SetFragViewPageHeight(false);
         SetupGoToText();
@@ -266,6 +263,8 @@ public class Master extends AppCompatActivity implements FragFavs.FavoriteSelect
                 if (devIsBLE)
                      ble.disconnect();
                 else wifi.disconnect();
+
+                isConnected = false;
             }
 
             super.onBackPressed();
@@ -357,9 +356,10 @@ public class Master extends AppCompatActivity implements FragFavs.FavoriteSelect
 
     private void SendString(String str)
     {
-        Log.v(LOGNAME, "Queue command: \"" + str + "\"");
-        if (isConnected && !msgWriteQueue.put(str))
-            Log.e(LOGNAME, "Msg queue full: str=\"" + str + "\"");
+        SendCommandString(str);
+        //Log.v(LOGNAME, "Queue command: \"" + str + "\"");
+        //if (isConnected && !msgWriteQueue.put(str))
+        //    Log.e(LOGNAME, "Msg queue full: str=\"" + str + "\"");
     }
 
     private void DeviceDisconnect(final String reason)
@@ -376,9 +376,11 @@ public class Master extends AppCompatActivity implements FragFavs.FavoriteSelect
             });
 
             isConnected = false;
-            Log.d(LOGNAME, "Finishing controls activity...");
-            finish();
         }
+        else Log.w(LOGNAME, "Device not connected!");
+
+        Log.d(LOGNAME, "Finishing master activity...");
+        finish();
     }
 
     @Override public void onScan(String name, int id, boolean isble)
@@ -412,8 +414,7 @@ public class Master extends AppCompatActivity implements FragFavs.FavoriteSelect
 
     @Override public void onRead(String reply)
     {
-        Log.d(LOGNAME, "WiFi reply: " + reply);
-        replyString.append(reply);
+        Log.e(LOGNAME, "Unexpected WiFi reply: " + reply);
     }
 
     private class MasterAdapter extends FragmentPagerAdapter

@@ -34,11 +34,11 @@
     <string name="action_ctrls_left">&lt;&lt;&lt; Controls</string>
     <string name="action_details">Details &gt;&gt;&gt;</string>
     <string name="text_addnetwork">
-        This will clear ALL stored network configurations.
+        This will clear ALL the stored network information from the device.
     </string>
     <string name="text_connectnetwork">
-        This will restart the device to connect it to one of the store networks.
-        This application will then return to the beginning Devices screen.
+        This will restart the device and connect it to one of the stored networks.
+        \n\nThis application will then return to the Device Scan screen.
     </string>
     <string name="list_networks">
           1) Name1    WEP   XXX

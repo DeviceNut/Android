@@ -1,11 +1,13 @@
 package com.devicenut.pixelnutctrl;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.support.annotation.NonNull;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,10 +20,18 @@ import android.widget.ScrollView;
 import android.widget.Spinner;
 import android.widget.TextView;
 
+import static com.devicenut.pixelnutctrl.Main.DEVSTAT_FAILED;
+import static com.devicenut.pixelnutctrl.Main.DEVSTAT_SUCCESS;
+import static com.devicenut.pixelnutctrl.Main.MINLEN_REPLYSTR;
 import static com.devicenut.pixelnutctrl.Main.appContext;
+import static com.devicenut.pixelnutctrl.Main.msgWriteEnable;
+import static com.devicenut.pixelnutctrl.Main.wifi;
 
-public class Network extends AppCompatActivity
+public class Network extends AppCompatActivity implements Wifi.WifiCallbacks
 {
+    private final String LOGNAME = "Network";
+    private final Activity context = this;
+
     private EditText pass;
     private TextView title;
     private ProgressBar waitRefresh;
@@ -29,14 +39,16 @@ public class Network extends AppCompatActivity
     private boolean isRefreshing = false;
     private Button doAdd, doConnect;
     private boolean haveNetworks = false;
+    private boolean isConfirming = false;
+    private StringBuilder replyString = new StringBuilder(MINLEN_REPLYSTR);
 
     private String listNames[] =
             {
                     "NetworkName1",
-                    "NetworkName1",
-                    "NetworkName1",
-                    "NetworkName1",
-                    "NetworkName1",
+                    "NetworkName2",
+                    "NetworkName3",
+                    "NetworkName4",
+                    "NetworkName5",
             };
 
     @Override protected void onCreate(Bundle savedInstanceState)
@@ -52,7 +64,8 @@ public class Network extends AppCompatActivity
 
         doAdd = findViewById(R.id.button_AddToDevice);
         doConnect = findViewById(R.id.button_ConnectToNetwork);
-        doConnect.setEnabled(false);
+        //doConnect.setEnabled(false);
+        //doConnect.setAlpha((float)0.5);
 
         pass = findViewById(R.id.edit_NetPass);
         //pass.setOnEditorActionListener(SaveNetworkOnDone);
@@ -63,6 +76,23 @@ public class Network extends AppCompatActivity
 
         //InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
         //if (imm != null) imm.toggleSoftInput(InputMethodManager.SHOW_FORCED, 0);
+    }
+
+    @Override protected void onResume()
+    {
+        Log.d(LOGNAME, ">>onResume");
+        super.onResume();
+
+        if (isConfirming)
+        {
+            Log.d(LOGNAME, "Returning from confirmation...");
+            isConfirming = false;
+        }
+        else
+        {
+            replyString.setLength(0);
+            wifi.setCallbacks(this);
+        }
     }
 
     @Override public void onBackPressed()
@@ -151,6 +181,8 @@ public class Network extends AppCompatActivity
         {
             case R.id.button_ClearStore:
             {
+                Log.d(LOGNAME, "Clear Stored Networks...");
+                isConfirming = true;
                 Intent i = new Intent(this, Confirm.class);
                 String str = getResources().getString(R.string.text_addnetwork);
                 i.putExtra("Text", str);
@@ -159,16 +191,21 @@ public class Network extends AppCompatActivity
             }
             case R.id.button_NetRefresh:
             {
+                Log.d(LOGNAME, "Network List Refresh...");
                 DoRefresh(true);
                 break;
             }
             case R.id.button_AddToDevice:
             {
+                Log.d(LOGNAME, "Add Network to Device...");
                 SaveNetwork();
+                pass.setText("");
                 break;
             }
             case R.id.button_ConnectToNetwork:
             {
+                Log.d(LOGNAME, "Connect Device to Network...");
+                isConfirming = true;
                 Intent i = new Intent(this, Confirm.class);
                 String str = getResources().getString(R.string.text_connectnetwork);
                 i.putExtra("Text", str);
@@ -177,4 +214,40 @@ public class Network extends AppCompatActivity
             }
         }
     }
+
+    @Override public void onScan(String name, int id, boolean isble)
+    {
+        Log.e(LOGNAME, "Unexpected callback: onScan");
+    }
+
+    @Override public void onConnect(final int status)
+    {
+        Log.e(LOGNAME, "Unexpected callback: onConnect");
+    }
+
+    @Override public void onDisconnect()
+    {
+        Log.i(LOGNAME, "Received disconnect");
+        //DeviceDisconnect("Request");
+    }
+
+    @Override public void onWrite(final int status)
+    {
+        if (status == DEVSTAT_SUCCESS)
+            msgWriteEnable = true;
+
+        else if (status == DEVSTAT_FAILED)
+        {
+            Log.e(LOGNAME, "OnWrite: failed");
+            //DeviceDisconnect("Write");
+        }
+        else Log.w(LOGNAME, "OnWrite: bad device state");
+    }
+
+    @Override public void onRead(String reply)
+    {
+        Log.d(LOGNAME, "WiFi reply: " + reply);
+        replyString.append(reply);
+    }
+
 }
