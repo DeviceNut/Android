@@ -414,7 +414,8 @@ public class Master extends AppCompatActivity implements FragFavs.FavoriteSelect
 
     @Override public void onRead(String reply)
     {
-        Log.e(LOGNAME, "Unexpected WiFi reply: " + reply);
+        if ((reply != null) && !reply.equals("ok"))
+            Log.e(LOGNAME, "Unexpected WiFi reply: " + reply);
     }
 
     private class MasterAdapter extends FragmentPagerAdapter

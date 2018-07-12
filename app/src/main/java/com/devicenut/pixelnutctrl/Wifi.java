@@ -241,9 +241,9 @@ class Wifi
                 {
                     inline = inline.trim();
                     Log.v(LOGNAME, "DeviceSays: " + inline);
-                    if (inline.equals("ok")) break;
                     wifiCB.onRead(inline);
                 }
+                wifiCB.onRead(null); // indicate done reading
 
                 devReader.close();
                 Log.v(LOGNAME, "Wifi finished reading");

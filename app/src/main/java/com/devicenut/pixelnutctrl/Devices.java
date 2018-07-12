@@ -120,10 +120,6 @@ public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
             return;
         }
 
-        // make sure keyboard is down
-        InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
-        if (imm != null) imm.toggleSoftInput(InputMethodManager.RESULT_HIDDEN, 0);
-
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)   != PackageManager.PERMISSION_GRANTED ||
             ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED)
         {
@@ -511,6 +507,8 @@ public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
 
     @Override public void onRead(String rstr)
     {
+        if (rstr == null) return; // end of read
+
         rstr = rstr.trim();
         Log.v(LOGNAME, "Reply=" + rstr);
 
