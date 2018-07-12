@@ -1,5 +1,6 @@
 package com.devicenut.pixelnutctrl;
 
+import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -28,11 +29,16 @@ public class Confirm extends AppCompatActivity
         {
             case R.id.button_ClearCancel:
             {
+                Intent intent= new Intent();
+                setResult(RESULT_CANCELED, intent);
                 finish();
                 break;
             }
             case R.id.button_ClearContinue:
             {
+                Intent intent= new Intent();
+                setResult(RESULT_OK, intent);
+                finish();
                 break;
             }
         }

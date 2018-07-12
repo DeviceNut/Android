@@ -161,8 +161,7 @@ public class FragCtrls extends Fragment implements SeekBar.OnSeekBarChangeListen
 
     public static FragCtrls newInstance() { return new FragCtrls(); }
 
-    @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
+    @Override public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
     {
         Log.d(LOGNAME, ">>onCreateView");
 
@@ -287,8 +286,7 @@ public class FragCtrls extends Fragment implements SeekBar.OnSeekBarChangeListen
         return v;
     }
 
-    @Override
-    public void onDestroyView()
+    @Override public void onDestroyView()
     {
         Log.d(LOGNAME, ">>onDestroyView");
         super.onDestroyView();
@@ -313,8 +311,7 @@ public class FragCtrls extends Fragment implements SeekBar.OnSeekBarChangeListen
         createViewCtrls = false;
     }
 
-    @Override
-    public void onAttach(Context context)
+    @Override public void onAttach(Context context)
     {
         Log.d(LOGNAME, ">>onAttach");
         super.onAttach(context);
@@ -325,8 +322,7 @@ public class FragCtrls extends Fragment implements SeekBar.OnSeekBarChangeListen
         listenPatternSelect = (PatternSelectInterface) getActivity();
     }
 
-    @Override
-    public void onDetach()
+    @Override public void onDetach()
     {
         Log.d(LOGNAME, ">>onDetach");
         super.onDetach();
@@ -343,14 +339,11 @@ public class FragCtrls extends Fragment implements SeekBar.OnSeekBarChangeListen
     {
         spinnerArrayAdapter_Basic = new ArrayAdapter<String>(appContext, R.layout.layout_spinner, listNames_Basic)
         {
-            @Override
-            public boolean areAllItemsEnabled() { return false; }
+            @Override public boolean areAllItemsEnabled() { return false; }
 
-            @Override
-            public boolean isEnabled(int position) { return listEnables_Basic[position]; }
+            @Override public boolean isEnabled(int position) { return listEnables_Basic[position]; }
 
-            @Override
-            public View getDropDownView(int position, View convertView, @NonNull ViewGroup parent)
+            @Override public View getDropDownView(int position, View convertView, @NonNull ViewGroup parent)
             {
                 View v = convertView;
                 if (v == null)
@@ -380,14 +373,11 @@ public class FragCtrls extends Fragment implements SeekBar.OnSeekBarChangeListen
     {
         spinnerArrayAdapter_All = new ArrayAdapter<String>(appContext, R.layout.layout_spinner, listNames_All)
         {
-            @Override
-            public boolean areAllItemsEnabled() { return false; }
+            @Override public boolean areAllItemsEnabled() { return false; }
 
-            @Override
-            public boolean isEnabled(int position) { return listEnables_All[position]; }
+            @Override public boolean isEnabled(int position) { return listEnables_All[position]; }
 
-            @Override
-            public View getDropDownView(int position, View convertView, @NonNull ViewGroup parent)
+            @Override public View getDropDownView(int position, View convertView, @NonNull ViewGroup parent)
             {
                 View v = convertView;
                 if (v == null)
@@ -413,11 +403,9 @@ public class FragCtrls extends Fragment implements SeekBar.OnSeekBarChangeListen
 
     private final AdapterView.OnItemSelectedListener patternListener = new AdapterView.OnItemSelectedListener()
     {
-        @Override
-        public void onNothingSelected(AdapterView<?> parent) {}
+        @Override public void onNothingSelected(AdapterView<?> parent) {}
 
-        @Override
-        public void onItemSelected(AdapterView<?> parent, View view, int position, long id)
+        @Override public void onItemSelected(AdapterView<?> parent, View view, int position, long id)
         {
             TextView v = (TextView) view;
             v.setTextColor(ContextCompat.getColor(appContext, R.color.UserChoice));

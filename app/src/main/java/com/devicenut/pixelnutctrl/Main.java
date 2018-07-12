@@ -60,39 +60,46 @@ public class Main extends Application
 
     static final int MAXLEN_BLE_CHUNK       = 20; // max chars that can be sent at once with BLE implementation
 
-    static final String PREFIX_PIXELNUT      = "P!";
-    static final String PREFIX_PHOTON        = "PHOTON-";
-    static final String POSTFIX_WIFI         = "---!P";
-    static final String PREFIX_ADAFRUIT      = "ADAFRUIT";
-    static final String DEVNAME_NONE         = "NoName";
-    static final String URL_PIXELNUT         = "http://www.pixelnut.io";
+    static final String PREFIX_PIXELNUT     = "P!";
+    static final String PREFIX_PHOTON       = "PHOTON-";
+    static final String POSTFIX_WIFI        = "---!P";
+    static final String PREFIX_ADAFRUIT     = "ADAFRUIT";
+    static final String DEVNAME_NONE        = "NoName";
+    static final String URL_PIXELNUT        = "http://www.pixelnut.io";
 
-    static final String CMD_GET_INFO         = "?";
-    static final String CMD_GET_SEGMENTS     = "?S";
-    static final String CMD_GET_PATTERNS     = "?P";
-    static final String CMD_GET_PLUGINS      = "?X";
-    static final String CMD_BLUENAME         = "@";
-    static final String CMD_BRIGHT           = "%";
-    static final String CMD_DELAY            = ":";
-    static final String CMD_EXTMODE          = "_";
-    static final String CMD_PROPVALS         = "=";
-    static final String CMD_TRIGGER          = "!";
-    static final String CMD_PAUSE            = "[";
-    static final String CMD_RESUME           = "]";
-    static final String CMD_SEGS_ENABLE      = "#";
-    static final String CMD_POP_PATTERN      = "P "; // always used before pattern string, needs to be separated
-    static final String CMD_START_END        = ".";
-    static final String CMD_SEQ_END          = "\n";
+    static final String CMD_GET_INFO        = "?";
+    static final String CMD_GET_SEGMENTS    = "?S";
+    static final String CMD_GET_PATTERNS    = "?P";
+    static final String CMD_GET_PLUGINS     = "?X";
+    static final String CMD_BLUENAME        = "@";
+    static final String CMD_BRIGHT          = "%";
+    static final String CMD_DELAY           = ":";
+    static final String CMD_EXTMODE         = "_";
+    static final String CMD_PROPVALS        = "=";
+    static final String CMD_TRIGGER         = "!";
+    static final String CMD_PAUSE           = "[";
+    static final String CMD_RESUME          = "]";
+    static final String CMD_SEGS_ENABLE     = "#";
+    static final String CMD_POP_PATTERN     = "P "; // always used before pattern string, needs to be separated
+    static final String CMD_START_END       = ".";
+    static final String CMD_SEQ_END         = "\n";
 
-    static final int MAXVAL_HUE              = 359;
-    static final int MAXVAL_WHT              = 50;
-    static final int MAXVAL_PERCENT          = 100;
-    static final int MAXVAL_FORCE            = 1000;
-    static final int MINVAL_DELAYRANGE       = 80;      // use this for patterns defined here, and is minimal value for custom patterns
+    // for WiFi devices only:
+    static final String WCMD_GET_NETACTIVE  = "?A";     // get list of active networks that can be connected to
+    static final String WCMD_GET_NETSTORE   = "?N";     // get list of currently stored networks
+    static final String WCMD_SET_NETSTORE   = "*N";     // store network configuration to device (or clear all)
+    static final String WCMD_SET_SOFTAP     = "*A";     // set SoftAP mode: 0=disable, 1=enable
+    static final String WCMD_CONNECT_CLOUD  = "*C";     // connect to the cloud, rebooting if necessary to do so
 
-    static final int MINLEN_CMDSTR           = 100;     // minimum length of the command/pattern string
-    static final int MINLEN_REPLYSTR         = 300;     // minimum length to alloc for reply string from device
-    static final int MINLEN_SEGLEN_FORADV    = 20;      // minimum length of each segment to be able to use the advanced patterns
+    static final int MAXVAL_HUE             = 359;
+    static final int MAXVAL_WHT             = 50;
+    static final int MAXVAL_PERCENT         = 100;
+    static final int MAXVAL_FORCE           = 1000;
+    static final int MINVAL_DELAYRANGE      = 80;      // use this for patterns defined here, and is minimal value for custom patterns
+
+    static final int MINLEN_CMDSTR          = 100;     // minimum length of the command/pattern string
+    static final int MINLEN_REPLYSTR        = 300;     // minimum length to alloc for reply string from device
+    static final int MINLEN_SEGLEN_FORADV   = 20;      // minimum length of each segment to be able to use the advanced patterns
 
     private static final String[] basicPatternNames =
             {
