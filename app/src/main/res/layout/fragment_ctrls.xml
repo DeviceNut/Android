@@ -17,7 +17,7 @@
         android:layout_marginTop="10dp"
         android:layout_marginLeft="@dimen/activity_horizontal_margin"
         android:layout_marginRight="@dimen/activity_horizontal_margin"
-        android:id="@+id/ll_HelpPage_Ctrls">
+        android:id="@+id/scroll_HelpPage_Ctrls">
 
         <LinearLayout
             android:layout_width="match_parent"

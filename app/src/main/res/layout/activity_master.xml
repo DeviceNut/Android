@@ -41,7 +41,7 @@
                 tools:ignore="RtlHardcoded"/>
 
             <Button
-                android:layout_width="35dp"
+                android:layout_width="45dp"
                 android:layout_height="35dp"
                 android:layout_marginTop="5dp"
                 android:layout_marginBottom="5dp"
@@ -56,7 +56,7 @@
                 android:id="@+id/button_HelpPage"/>
 
             <Button
-                android:layout_width="35dp"
+                android:layout_width="45dp"
                 android:layout_height="35dp"
                 android:layout_marginTop="5dp"
                 android:layout_marginBottom="5dp"
@@ -71,7 +71,7 @@
                 android:id="@+id/button_Networks"/>
 
             <Button
-                android:layout_width="70dp"
+                android:layout_width="60dp"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="7dp"
                 android:layout_marginBottom="7dp"

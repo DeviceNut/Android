@@ -43,6 +43,7 @@ import static com.devicenut.pixelnutctrl.Main.InitVarsForDevice;
 import static com.devicenut.pixelnutctrl.Main.SleepMsecs;
 
 import static com.devicenut.pixelnutctrl.Main.ble;
+import static com.devicenut.pixelnutctrl.Main.resumeScanning;
 import static com.devicenut.pixelnutctrl.Main.wifi;
 import static com.devicenut.pixelnutctrl.Main.devName;
 import static com.devicenut.pixelnutctrl.Main.devIsBLE;
@@ -86,7 +87,6 @@ public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
     private int buttonCount = 0;
     private boolean isScanning = false;
     private boolean isConnecting = false;
-    private boolean resumeScanning = true;
     private boolean didFail = false;
     private boolean isDone = false;
 

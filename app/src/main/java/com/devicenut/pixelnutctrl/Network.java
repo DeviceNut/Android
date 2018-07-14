@@ -16,6 +16,7 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.ScrollView;
 import android.widget.Spinner;
@@ -37,8 +38,10 @@ import static com.devicenut.pixelnutctrl.Main.WCMD_GET_NETSTORE;
 import static com.devicenut.pixelnutctrl.Main.WCMD_SET_NETSTORE;
 import static com.devicenut.pixelnutctrl.Main.WCMD_SET_SOFTAP;
 import static com.devicenut.pixelnutctrl.Main.appContext;
+import static com.devicenut.pixelnutctrl.Main.helpActive;
 import static com.devicenut.pixelnutctrl.Main.isConnected;
 import static com.devicenut.pixelnutctrl.Main.msgWriteEnable;
+import static com.devicenut.pixelnutctrl.Main.resumeScanning;
 import static com.devicenut.pixelnutctrl.Main.wifi;
 
 public class Network extends AppCompatActivity implements Wifi.WifiCallbacks
@@ -49,10 +52,11 @@ public class Network extends AppCompatActivity implements Wifi.WifiCallbacks
     private EditText passEdit;
     private TextView title, networkSelect;
     private ProgressBar waitRefresh;
-    private ScrollView scrollView;
+    private ScrollView scrollNet, helpPage;
     private Button doAddButton, doCntButton;
     private boolean doStoredNetworks = false;
     private boolean doAvailableNetworks = false;
+    private boolean doAddNetwork = false;
     private boolean keepWaiting = false;
     private boolean isRefreshing = false;
     private boolean doFirstScan = false;
@@ -108,8 +112,9 @@ public class Network extends AppCompatActivity implements Wifi.WifiCallbacks
         setContentView(R.layout.activity_network);
 
         title = findViewById(R.id.title_Networks);
-        scrollView = findViewById(R.id.scroll_networks);
-        
+        scrollNet  = findViewById(R.id.scroll_Network);
+        helpPage   = findViewById(R.id.scroll_HelpPage_Network);
+
         networkSelect = findViewById(R.id.text_NetworkSelect);
         waitRefresh = findViewById(R.id.progress_Refresh);
         networkList = findViewById(R.id.spinner_Networks);
@@ -146,9 +151,13 @@ public class Network extends AppCompatActivity implements Wifi.WifiCallbacks
 
     @Override public void onBackPressed()
     {
-        if (isRefreshing) SetupDisplay(false);
+        if (helpActive) SetHelpMode(false);
+
+        else if (isRefreshing) SetupDisplay(false);
 
         else super.onBackPressed();
+
+        keepWaiting = false;
     }
 
     private ArrayAdapter<String> arrayAdapter_Networks;
@@ -235,17 +244,19 @@ public class Network extends AppCompatActivity implements Wifi.WifiCallbacks
 
     private void SetupDisplay(boolean dostart)
     {
+        helpPage.setVisibility(GONE);
+
         if (dostart)
         {
             title.setAlpha((float)0.3);
-            scrollView.setAlpha((float)0.3);
+            scrollNet.setAlpha((float)0.3);
             waitRefresh.setVisibility(VISIBLE);
             isRefreshing = true;
         }
         else
         {
             title.setAlpha((float)1.0);
-            scrollView.setAlpha((float)1.0);
+            scrollNet.setAlpha((float)1.0);
             waitRefresh.setVisibility(GONE);
             isRefreshing = false;
         }
@@ -260,12 +271,29 @@ public class Network extends AppCompatActivity implements Wifi.WifiCallbacks
             networkSelect.setText("No networks found");
             networkList.setVisibility(GONE);
         }
+
         SetAddNetButton();
+    }
+
+    private void SetHelpMode(boolean enable)
+    {
+        if (enable)
+        {
+            helpActive = true;
+            scrollNet.setVisibility(GONE);
+            helpPage.setVisibility(VISIBLE);
+        }
+        else
+        {
+            helpActive = false;
+            helpPage.setVisibility(GONE);
+            scrollNet.setVisibility(VISIBLE);
+        }
     }
 
     public void onClick(View v)
     {
-        switch (v.getId())
+        if (!keepWaiting) switch (v.getId())
         {
             case R.id.button_ClearStore:
             {
@@ -305,6 +333,11 @@ public class Network extends AppCompatActivity implements Wifi.WifiCallbacks
                 startActivityForResult(i, 1);
                 break;
             }
+            case R.id.button_HelpPage2:
+            {
+                SetHelpMode(true);
+                break;
+            }
         }
     }
 
@@ -314,6 +347,7 @@ public class Network extends AppCompatActivity implements Wifi.WifiCallbacks
 
         doStoredNetworks = true;
         doAvailableNetworks = false;
+        doAddNetwork = false;
         replyString.setLength(0);
 
         SendCommandString(WCMD_GET_NETSTORE);
@@ -326,6 +360,7 @@ public class Network extends AppCompatActivity implements Wifi.WifiCallbacks
 
         doStoredNetworks = false;
         doAvailableNetworks = true;
+        doAddNetwork = false;
         replyString.setLength(0);
 
         SendCommandString(WCMD_GET_NETACTIVE);
@@ -339,25 +374,26 @@ public class Network extends AppCompatActivity implements Wifi.WifiCallbacks
         bstr.append(WCMD_SET_NETSTORE);
         if (netname != null)
         {
-            bstr.append(" " + netname);
-            if (password != null)
+            bstr.append(" ").append(netname);
+
+            if (security != null)
             {
-                bstr.append(" " + password);
+                password = (password == null) ? "*" : password; // use special placeholder for empty password
+                bstr.append(" ").append(password);
 
-                if (security != null)
-                {
-                    bstr.append(" " + security);
+                bstr.append(" ").append(security);
 
-                    if (cipher != null)
-                    {
-                        bstr.append(" " + cipher);
-                    }
-                }
+                if (cipher != null)
+                    bstr.append(" ").append(cipher);
             }
         }
         String s = bstr.toString();
 
         Log.d(LOGNAME, "Set Stored Network: " + s);
+
+        doStoredNetworks = false;
+        doAvailableNetworks = false;
+        doAddNetwork = true;
 
         SendCommandString(s);
         WaitForResponse();
@@ -368,7 +404,7 @@ public class Network extends AppCompatActivity implements Wifi.WifiCallbacks
         keepWaiting = true;
         SetupDisplay(true);
 
-        new CountDownTimer(5000, 100)
+        new CountDownTimer(10000, 125)
         {
             public void onTick(long millisUntilFinished)
             {
@@ -398,10 +434,13 @@ public class Network extends AppCompatActivity implements Wifi.WifiCallbacks
             }
             else // ConnectToDevice
             {
+                doStoredNetworks = false;
+                doAvailableNetworks = false;
+                doAddNetwork = false;
+
                 SendCommandString(WCMD_SET_SOFTAP + "0"); // first disable SoftAP mode
                 SendCommandString(WCMD_CONNECT_CLOUD);    // then connect to the cloud
-                isConnected = false; // force return to Device Scan screen
-                finish();
+                WaitForResponse();
             }
         }
     }
@@ -547,12 +586,23 @@ public class Network extends AppCompatActivity implements Wifi.WifiCallbacks
 
                     keepWaiting = false;
                 }
-                else if (!replyString.toString().startsWith("ok")) // return value from Add Network failed
+                else if (doAddNetwork)
                 {
-                    keepWaiting = false;
-                    Toast.makeText(context, "Add toNetwork: " + replyString.toString().trim(), Toast.LENGTH_LONG).show();
+                    doAddNetwork = false;
+
+                    if (!replyString.toString().startsWith("ok")) // return value from Add Network failed
+                    {
+                        keepWaiting = false;
+                        Toast.makeText(context, "Add Network: " + replyString.toString().trim(), Toast.LENGTH_LONG).show();
+                    }
+                    else GetStoredNetworks(false); // now retrieve all stored networks to update display
                 }
-                else GetStoredNetworks(false); // now retrieve all stored networks to update display
+                else // return value from Connect Device (ignore errors)
+                {
+                    isConnected = false;
+                    resumeScanning = false;
+                    finish();
+                }
             }
         });
     }

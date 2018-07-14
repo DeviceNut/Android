@@ -25,21 +25,97 @@
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
-        <TextView
+        <View
+            android:layout_width="fill_parent"
+            android:layout_height="2dp"
+            android:background="@color/HorzDivider0"/>
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:background="@color/DarkHeader"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:textAlignment="center"
+                android:textSize="24sp"
+                android:background="@color/DarkHeader"
+                android:text="@string/title_networks"
+                android:id="@+id/title_Networks"/>
+
+            <Button
+                android:layout_width="45dp"
+                android:layout_height="35dp"
+                android:layout_marginTop="8dp"
+                android:layout_marginRight="8dp"
+                android:layout_alignParentEnd="true"
+                android:background="@drawable/roundbutton"
+                android:text="@string/name_help"
+                android:textStyle="bold"
+                android:textSize="22sp"
+                android:textColor="@color/UserChoice"
+                android:onClick="onClick"
+                android:id="@+id/button_HelpPage2"/>
+
+        </RelativeLayout>
+
+        <View
+            android:layout_width="fill_parent"
+            android:layout_height="1dp"
+            android:background="@color/HorzDivider1"/>
+
+        <View
+            android:layout_width="fill_parent"
+            android:layout_height="1dp"
+            android:background="@color/HorzDivider2"/>
+
+        <View
+            android:layout_width="fill_parent"
+            android:layout_height="1dp"
+            android:background="@color/HorzDivider3"/>
+
+        <ScrollView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textAlignment="center"
-            android:textSize="24sp"
-            android:background="@color/DarkHeader"
-            android:text="@string/title_networks"
-            android:id="@+id/title_Networks"/>
+            android:visibility="gone"
+            android:orientation="vertical"
+            android:layout_marginTop="10dp"
+            android:layout_marginLeft="@dimen/activity_horizontal_margin"
+            android:layout_marginRight="@dimen/activity_horizontal_margin"
+            android:id="@+id/scroll_HelpPage_Network">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="10dp"
+                    android:text="@string/title_help_network"
+                    android:textAppearance="@style/TextAppearance.AppCompat.Large"
+                    android:textStyle="italic"/>
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+                    android:text="@string/text_help_network"
+                    android:id="@+id/view_HelpText_Network"/>
+
+            </LinearLayout>
+        </ScrollView>
 
         <ScrollView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:requiresFadingEdge="vertical"
             android:padding="10dp"
-            android:id="@+id/scroll_networks">
+            android:id="@+id/scroll_Network">
 
             <LinearLayout
                 android:layout_width="match_parent"

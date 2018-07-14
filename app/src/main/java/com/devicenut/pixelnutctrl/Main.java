@@ -89,7 +89,7 @@ public class Main extends Application
     static final String WCMD_GET_NETSTORE   = "?N";     // get list of currently stored networks
     static final String WCMD_SET_NETSTORE   = "*N";     // store network configuration to device (or clear all)
     static final String WCMD_SET_SOFTAP     = "*A";     // set SoftAP mode: 0=disable, 1=enable
-    static final String WCMD_CONNECT_CLOUD  = "*C";     // connect to the cloud, rebooting if necessary to do so
+    static final String WCMD_CONNECT_CLOUD  = "*R";     // connect to the cloud by restarting the device
 
     static final int MAXVAL_HUE             = 359;
     static final int MAXVAL_WHT             = 50;
@@ -257,7 +257,8 @@ public class Main extends Application
     static final int basicPatternsCount = basicPatternNames.length;
     static final int advPatternsCount = advPatternNames.length;
 
-    static boolean isConnected = false;         // shared by Devices and Master
+    static boolean isConnected = false;         // shared by Devices and Master and Network
+    static boolean resumeScanning = true;       // shared by Devices and Network
 
     // determined for android device being used
     static int pixelWidth = 0;

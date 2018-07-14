@@ -28,6 +28,7 @@
     <string name="title_networks">Networks</string>
     <string name="title_help_favs">Favorites Help</string>
     <string name="title_help_ctrls">Controls Help</string>
+    <string name="title_help_network">Network Help</string>
     <string name="title_favs">Favorites</string>
     <string name="action_favs">&lt;&lt;&lt; Favorites</string>
     <string name="action_ctrls_rite">Controls &gt;&gt;&gt;</string>
@@ -37,13 +38,8 @@
         This will clear ALL the stored network information from the device.
     </string>
     <string name="text_connectnetwork">
-        This will restart the device and connect it to one of the stored networks.
+        This restarts the device, which then tries to connect to one of its stored networks.
         \n\nThis application will then return to the Device Scan screen.
-    </string>
-    <string name="list_networks">
-          1) Name1    WEP   XXX
-        \n2) Name2    WPA   YYY
-        \n3) Name3    WPA2  ZZZ
     </string>
     <string name="text_help_head">
         You are connected to the PixelNut! device whose name is displayed in the upper left.
@@ -104,5 +100,10 @@
         The amount of change is determined by the amount of force that is set.
 
         \n\nNot all patterns allow setting the force, and some cannot be triggered at all.
+    </string>
+    <string name="text_help_network">
+        This screen allows you to control what networks are stored in your device,
+        determining how it can connect to your local WiFi network so that it can be
+        controlled over the internet.
     </string>
 </resources>

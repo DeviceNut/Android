@@ -168,7 +168,7 @@ public class FragCtrls extends Fragment implements SeekBar.OnSeekBarChangeListen
         View v = inflater.inflate(R.layout.fragment_ctrls, container, false);
 
         viewCtrls       = v.findViewById(R.id.scroll_Controls);
-        helpPage        = v.findViewById(R.id.ll_HelpPage_Ctrls);
+        helpPage        = v.findViewById(R.id.scroll_HelpPage_Ctrls);
         helpText        = v.findViewById(R.id.view_HelpText_Ctrls);
 
         llPatternHelp   = v.findViewById(R.id.ll_PatternHelp);
