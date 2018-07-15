@@ -144,8 +144,11 @@ class ReplyStrs
         }
         else if (didFinishReading)
         {
-            Log.e(LOGNAME, "Reply after finish: " + reply);
-            replyFail = true;
+            if (!reply.equals("ok"))
+            {
+                Log.e(LOGNAME, "Reply after finish: " + reply);
+                replyFail = true;
+            }
             return 0;
         }
         else if ((replyState > 1) && (optionLines <= 0))
