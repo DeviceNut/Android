@@ -53,7 +53,7 @@ public class Network extends AppCompatActivity implements Wifi.WifiCallbacks
     private TextView title, networkSelect;
     private ProgressBar waitRefresh;
     private ScrollView scrollNet, helpPage;
-    private Button doAddButton, doCntButton;
+    private Button doClearButton, doAddButton, doCntButton;
     private boolean doStoredNetworks = false;
     private boolean doAvailableNetworks = false;
     private boolean doAddNetwork = false;
@@ -62,7 +62,8 @@ public class Network extends AppCompatActivity implements Wifi.WifiCallbacks
     private boolean doFirstScan = false;
     private StringBuilder replyString = new StringBuilder(MINLEN_REPLYSTR);
 
-    private int numNetworks = 0;
+    private int storedCount = 0;
+    private int availableCount = 0;
     private Spinner networkList;
     private String listNames[] = new String[0];
 
@@ -122,8 +123,9 @@ public class Network extends AppCompatActivity implements Wifi.WifiCallbacks
         passEdit = findViewById(R.id.edit_NetPass);
         passEdit.setText(""); // clear input field
 
-        doAddButton = findViewById(R.id.button_AddToDevice);
-        doCntButton = findViewById(R.id.button_ConnectToNetwork);
+        doClearButton = findViewById(R.id.button_ClearStore);
+        doAddButton   = findViewById(R.id.button_AddToDevice);
+        doCntButton   = findViewById(R.id.button_ConnectToNetwork);
         SetConnectButton(false);
 
         wifi.setCallbacks(this);
@@ -228,9 +230,9 @@ public class Network extends AppCompatActivity implements Wifi.WifiCallbacks
         }
     }
 
-    private void SetAddNetButton()
+    private void SetAddClrButtons()
     {
-        if (numNetworks > 0)
+        if ((availableCount > 0) && (storedCount < 5))
         {
             doAddButton.setEnabled(true);
             doAddButton.setAlpha((float)1.0);
@@ -239,6 +241,17 @@ public class Network extends AppCompatActivity implements Wifi.WifiCallbacks
         {
             doAddButton.setEnabled(false);
             doAddButton.setAlpha((float)0.5);
+        }
+
+        if (storedCount > 0)
+        {
+            doClearButton.setEnabled(true);
+            doClearButton.setAlpha((float)1.0);
+        }
+        else
+        {
+            doClearButton.setEnabled(false);
+            doClearButton.setAlpha((float)0.5);
         }
     }
 
@@ -261,7 +274,7 @@ public class Network extends AppCompatActivity implements Wifi.WifiCallbacks
             isRefreshing = false;
         }
 
-        if (numNetworks > 0)
+        if (availableCount > 0)
         {
             networkSelect.setText("Select from available");
             networkList.setVisibility(VISIBLE);
@@ -272,7 +285,7 @@ public class Network extends AppCompatActivity implements Wifi.WifiCallbacks
             networkList.setVisibility(GONE);
         }
 
-        SetAddNetButton();
+        SetAddClrButtons();
     }
 
     private void SetHelpMode(boolean enable)
@@ -513,7 +526,7 @@ public class Network extends AppCompatActivity implements Wifi.WifiCallbacks
                     doStoredNetworks = false;
 
                     ClearDisplayedNetworks();
-                    boolean haveone = false;
+                    storedCount = 0;
 
                     if (replyString.length() > 0)
                     {
@@ -528,13 +541,13 @@ public class Network extends AppCompatActivity implements Wifi.WifiCallbacks
                             if (items.length > 1) ((TextView)findViewById(netids[1])).setText(items[1]);
                             if (items.length > 2) ((TextView)findViewById(netids[2])).setText(items[2]);
 
-                            if (items.length > 0) haveone = true;
+                            if (items.length > 0) ++storedCount;
                         }
 
                         replyString.setLength(0);
                     }
 
-                    SetConnectButton(haveone);
+                    SetConnectButton(storedCount > 0);
 
                     if (doFirstScan)
                     {
@@ -543,7 +556,7 @@ public class Network extends AppCompatActivity implements Wifi.WifiCallbacks
                     }
                     else
                     {
-                        SetAddNetButton();
+                        SetAddClrButtons();
                         keepWaiting = false;
                     }
                 }
@@ -560,7 +573,7 @@ public class Network extends AppCompatActivity implements Wifi.WifiCallbacks
                         listCipher = new String[strs.length];
 
                         arrayAdapter_Networks.clear();
-                        numNetworks = 0;
+                        availableCount = 0;
 
                         for (int i = 0; i < strs.length; ++i)
                         {
@@ -571,7 +584,7 @@ public class Network extends AppCompatActivity implements Wifi.WifiCallbacks
 
                             if (items.length > 0)
                             {
-                                ++numNetworks;
+                                ++availableCount;
                                 listNames[i] = items[0];
                             }
                             listSecurity[i] = (items.length > 1) ? items[1] : null;
@@ -584,6 +597,7 @@ public class Network extends AppCompatActivity implements Wifi.WifiCallbacks
                         replyString.setLength(0);
                     }
 
+                    SetAddClrButtons();
                     keepWaiting = false;
                 }
                 else if (doAddNetwork)
@@ -601,6 +615,7 @@ public class Network extends AppCompatActivity implements Wifi.WifiCallbacks
                 {
                     isConnected = false;
                     resumeScanning = false;
+                    wifi.disconnect();
                     finish();
                 }
             }
