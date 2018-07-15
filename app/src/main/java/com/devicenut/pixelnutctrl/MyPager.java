@@ -24,9 +24,4 @@ public class MyPager extends ViewPager
     {
         return this.enabled && super.onInterceptTouchEvent(event);
     }
-
-    public void setPagingEnabled(boolean enabled)
-    {
-        this.enabled = enabled;
-    }
 }

@@ -33,9 +33,6 @@
         <activity
             android:name=".Confirm"
             android:theme="@style/DialogTheme" />
-        <activity
-            android:name=".Failed"
-            android:theme="@style/DialogTheme" />
     </application>
 
 </manifest>

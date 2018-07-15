@@ -17,7 +17,6 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
-import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -67,7 +66,7 @@ public class Master extends AppCompatActivity implements FragFavs.FavoriteSelect
 
     private LinearLayout llFragPages;
     private RelativeLayout llGoToText;
-    private Button pauseButton, helpButton;
+    private Button pauseButton;
     private TextView nameText;
     private TextView leftText, rightText;
 

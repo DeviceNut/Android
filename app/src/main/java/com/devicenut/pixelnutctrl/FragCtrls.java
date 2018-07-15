@@ -16,7 +16,6 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.RadioButton;
-import android.widget.RelativeLayout;
 import android.widget.ScrollView;
 import android.widget.SeekBar;
 import android.widget.Spinner;
@@ -223,7 +222,7 @@ public class FragCtrls extends Fragment implements SeekBar.OnSeekBarChangeListen
             Button sendButton = v.findViewById(R.id.button_SendCmd);
             sendButton.setOnClickListener(mClicker);
         }
-        else ((RelativeLayout)(v.findViewById(R.id.rl_SendCmdStr))).setVisibility(GONE);
+        else v.findViewById(R.id.rl_SendCmdStr).setVisibility(GONE);
 
         segRadioButtons = new RadioButton[segRadioIds.length];
         for (int i = 0; i < segRadioIds.length; ++i)
@@ -355,7 +354,7 @@ public class FragCtrls extends Fragment implements SeekBar.OnSeekBarChangeListen
 
                 if (v != null)
                 {
-                    TextView tv = (TextView) v.findViewById(R.id.spinnerText);
+                    TextView tv = v.findViewById(R.id.spinnerText);
                     tv.setText(listNames_Basic[position]);
 
                     if (!listEnables_Basic[position]) tv.setTextColor(Color.GRAY);
@@ -389,7 +388,7 @@ public class FragCtrls extends Fragment implements SeekBar.OnSeekBarChangeListen
 
                 if (v != null)
                 {
-                    TextView tv = (TextView) v.findViewById(R.id.spinnerText);
+                    TextView tv = v.findViewById(R.id.spinnerText);
                     tv.setText(listNames_All[position]);
 
                     if (!listEnables_All[position]) tv.setTextColor(Color.GRAY);

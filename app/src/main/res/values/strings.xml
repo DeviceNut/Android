@@ -111,9 +111,12 @@
         \n\nDevices can only store up to 5 different network configurations, and can only
         be removed by clearing all of them at once.
 
+        \n\nYou can only add networks that are currently available to the device. Use the
+        Refresh button to update that list.
+
         \n\nBe sure to enter your private passphrase, if needed, before adding the network.
 
-        \n\nAfter the device sucessfully connects to one of the networks that has been stored,
+        \n\nAfter the device successfully connects to one of the networks that has been stored,
         you will no longer be able talk to the device using this application.
 
         \n\nInstead, use a browser and goto www.pixelnut.io/devices to connect to the device

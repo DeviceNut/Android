@@ -16,7 +16,6 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.ScrollView;
 import android.widget.Spinner;
@@ -60,7 +59,7 @@ public class Network extends AppCompatActivity implements Wifi.WifiCallbacks
     private boolean keepWaiting = false;
     private boolean isRefreshing = false;
     private boolean doFirstScan = false;
-    private StringBuilder replyString = new StringBuilder(MINLEN_REPLYSTR);
+    private final StringBuilder replyString = new StringBuilder(MINLEN_REPLYSTR);
 
     private int storedCount = 0;
     private int availableCount = 0;
@@ -167,7 +166,7 @@ public class Network extends AppCompatActivity implements Wifi.WifiCallbacks
     private void CreateSpinnerAdapterNetworks()
     {
         arrayAdapter_Networks = new ArrayAdapter<String>(appContext, R.layout.layout_spinner,
-                                    new ArrayList<String>(Arrays.asList(listNames)))
+                                    new ArrayList<>(Arrays.asList(listNames)))
         {
             @Override public View getDropDownView(int position, View convertView, @NonNull ViewGroup parent)
             {
