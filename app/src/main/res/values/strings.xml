@@ -59,6 +59,7 @@
         controls to their desired values.
 
         \n\nTo remove one of these created favorites, press the \"X\" button next to the pattern on the Favorites page.
+        \n
     </string>
     <string name="text_help_segs_logical">
         \n\nSelect Segment to Control:
@@ -100,10 +101,23 @@
         The amount of change is determined by the amount of force that is set.
 
         \n\nNot all patterns allow setting the force, and some cannot be triggered at all.
+        \n
     </string>
     <string name="text_help_network">
         This screen allows you to control what networks are stored in your device,
         determining how it can connect to your local WiFi network so that it can be
         controlled over the internet.
+
+        \n\nDevices can only store up to 5 different network configurations, and can only
+        be removed by clearing all of them at once.
+
+        \n\nBe sure to enter your private passphrase, if needed, before adding the network.
+
+        \n\nAfter the device sucessfully connects to one of the networks that has been stored,
+        you will no longer be able talk to the device using this application.
+
+        \n\nInstead, use a browser and goto www.pixelnut.io/devices to connect to the device
+        through the internet.
+        \n
     </string>
 </resources>
