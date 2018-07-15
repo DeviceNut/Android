@@ -60,20 +60,9 @@ class Wifi
     {
         wifiCB = null;
         wifiReceiver = new WifiReceiver();
-        saveDeviceID = 0;
 
         if (appContext.getPackageManager().hasSystemFeature(PackageManager.FEATURE_WIFI))
-        {
             wifiManager = (WifiManager) appContext.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
-            if ((wifiManager != null) && wifiManager.isWifiEnabled())
-            {
-                WifiInfo info = wifiManager.getConnectionInfo();
-                ShowConnectionInfo(info);
-
-                saveDeviceID = info.getNetworkId();
-                Log.d(LOGNAME, "Saving previous network ID=" + saveDeviceID);
-            }
-        }
     }
 
     boolean checkForPresence()
@@ -91,6 +80,12 @@ class Wifi
     void startScanning()
     {
         if (wifiManager == null) return; // sanity check
+
+        WifiInfo info = wifiManager.getConnectionInfo();
+        ShowConnectionInfo(info);
+
+        saveDeviceID = info.getNetworkId();
+        Log.d(LOGNAME, ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>  Saving previous network ID=" + saveDeviceID);
 
         stopScan = false;
         wifiNameList.clear();
@@ -189,15 +184,14 @@ class Wifi
 
     void disconnect()
     {
-        Log.d(LOGNAME, "Disconnect network");
+        Log.d(LOGNAME, "Disconnect network: SavedID=" + saveDeviceID);
         stopConnect = true;
         wifiManager.disconnect();
 
-        if (saveDeviceID != 0)
+        if (saveDeviceID != -1)
         {
             boolean success = wifiManager.enableNetwork(saveDeviceID, true);
-            Log.i(LOGNAME, "Reconnect to previous network: ID=" + saveDeviceID + ": " + (success ? "success" : "failed"));
-            saveDeviceID = 0;
+            Log.i(LOGNAME, ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> Reconnect to previous network: ID=" + saveDeviceID + ": " + (success ? "success" : "failed"));
         }
     }
 
