@@ -71,7 +71,7 @@ public class Main extends Application
     static final String CMD_GET_SEGMENTS    = "?S";
     static final String CMD_GET_PATTERNS    = "?P";
     static final String CMD_GET_PLUGINS     = "?X";
-    static final String CMD_BLUENAME        = "@";
+    static final String CMD_RENAME          = "@";
     static final String CMD_BRIGHT          = "%";
     static final String CMD_DELAY           = ":";
     static final String CMD_EXTMODE         = "_";
@@ -89,7 +89,7 @@ public class Main extends Application
     static final String WCMD_GET_NETSTORE   = "?N";     // get list of currently stored networks
     static final String WCMD_SET_NETSTORE   = "*N";     // store network configuration to device (or clear all)
     static final String WCMD_SET_SOFTAP     = "*A";     // set SoftAP mode: 0=disable, 1=enable
-    static final String WCMD_CONNECT_CLOUD  = "*R";     // connect to the cloud by restarting the device
+    static final String WCMD_CONNECT_CLOUD  = "*C";     // connect to the cloud without restarting the device (doesn't work FIXME)
 
     static final int MAXVAL_HUE             = 359;
     static final int MAXVAL_WHT             = 50;

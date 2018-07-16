@@ -22,7 +22,7 @@ import android.widget.Toast;
 
 import static android.view.View.GONE;
 import static android.view.View.VISIBLE;
-import static com.devicenut.pixelnutctrl.Main.CMD_BLUENAME;
+import static com.devicenut.pixelnutctrl.Main.CMD_RENAME;
 import static com.devicenut.pixelnutctrl.Main.CMD_PAUSE;
 import static com.devicenut.pixelnutctrl.Main.CMD_RESUME;
 import static com.devicenut.pixelnutctrl.Main.CMD_SEQ_END;
@@ -219,19 +219,23 @@ public class Master extends AppCompatActivity implements FragFavs.FavoriteSelect
             return;
         }
 
-        if (isEditing && (ble != null))
+        if (isEditing)
         {
             isEditing = false;
             if (!devNameSaved.equals(devName))
             {
                 Log.d(LOGNAME, "Renaming device=" + devName);
-                SendString(CMD_BLUENAME + devName);
+                SendString(CMD_RENAME + devName);
                 SendString(CMD_SEQ_END);
 
-                if (Build.VERSION.SDK_INT < 23)
+                if (!devIsBLE)
+                {
+                    Toast.makeText(context, "Must restart device to see name change", Toast.LENGTH_SHORT).show();
+                }
+                else if (Build.VERSION.SDK_INT < 23)
                 {
                     doRefreshCache = true; // force refreshing cache before do next scan: doesn't work FIXME
-                    Toast.makeText(context, "Rescan from Settings to see name change", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(context, "Must rescan from Android Settings to see the name change", Toast.LENGTH_SHORT).show();
                 }
             }
         }

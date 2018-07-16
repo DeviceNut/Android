@@ -31,7 +31,6 @@ import static com.devicenut.pixelnutctrl.Main.DEVSTAT_FAILED;
 import static com.devicenut.pixelnutctrl.Main.DEVSTAT_SUCCESS;
 import static com.devicenut.pixelnutctrl.Main.MINLEN_REPLYSTR;
 import static com.devicenut.pixelnutctrl.Main.SendCommandString;
-import static com.devicenut.pixelnutctrl.Main.WCMD_CONNECT_CLOUD;
 import static com.devicenut.pixelnutctrl.Main.WCMD_GET_NETACTIVE;
 import static com.devicenut.pixelnutctrl.Main.WCMD_GET_NETSTORE;
 import static com.devicenut.pixelnutctrl.Main.WCMD_SET_NETSTORE;
@@ -450,8 +449,8 @@ public class Network extends AppCompatActivity implements Wifi.WifiCallbacks
                 doAvailableNetworks = false;
                 doAddNetwork = false;
 
-                SendCommandString(WCMD_SET_SOFTAP + "0"); // first disable SoftAP mode
-                SendCommandString(WCMD_CONNECT_CLOUD);    // then connect to the cloud
+                // first disable SoftAP mode, then connect to the cloud
+                SendCommandString(WCMD_SET_SOFTAP + "0 R");
                 WaitForResponse();
             }
         }

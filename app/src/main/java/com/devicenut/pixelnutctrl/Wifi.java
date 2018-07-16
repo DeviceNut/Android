@@ -85,7 +85,7 @@ class Wifi
         ShowConnectionInfo(info);
 
         saveDeviceID = info.getNetworkId();
-        Log.d(LOGNAME, ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>  Saving previous network ID=" + saveDeviceID);
+        Log.d(LOGNAME, "Saving previous network ID=" + saveDeviceID);
 
         stopScan = false;
         wifiNameList.clear();
@@ -191,7 +191,7 @@ class Wifi
         if (saveDeviceID != -1)
         {
             boolean success = wifiManager.enableNetwork(saveDeviceID, true);
-            Log.i(LOGNAME, ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> Reconnect to previous network: ID=" + saveDeviceID + ": " + (success ? "success" : "failed"));
+            Log.i(LOGNAME, "Reconnect to previous network: ID=" + saveDeviceID + ": " + (success ? "success" : "failed"));
         }
     }
 
