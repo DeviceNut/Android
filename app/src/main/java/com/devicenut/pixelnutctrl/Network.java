@@ -578,8 +578,6 @@ public class Network extends AppCompatActivity implements Wifi.WifiCallbacks
                             Log.d(LOGNAME, "Adding network: " + strs[i]);
                             String items[] = strs[i].split(" ");
 
-                            Log.v(LOGNAME, "#strs=" + strs.length + " #items=" + items.length);
-
                             if (items.length > 0)
                             {
                                 ++availableCount;
