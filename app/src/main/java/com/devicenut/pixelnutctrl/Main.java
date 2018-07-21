@@ -12,7 +12,6 @@ public class Main extends Application
     static Bluetooth ble;
     static int deviceID;
     static String devName;
-    static final boolean enableWiFi = true;
     static boolean devIsBLE = true;
     static boolean blePresentAndEnabled = false;
     static boolean wifiPresentAndEnabled = false;

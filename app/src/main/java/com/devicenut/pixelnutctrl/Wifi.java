@@ -36,7 +36,7 @@ class Wifi
 {
     private static final String LOGNAME = "WiFi";
 
-    private static WifiManager wifiManager = null;
+    private static WifiManager wifiManager;
     private static WifiReceiver wifiReceiver;
     private static boolean stopScan = false;
     private static boolean stopConnect = false;
@@ -59,10 +59,14 @@ class Wifi
     Wifi()
     {
         wifiCB = null;
-        wifiReceiver = new WifiReceiver();
+        wifiReceiver = null;
+        wifiManager = null;
 
         if (appContext.getPackageManager().hasSystemFeature(PackageManager.FEATURE_WIFI))
+        {
             wifiManager = (WifiManager) appContext.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+            wifiReceiver = new WifiReceiver();
+        }
     }
 
     boolean checkForPresence()
