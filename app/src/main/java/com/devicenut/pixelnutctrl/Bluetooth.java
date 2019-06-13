@@ -362,9 +362,10 @@ class Bluetooth
             String str = new String(bytes, Charset.forName("UTF-8"));
             Log.v(LOGNAME, "ReadBytes=\"" + str + "\"");
 
-            if (strLine == null) strLine = new StringBuilder(100); // clear any read data
             while(true)
             {
+                if (strLine == null) strLine = new StringBuilder(100); // get empty string object
+
                 int i = str.indexOf("\n");
                 if (i < 0)
                 {
