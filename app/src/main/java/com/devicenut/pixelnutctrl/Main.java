@@ -145,6 +145,13 @@ public class Main extends Application
                     "E20 H30 C25 D30 Q7 T G",
             };
 
+    // 0x80 - 1 to disable delay control
+    // 0x20 - 1 to enable force (if trigger)
+    // 0x10 - 1 to enable triggering
+    // 0x07 - 1's to enable properties:
+    //        1: color
+    //        2: white
+    //        4: count
     private static final int[] basicPatternBits =
             {
                     0x83, // disable Delay control
@@ -233,6 +240,8 @@ public class Main extends Application
                     "E0 B80 D10 Q3 T E111 F O10 T10 E142 F250 I T G",
                     "E0 H30 D30 T E110 F600 I T E111 A1 G",
                     "E50 B60 H0 D10 T E50 B70 H125 D15 T E20 V1 B90 W80 H270 C25 D30 Q2 F0 I T20 O10 G",
+                    //"E20 H0 C20 D25 Q4 O1 T1 E20 W100 C20 D35 Q4 O3 T3 E20 H240 C20 D45 Q4 O5 T5 G",
+                    //"E1 C33 D30 T E113 Q4 A0 T G",
                     "E50 V1 B65 W30 H100 D10 Q1 T E40 H270 C10 D50 T E20 C20 D15 A1 F0 I T G"
             };
 
@@ -250,6 +259,7 @@ public class Main extends Application
                     0x33,
                     0x30,
                     0x12,
+                    //0x04,
                     0x11,
             };
 

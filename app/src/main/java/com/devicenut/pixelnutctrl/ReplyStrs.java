@@ -372,12 +372,11 @@ class ReplyStrs
                             replyFail = true;
                         }
                     }
-                    else if (numSegments < 1)
+                    else
                     {
                         multiStrands = true;
                         numSegments = -numSegments;
                     }
-                    else replyFail = true;
 
                     if (maxlenCmdStrs < MINLEN_CMDSTR)
                     {
@@ -443,7 +442,7 @@ class ReplyStrs
                         if (customPlugins < 0) customPlugins = 0;
 
                         Log.d(LOGNAME, ">> Segments=" + numSegments + ((numSegments > 1) ? (multiStrands ? " (physical)" : " (logical)") : ""));
-                        Log.d(LOGNAME, ">> CmdStrLen=" + maxlenCmdStrs + " MaxAdvPatterns=" + maxlenAdvPatterns);
+                        Log.d(LOGNAME, ">> CmdStrLen=" + maxlenCmdStrs + " MaxLenAdvPatterns=" + maxlenAdvPatterns);
                         Log.d(LOGNAME, ">> CurPattern=" + segPatterns[0] + " DoInit=" + initPatterns);
                         Log.d(LOGNAME, ">> DevicePatterns=" + devicePatterns + " Advanced=" + useAdvPatterns);
                         Log.d(LOGNAME, ">> Total patterns=" + numPatterns);
