@@ -24,7 +24,7 @@ public class Main extends Application
     static boolean doRefreshCache = false;
 
     static MyPager masterPager;
-    static int numFragments, pageFavorites, pageControls, pageDetails, pageCurrent;
+    static int numFragments, pageFavorites, pageControls, pageCurrent;
 
     static int maxlenAdvPatterns;
     static Context appContext;
@@ -45,7 +45,6 @@ public class Main extends Application
     // only works on background threads
     static void SleepMsecs(int msecs)
     {
-        //noinspection EmptyCatchBlock
         try { Thread.sleep(msecs); }
         catch (Exception ignored) {}
     }
@@ -57,19 +56,18 @@ public class Main extends Application
     static final int DEVSTAT_BADSTATE       = -2;   // wifi device not in correct state (waiting for credentials app)
     static final int DEVSTAT_DISCONNECTED   = -3;
 
-    static final int MAXLEN_BLE_CHUNK       = 20; // max chars that can be sent at once with BLE implementation
+    static final int MAXLEN_BLE_CHUNK       = 20;   // max chars that can be sent at once with BLE implementation
 
     static final String PREFIX_PIXELNUT     = "P!";
     static final String PREFIX_PHOTON       = "PHOTON-";
     static final String POSTFIX_WIFI        = "---!P";
     static final String PREFIX_ADAFRUIT     = "ADAFRUIT";
     static final String DEVNAME_NONE        = "NoName";
-    static final String URL_PIXELNUT        = "http://www.pixelnut.io";
+    static final String URL_DEVICENUT       = "http://www.devicenut.com";
 
     static final String CMD_GET_INFO        = "?";
     static final String CMD_GET_SEGMENTS    = "?S";
     static final String CMD_GET_PATTERNS    = "?P";
-    static final String CMD_GET_PLUGINS     = "?X";
     static final String CMD_RENAME          = "@";
     static final String CMD_BRIGHT          = "%";
     static final String CMD_DELAY           = ":";
@@ -88,18 +86,17 @@ public class Main extends Application
     static final String WCMD_GET_NETSTORE   = "?N";     // get list of currently stored networks
     static final String WCMD_SET_NETSTORE   = "*N";     // store network configuration to device (or clear all)
     static final String WCMD_SET_SOFTAP     = "*A";     // set SoftAP mode: 0=disable, 1=enable
-    static final String WCMD_CONNECT_CLOUD  = "*C";     // connect to the cloud without restarting the device (doesn't work FIXME)
 
     static final int MAXVAL_HUE             = 359;
     static final int MAXVAL_WHT             = 50;
     static final int MAXVAL_PERCENT         = 100;
     static final int MAXVAL_FORCE           = 1000;
-    static final int MINVAL_DELAYRANGE      = 80;      // use this for patterns defined here, and is minimal value for custom patterns
+    static final int MINVAL_DELAYRANGE      = 80;       // use this for patterns defined here, and is minimal value for custom patterns
 
-    static final int MINLEN_CMDSTR          = 100;     // minimum length of the command/pattern string
-    static final int MINLEN_REPLYSTR        = 300;     // minimum length to alloc for reply string from device
-    static final int MINLEN_SEGLEN_FORADV   = 20;      // minimum length of each segment to be able to use the advanced patterns
-
+    static final int MINLEN_CMDSTR          = 100;      // minimum length of the command/pattern string
+    static final int MINLEN_REPLYSTR        = 300;      // minimum length to alloc for reply string from device
+    static final int MINLEN_SEGLEN_FORADV   = 20;       // minimum length of each segment to be able to use the advanced patterns
+    static final int MAXNUM_SEGMENTS        = 5;        // maximum possible number of segments due to layout limitations 
     private static final String[] basicPatternNames =
             {
                     "Solid",
@@ -145,6 +142,7 @@ public class Main extends Application
                     "E20 H30 C25 D30 Q7 T G",
             };
 
+    // TODO: make these constants
     // 0x80 - 1 to disable delay control
     // 0x20 - 1 to enable force (if trigger)
     // 0x10 - 1 to enable triggering
@@ -276,37 +274,34 @@ public class Main extends Application
 
     // read from device during configuration
     static int curSegment = 0;                  // index from 0
-    static int numPatterns = 0;                 // total number of patterns that can be chosen
     static int numSegments = 0;                 // total number of pixel segments
+    static int numPatterns = 0;                 // total number of patterns that can be chosen
     static int devicePatterns = 0;              // number of custom patterns defined by device
-    static int customPlugins = 0;               // number of custom plugins defined by device
     static int maxlenCmdStrs = 0;               // max length of command string that can be sent
     static final int rangeDelay = MINVAL_DELAYRANGE;  // default range of delay offsets
+
+    static boolean multiStrands = false;        // true if device has multiple physical pixel strands
+                                                // else all segment info must be sent when changing patterns
 
     static int featureBits = 0;                 // bits that enable extended features
     static final int FEATURE_INT_PATTERNS = 0x01;   // set if cannot use external patterns
     static final int FEATURE_BASIC_PATTERNS = 0x02; // set if cannot use advanced patterns
 
-    private static final int maxNumSegs = 5;  // limited because of layout
-    static final int[] segPatterns      = new int[maxNumSegs];   // current pattern for each segment (index from 0)
-    static final int[] curBright        = new int[maxNumSegs];
-    static final int[] curDelay         = new int[maxNumSegs];
-    static final boolean segXmodeEnb[]  = new boolean[maxNumSegs];
-    static final int segXmodeHue[]      = new int[maxNumSegs];
-    static final int segXmodeWht[]      = new int[maxNumSegs];
-    static final int segXmodeCnt[]      = new int[maxNumSegs];
-    static final int segTrigForce[]     = new int[maxNumSegs];
-    static final int segPixels[]        = new int[maxNumSegs];
-    static final int segTracks[]        = new int[maxNumSegs];
-    static final int segLayers[]        = new int[maxNumSegs];
+    static final int[] segPatterns      = new int[MAXNUM_SEGMENTS];   // current pattern for each segment (index from 0)
+    static final int[] curBright        = new int[MAXNUM_SEGMENTS];
+    static final int[] curDelay         = new int[MAXNUM_SEGMENTS];
+    static final boolean[] segXmodeEnb  = new boolean[MAXNUM_SEGMENTS];
+    static final int[] segXmodeHue      = new int[MAXNUM_SEGMENTS];
+    static final int[] segXmodeWht      = new int[MAXNUM_SEGMENTS];
+    static final int[] segXmodeCnt      = new int[MAXNUM_SEGMENTS];
+    static final int[] segTrigForce     = new int[MAXNUM_SEGMENTS];
+    static final int[] segPixels        = new int[MAXNUM_SEGMENTS];
+    static final int[] segTracks        = new int[MAXNUM_SEGMENTS];
+    static final int[] segLayers        = new int[MAXNUM_SEGMENTS];
 
-    // only used for multiple segments on the same physical strand:
-    static final int[] segPosStart      = new int[maxNumSegs];  // starting positions for each segment
-    static final int[] segPosCount      = new int[maxNumSegs];  // number of pixels for each segment
-
-    static boolean initPatterns = false;        // true if must initialize device with patterns at startup
-    static boolean multiStrands = false;        // true if device has multiple physical pixel strands
-                                                // false means all segment info must be sent when changing patterns
+    // only used for multiple (logical) segments on the same physical strand:
+    static final int[] segPosStart      = new int[MAXNUM_SEGMENTS];  // starting positions for each segment
+    static final int[] segPosCount      = new int[MAXNUM_SEGMENTS];  // number of pixels for each segment
 
     static boolean createViewFavs = false;      // true when views have been created, false when it's deleted
     static boolean createViewCtrls = false;
@@ -318,7 +313,6 @@ public class Main extends Application
     private static final int FAVTYPE_DEVICE = 0;
     private static final int FAVTYPE_BASIC = 1;
     private static final int FAVTYPE_ADV = 2;
-    private static final int FAVTYPE_STORED = 3;  // TODO: not implemented
     static final int NUM_FAVSTR_VALS = 7; // number of values in vals string (bright, delay, auto/manual, color, white, count, trigger)
 
     static class FavoriteInfo
@@ -513,11 +507,6 @@ public class Main extends Application
                     pnum += devicePatterns + basicPatternsCount;
                     break;
                 }
-                case FAVTYPE_STORED:
-                {
-                    pnum += devicePatterns + basicPatternsCount + advPatternsCount;
-                    break;
-                }
             }
 
             return pnum;
@@ -557,7 +546,7 @@ public class Main extends Application
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     // used to determine which patterns are allowed on which segments
-    static final boolean[] segBasicOnly = new boolean[maxNumSegs];
+    static final boolean[] segBasicOnly = new boolean[MAXNUM_SEGMENTS];
     static boolean haveBasicSegs = false;       // true if some segments too small for advanced patterns
     static boolean useAdvPatterns = true;       // false if limited flash space to receive commands
     static boolean useExtPatterns;              // false if can use only device internal patterns
@@ -602,7 +591,6 @@ public class Main extends Application
         {
             pageFavorites = 0;
             pageControls = 1;
-            pageDetails = -1; // FIXME =2
             numFragments = 2;
 
             AddDefaultFavorites();
@@ -611,7 +599,6 @@ public class Main extends Application
         {
             pageFavorites = -1;
             pageControls = 0;
-            pageDetails = -1;
             numFragments = 1;
         }
         pageCurrent = 0;

@@ -27,7 +27,7 @@ import static com.devicenut.pixelnutctrl.Main.CMD_SEQ_END;
 import static com.devicenut.pixelnutctrl.Main.DEVSTAT_BADSTATE;
 import static com.devicenut.pixelnutctrl.Main.DEVSTAT_SUCCESS;
 import static com.devicenut.pixelnutctrl.Main.CMD_GET_INFO;
-import static com.devicenut.pixelnutctrl.Main.URL_PIXELNUT;
+import static com.devicenut.pixelnutctrl.Main.URL_DEVICENUT;
 import static com.devicenut.pixelnutctrl.Main.appContext;
 import static com.devicenut.pixelnutctrl.Main.blePresentAndEnabled;
 import static com.devicenut.pixelnutctrl.Main.cmdPauseEnable;
@@ -244,7 +244,7 @@ public class Devices extends AppCompatActivity implements Bluetooth.BleCallbacks
                 // if not scanning now, don't resume after return
                 if (!StopScanning()) resumeScanning = false;
 
-                Uri uri = Uri.parse(URL_PIXELNUT);
+                Uri uri = Uri.parse(URL_DEVICENUT);
                 Intent intent = new Intent(Intent.ACTION_VIEW, uri);
                 startActivity(intent);
                 break;

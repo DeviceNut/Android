@@ -290,7 +290,7 @@ public class FragFavs extends Fragment
         if (index >= 0)
         {
             Log.d(LOGNAME, "Select favorite #" + index);
-            objsChoose[index].setText(">>> " + listFavorites[index].getPatternName() + " <<<");
+            objsChoose[index].setText(String.format(">>> %s <<<", listFavorites[index].getPatternName()));
             objsChoose[index].setTextColor(ContextCompat.getColor(appContext, R.color.HighLight));
             curFavorite = index;
         }

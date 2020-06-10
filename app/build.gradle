@@ -6,8 +6,8 @@ android {
         applicationId "com.devicenut.pixelnutctrl"
         minSdkVersion 21
         targetSdkVersion 29
-        versionCode 49
-        versionName "4.9"
+        versionCode 50
+        versionName "5.0"
     }
     buildTypes {
         release {
@@ -20,7 +20,7 @@ android {
 }
 
 dependencies {
-    implementation 'com.google.android.material:material:1.0.0'
+    implementation 'com.google.android.material:material:1.1.0'
     implementation fileTree(include: ['*.jar'], dir: 'libs')
     androidTestImplementation('androidx.test.espresso:espresso-core:3.1.0', {
         exclude group: 'com.android.support', module: 'support-annotations'

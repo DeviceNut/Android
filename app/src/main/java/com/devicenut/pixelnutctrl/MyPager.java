@@ -7,7 +7,7 @@ import android.view.MotionEvent;
 
 public class MyPager extends ViewPager
 {
-    private boolean enabled;
+    private final boolean enabled;
 
     public MyPager(Context context, AttributeSet attrs)
     {
