@@ -4,7 +4,6 @@ import android.util.Log;
 
 import static com.devicenut.pixelnutctrl.Main.FEATURE_BASIC_PATTERNS;
 import static com.devicenut.pixelnutctrl.Main.CMD_GET_PATTERNS;
-import static com.devicenut.pixelnutctrl.Main.CMD_GET_PLUGINS;
 import static com.devicenut.pixelnutctrl.Main.CMD_GET_SEGMENTS;
 import static com.devicenut.pixelnutctrl.Main.FEATURE_INT_PATTERNS;
 import static com.devicenut.pixelnutctrl.Main.MAXVAL_FORCE;
@@ -27,8 +26,6 @@ import static com.devicenut.pixelnutctrl.Main.segBasicOnly;
 import static com.devicenut.pixelnutctrl.Main.curBright;
 import static com.devicenut.pixelnutctrl.Main.curDelay;
 import static com.devicenut.pixelnutctrl.Main.devicePatterns;
-import static com.devicenut.pixelnutctrl.Main.customPlugins;
-import static com.devicenut.pixelnutctrl.Main.initPatterns;
 import static com.devicenut.pixelnutctrl.Main.multiStrands;
 import static com.devicenut.pixelnutctrl.Main.useAdvPatterns;
 import static com.devicenut.pixelnutctrl.Main.useExtPatterns;
@@ -60,7 +57,6 @@ class ReplyStrs
     private int optionLines;
     private boolean getSegments;
     private boolean getPatterns;
-    private boolean getPlugins;
 
     double progressPercent;
     double progressPcentInc;
@@ -129,8 +125,7 @@ class ReplyStrs
     {
         getSegments = (numSegments > 1);
         getPatterns = (devicePatterns > 0);
-        getPlugins = (customPlugins > 0);
-        setPercentage = (getSegments || getPatterns || getPlugins);
+        setPercentage = (getSegments || getPatterns);
     }
 
     int Next(String reply)
@@ -298,10 +293,6 @@ class ReplyStrs
             }
             else replyFail = true;
         }
-        else if (getPlugins)
-        {
-            throw new NullPointerException("Custom Plugins Not Supported Yet");
-        }
         else switch(replyState+1)
         {
             case 1: // first line: title string and line count
@@ -353,29 +344,20 @@ class ReplyStrs
                     segPatterns[0]  = Integer.parseInt(strs[1]);
                     devicePatterns  = Integer.parseInt(strs[2]);
                     featureBits     = Integer.parseInt(strs[3]);
-                    customPlugins   = Integer.parseInt(strs[4]);
+                    multiStrands    = (Integer.parseInt(strs[4]) > 0); // old firmware: always 0
                     maxlenCmdStrs   = Integer.parseInt(strs[5]);
 
-                    if (numSegments == -1)
+                    if (numSegments < 0)
                     {
-                        Log.w(LOGNAME, "Old firmware: segments = -1");
-                        numSegments = 1; // older firmware did this
-                    }
-
-                    if (numSegments > 0)
-                    {
-                        multiStrands = false;
-
-                        if ((devicePatterns > 0) && (numSegments > 1))
-                        {
-                            Log.e(LOGNAME, "Cannot have device patterns AND logical segments");
-                            replyFail = true;
-                        }
-                    }
-                    else
-                    {
-                        multiStrands = true;
+                        Log.w(LOGNAME, "Old firmware: segments = " + numSegments);
                         numSegments = -numSegments;
+                        if (numSegments > 1) multiStrands = true;
+                    }
+
+                    if ((devicePatterns > 0) && (numSegments > 1) && !multiStrands)
+                    {
+                        Log.e(LOGNAME, "Cannot have device patterns AND logical segments");
+                        replyFail = true;
                     }
 
                     if (maxlenCmdStrs < MINLEN_CMDSTR)
@@ -383,14 +365,12 @@ class ReplyStrs
                         Log.e(LOGNAME, "Cmd/Pattern string is too short: len=" + maxlenCmdStrs);
                         replyFail = true;
                     }
-                    else if (!replyFail)
+
+                    if (!replyFail)
                     {
                         if (segPatterns[0] > 0)
-                        {
-                            segPatterns[0] -= 1; // device patterns start at 1
-                            initPatterns = false;
-                        }
-                        else initPatterns = true; // trigger sending initial pattern to device
+                             segPatterns[0] -= 1; // device pattern numbers start at 1
+                        else segPatterns[0] = 1; // older firmware with no flash values
 
                         if ((featureBits & FEATURE_INT_PATTERNS) != 0)
                         {
@@ -400,8 +380,6 @@ class ReplyStrs
                             numPatterns = 0;
 
                             haveBasicSegs = true;
-                            for (int i = 0; i < numSegments; ++i)
-                                segBasicOnly[i] = true;
                         }
                         else if ((featureBits & FEATURE_BASIC_PATTERNS) != 0)
                         {
@@ -411,8 +389,6 @@ class ReplyStrs
                             numPatterns = basicPatternsCount;
 
                             haveBasicSegs = true;
-                            for (int i = 0; i < numSegments; ++i)
-                                segBasicOnly[i] = true;
                         }
                         else if (((numSegments > 1) && !multiStrands && (maxlenCmdStrs < (maxlenAdvPatterns * numSegments))) ||
                                  (maxlenCmdStrs < maxlenAdvPatterns))
@@ -423,8 +399,6 @@ class ReplyStrs
                             numPatterns = basicPatternsCount;
 
                             haveBasicSegs = true;
-                            for (int i = 0; i < numSegments; ++i)
-                                segBasicOnly[i] = true;
                         }
                         else
                         {
@@ -433,20 +407,13 @@ class ReplyStrs
                             numPatterns = basicPatternsCount + advPatternsCount;
 
                             haveBasicSegs = false;
-                            for (int i = 0; i < numSegments; ++i)
-                                segBasicOnly[i] = false;
                         }
                         numPatterns += devicePatterns;
 
-                        if (numSegments < 1) numSegments = 1;
-                        if (customPlugins < 0) customPlugins = 0;
-
                         Log.d(LOGNAME, ">> Segments=" + numSegments + ((numSegments > 1) ? (multiStrands ? " (physical)" : " (logical)") : ""));
                         Log.d(LOGNAME, ">> CmdStrLen=" + maxlenCmdStrs + " MaxLenAdvPatterns=" + maxlenAdvPatterns);
-                        Log.d(LOGNAME, ">> CurPattern=" + segPatterns[0] + " DoInit=" + initPatterns);
-                        Log.d(LOGNAME, ">> DevicePatterns=" + devicePatterns + " Advanced=" + useAdvPatterns);
-                        Log.d(LOGNAME, ">> Total patterns=" + numPatterns);
-                        Log.d(LOGNAME, ">> CustomPlugins=" + customPlugins);
+                        Log.d(LOGNAME, ">> Patterns: Dev=" + devicePatterns + " Adv=" + useAdvPatterns + " Total=" + numPatterns);
+                        Log.d(LOGNAME, ">> CurPattern=" + segPatterns[0]);
                         Log.d(LOGNAME, ">> Features=0x" + Integer.toHexString(featureBits));
 
                         if (devicePatterns > 0)
@@ -462,6 +429,9 @@ class ReplyStrs
                             Log.e(LOGNAME, "No patterns defined!");
                             replyFail = true;
                         }
+
+                        for (int i = 0; i < numSegments; ++i)
+                            segBasicOnly[i] = haveBasicSegs;
                     }
                 }
                 else
@@ -576,7 +546,7 @@ class ReplyStrs
         if (setPercentage)
         {
             // use 101 to insure the progress bar fills up entirely
-            progressPcentInc = 101.0 / ((getSegments ? (numSegments+1) : 0) + (devicePatterns *3) + (customPlugins*2));
+            progressPcentInc = 101.0 / ((getSegments ? (numSegments+1) : 0) + (devicePatterns *3));
             progressPercent = -progressPcentInc; // incremented first, so start at 0
             setPercentage = false;
 
@@ -593,12 +563,6 @@ class ReplyStrs
         {
             sendCmdStr = CMD_GET_PATTERNS;
             optionLines = devicePatterns *3;
-            moreinfo = true;
-        }
-        else if (getPlugins)
-        {
-            sendCmdStr = CMD_GET_PLUGINS;
-            optionLines = customPlugins*2;
             moreinfo = true;
         }
 
