@@ -35,7 +35,6 @@ import static com.devicenut.pixelnutctrl.Main.doRefreshCache;
 import static com.devicenut.pixelnutctrl.Main.helpActive;
 import static com.devicenut.pixelnutctrl.Main.numFragments;
 import static com.devicenut.pixelnutctrl.Main.pageControls;
-import static com.devicenut.pixelnutctrl.Main.pageDetails;
 import static com.devicenut.pixelnutctrl.Main.pageFavorites;
 import static com.devicenut.pixelnutctrl.Main.pageCurrent;
 import static com.devicenut.pixelnutctrl.Main.masterPager;
@@ -135,7 +134,6 @@ public class Master extends AppCompatActivity implements FragFavs.FavoriteSelect
 
         if (pageFavorites >= 0) myFragments[pageFavorites] = FragFavs.newInstance();
         myFragments[pageControls] = FragCtrls.newInstance();
-        //FIXME myFragments[pageDetails] = FragAdv.newInstance();
 
         inLandscape = (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE);
         if (inLandscape && getResources().getBoolean(R.bool.portrait_only))
@@ -172,12 +170,7 @@ public class Master extends AppCompatActivity implements FragFavs.FavoriteSelect
     {
         Log.d(LOGNAME, "SetupGoToText: curpage=" + pageCurrent);
 
-        if (pageCurrent == pageDetails)
-        {
-            leftText.setVisibility(VISIBLE);
-            leftText.setText(getResources().getString(R.string.action_ctrls_left));
-        }
-        else if ((pageCurrent == pageControls) && (pageFavorites >= 0))
+        if ((pageCurrent == pageControls) && (pageFavorites >= 0))
         {
             leftText.setVisibility(VISIBLE);
             leftText.setText(getResources().getString(R.string.action_favs));
@@ -199,12 +192,6 @@ public class Master extends AppCompatActivity implements FragFavs.FavoriteSelect
             rightText.setVisibility(VISIBLE);
             rightText.setText(getResources().getString(R.string.action_ctrls_rite));
         }
-        /* FIXME else if (pageCurrent == pageControls)
-        {
-            rightText.setVisibility(VISIBLE);
-            rightText.setText(getResources().getString(R.string.action_details));
-        }
-        */
         else rightText.setVisibility(GONE);
     }
 
@@ -277,8 +264,6 @@ public class Master extends AppCompatActivity implements FragFavs.FavoriteSelect
 
     private void SetHelpMode(boolean enable)
     {
-        // FIXME: show help for Details page
-
         if (createViewFavs && createViewCtrls)
         {
             if (enable) // turn controls help on
