@@ -97,6 +97,7 @@ public class Main extends Application
     static final int MINLEN_REPLYSTR        = 300;      // minimum length to alloc for reply string from device
     static final int MINLEN_SEGLEN_FORADV   = 20;       // minimum length of each segment to be able to use the advanced patterns
     static final int MAXNUM_SEGMENTS        = 5;        // maximum possible number of segments due to layout limitations 
+
     private static final String[] basicPatternNames =
             {
                     "Solid",
@@ -282,10 +283,10 @@ public class Main extends Application
 
     static boolean multiStrands = false;        // true if device has multiple physical pixel strands
                                                 // else all segment info must be sent when changing patterns
+    static boolean oldSegmentVals = false;      // true if talking to old firmware that uses segments from 1
 
     static int featureBits = 0;                 // bits that enable extended features
-    static final int FEATURE_INT_PATTERNS = 0x01;   // set if cannot use external patterns
-    static final int FEATURE_BASIC_PATTERNS = 0x02; // set if cannot use advanced patterns
+    static final int FEATURE_NOAPP_PATTERNS = 0x01; // set if cannot use patterns from this app
 
     static final int[] segPatterns      = new int[MAXNUM_SEGMENTS];   // current pattern for each segment (index from 0)
     static final int[] curBright        = new int[MAXNUM_SEGMENTS];
@@ -533,23 +534,17 @@ public class Main extends Application
     private static void AddDefaultFavorites()
     {
         listFavorites[0] = defFav_Purple;
-        numFavorites = 1;
-
-        if (useAdvPatterns)
-        {
-            listFavorites[1] = defFav_Rainbow;
-            listFavorites[2] = defFav_Holiday;
-            numFavorites += 2;
-        }
+        listFavorites[1] = defFav_Rainbow;
+        listFavorites[2] = defFav_Holiday;
+        numFavorites = 3;
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     // used to determine which patterns are allowed on which segments
     static final boolean[] segBasicOnly = new boolean[MAXNUM_SEGMENTS];
-    static boolean haveBasicSegs = false;       // true if some segments too small for advanced patterns
-    static boolean useAdvPatterns = true;       // false if limited flash space to receive commands
-    static boolean useExtPatterns;              // false if can use only device internal patterns
+    static boolean haveBasicSegs;               // true if some segments too small for advanced patterns
+    static boolean useExtPatterns;              // false if can use only device specific patterns
 
     // assigned for device specific patterns
     static String[] patternNames_Device;
@@ -595,7 +590,7 @@ public class Main extends Application
 
             AddDefaultFavorites();
         }
-        else
+        else // disable Favorites if device only patterns
         {
             pageFavorites = -1;
             pageControls = 0;
@@ -603,8 +598,12 @@ public class Main extends Application
         }
         pageCurrent = 0;
 
-        if (haveBasicSegs) CreateListArrays_Basic(); // some segments use only basic patterns
-        if (useAdvPatterns) CreateListArrays_Adv();  // are allowed to use advanced patterns
+        // some segments use only basic patterns, or only device patterns
+        if (haveBasicSegs || !useExtPatterns)
+            CreateListArrays_Basic();
+
+        if (useExtPatterns) // use advanced patterns if not only device ones
+            CreateListArrays_Adv();
 
         curSegment = 0; // always start with first segment
     }

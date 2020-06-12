@@ -179,13 +179,7 @@ public class Master extends AppCompatActivity implements FragFavs.FavoriteSelect
 
         if (inLandscape)
         {
-            /* if (pageCurrent != pageControls)
-            {
-                rightText.setVisibility(VISIBLE);
-                rightText.setText(getResources().getString(R.string.action_details));
-            }
-            else */
-                rightText.setVisibility(GONE);
+            rightText.setVisibility(GONE);
         }
         else if (pageCurrent == pageFavorites)
         {

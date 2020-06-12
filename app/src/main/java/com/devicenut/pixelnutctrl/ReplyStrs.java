@@ -2,10 +2,9 @@ package com.devicenut.pixelnutctrl;
 
 import android.util.Log;
 
-import static com.devicenut.pixelnutctrl.Main.FEATURE_BASIC_PATTERNS;
 import static com.devicenut.pixelnutctrl.Main.CMD_GET_PATTERNS;
 import static com.devicenut.pixelnutctrl.Main.CMD_GET_SEGMENTS;
-import static com.devicenut.pixelnutctrl.Main.FEATURE_INT_PATTERNS;
+import static com.devicenut.pixelnutctrl.Main.FEATURE_NOAPP_PATTERNS;
 import static com.devicenut.pixelnutctrl.Main.MAXVAL_FORCE;
 import static com.devicenut.pixelnutctrl.Main.MAXVAL_HUE;
 import static com.devicenut.pixelnutctrl.Main.MAXVAL_PERCENT;
@@ -27,7 +26,7 @@ import static com.devicenut.pixelnutctrl.Main.curBright;
 import static com.devicenut.pixelnutctrl.Main.curDelay;
 import static com.devicenut.pixelnutctrl.Main.devicePatterns;
 import static com.devicenut.pixelnutctrl.Main.multiStrands;
-import static com.devicenut.pixelnutctrl.Main.useAdvPatterns;
+import static com.devicenut.pixelnutctrl.Main.oldSegmentVals;
 import static com.devicenut.pixelnutctrl.Main.useExtPatterns;
 import static com.devicenut.pixelnutctrl.Main.maxlenCmdStrs;
 import static com.devicenut.pixelnutctrl.Main.numPatterns;
@@ -165,7 +164,7 @@ class ReplyStrs
                         int val1 = Integer.parseInt(strs[i++]);
                         int val2 = Integer.parseInt(strs[i++]);
                         int val3 = Integer.parseInt(strs[i++]);
-                        Log.d(LOGNAME, ">> Segment Info " + j + ": " + val1 + ":" + val2 + ":" + val3);
+                        Log.d(LOGNAME, ">> Physical Segment Info " + j + ": " + val1 + ":" + val2 + ":" + val3);
 
                         segPixels[j] = val1;
                         segLayers[j] = val2;
@@ -178,6 +177,18 @@ class ReplyStrs
                             replyFail = true;
                             break;
                         }
+
+                        /* Cannot do this unless disable grouping, so assume this 
+                        //
+                        // if can use advanced patterns, but a given segment is very short,
+                        // then only allow basic patterns on that particular segment
+                        if (segPixels[j] < MINLEN_SEGLEN_FORADV)
+                        {
+                            Log.w(LOGNAME, "No advanced patterns for segment=" + j);
+                            segBasicOnly[j] = true;
+                            haveBasicSegs = true;
+                        }
+                        */
 
                         if (strs.length == 3) // only first set of values has been sent
                         {
@@ -200,14 +211,15 @@ class ReplyStrs
 
                         int val1 = Integer.parseInt(strs[i++]);
                         int val2 = Integer.parseInt(strs[i++]);
-                        Log.d(LOGNAME, ">> Segment Extents " + j + ": " + val1 + ":" + val2);
+                        Log.d(LOGNAME, ">> Logical Segment Extent " + j + ": " + val1 + "-" + val2);
 
                         segPosStart[j] = val1;
                         segPosCount[j] = val2;
+                        int len = val2 - val1 + 1;
 
                         // if can use advanced patterns, but a given segment is very short,
                         // then only allow basic patterns on that particular segment
-                        if (useAdvPatterns && (val2 < MINLEN_SEGLEN_FORADV))
+                        if (len < MINLEN_SEGLEN_FORADV)
                         {
                             Log.w(LOGNAME, "No advanced patterns for segment=" + j);
                             segBasicOnly[j] = true;
@@ -347,17 +359,17 @@ class ReplyStrs
                     multiStrands    = (Integer.parseInt(strs[4]) > 0); // old firmware: always 0
                     maxlenCmdStrs   = Integer.parseInt(strs[5]);
 
+                    oldSegmentVals  = false;
+
                     if (numSegments < 0)
                     {
                         Log.w(LOGNAME, "Old firmware: segments = " + numSegments);
                         numSegments = -numSegments;
-                        if (numSegments > 1) multiStrands = true;
-                    }
-
-                    if ((devicePatterns > 0) && (numSegments > 1) && !multiStrands)
-                    {
-                        Log.e(LOGNAME, "Cannot have device patterns AND logical segments");
-                        replyFail = true;
+                        if (numSegments > 1)
+                        {
+                            multiStrands = true;
+                            oldSegmentVals = true;
+                        }
                     }
 
                     if (maxlenCmdStrs < MINLEN_CMDSTR)
@@ -368,51 +380,35 @@ class ReplyStrs
 
                     if (!replyFail)
                     {
+                        useExtPatterns = ((featureBits & FEATURE_NOAPP_PATTERNS) == 0);
+
                         if (segPatterns[0] > 0)
                              segPatterns[0] -= 1; // device pattern numbers start at 1
-                        else segPatterns[0] = 1; // older firmware with no flash values
+                        else segPatterns[0] = 0;  // old firmware with no flash values
 
-                        if ((featureBits & FEATURE_INT_PATTERNS) != 0)
+                        if (!useExtPatterns)
                         {
-                            // can only use internal patterns
-                            useExtPatterns = false;
-                            useAdvPatterns = false;
+                            // can only use device specific patterns
                             numPatterns = 0;
-
-                            haveBasicSegs = true;
-                        }
-                        else if ((featureBits & FEATURE_BASIC_PATTERNS) != 0)
-                        {
-                            // can only use basic patterns
-                            useExtPatterns = true;
-                            useAdvPatterns = false;
-                            numPatterns = basicPatternsCount;
-
                             haveBasicSegs = true;
                         }
                         else if (((numSegments > 1) && !multiStrands && (maxlenCmdStrs < (maxlenAdvPatterns * numSegments))) ||
                                  (maxlenCmdStrs < maxlenAdvPatterns))
                         {
                             // if command/pattern string not long enough then must use only basic patterns
-                            useExtPatterns = true;
-                            useAdvPatterns = false;
                             numPatterns = basicPatternsCount;
-
                             haveBasicSegs = true;
                         }
                         else
                         {
-                            useExtPatterns = true;
-                            useAdvPatterns = true;
                             numPatterns = basicPatternsCount + advPatternsCount;
-
                             haveBasicSegs = false;
                         }
                         numPatterns += devicePatterns;
 
                         Log.d(LOGNAME, ">> Segments=" + numSegments + ((numSegments > 1) ? (multiStrands ? " (physical)" : " (logical)") : ""));
                         Log.d(LOGNAME, ">> CmdStrLen=" + maxlenCmdStrs + " MaxLenAdvPatterns=" + maxlenAdvPatterns);
-                        Log.d(LOGNAME, ">> Patterns: Dev=" + devicePatterns + " Adv=" + useAdvPatterns + " Total=" + numPatterns);
+                        Log.d(LOGNAME, ">> Patterns: Device=" + devicePatterns + " Total=" + numPatterns);
                         Log.d(LOGNAME, ">> CurPattern=" + segPatterns[0]);
                         Log.d(LOGNAME, ">> Features=0x" + Integer.toHexString(featureBits));
 
