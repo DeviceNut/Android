@@ -130,7 +130,8 @@ public class Master extends AppCompatActivity implements FragFavs.FavoriteSelect
 
         setContentView(R.layout.activity_master);
 
-        if (devIsBLE) findViewById(R.id.button_Networks).setVisibility(GONE);
+        // if (devIsBLE) // FIXME
+        findViewById(R.id.button_Networks).setVisibility(GONE);
 
         if (pageFavorites >= 0) myFragments[pageFavorites] = FragFavs.newInstance();
         myFragments[pageControls] = FragCtrls.newInstance();

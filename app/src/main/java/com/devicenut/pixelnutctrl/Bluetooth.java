@@ -145,7 +145,6 @@ class Bluetooth
         Log.i(LOGNAME, "Connecting to GATT...");
         SleepMsecs(100); // hack to prevent disconnect
 
-        //bleAdapter.cancelDiscovery();
         bleGatt = bdev.connectGatt(appContext, false, bleGattCB);
         if (bleGatt == null) return false;
 
