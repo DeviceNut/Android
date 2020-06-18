@@ -292,13 +292,16 @@ class Wifi
                 String dspname = "";
                 boolean haveone = false;
 
+                // POSTFIX_WIFI is optional (Particle only)
                 int index = name.indexOf(POSTFIX_WIFI);
+                if (index <= 0) index = name.length();
+
                 if (name.startsWith(PREFIX_PIXELNUT) && (index > 0))
                 {
                     haveone = true;
                     dspname = name.substring(PREFIX_PIXELNUT.length(), index);
                 }
-                else if (name.toUpperCase().startsWith(PREFIX_PHOTON))
+                else if (name.toUpperCase().startsWith(PREFIX_PHOTON)) // FIXME: remove this
                 {
                     haveone = true;
                     dspname = name.substring( PREFIX_PHOTON.length() );
