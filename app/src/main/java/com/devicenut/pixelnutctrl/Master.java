@@ -5,6 +5,8 @@ import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
 import android.os.Build;
+
+import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentPagerAdapter;
@@ -414,6 +416,7 @@ public class Master extends AppCompatActivity implements FragFavs.FavoriteSelect
 
         @Override public int getCount() { return numFragments; }
 
+        @NonNull
         @Override public Fragment getItem(int position)
         {
             Log.d(LOGNAME, "Select fragment " + position);

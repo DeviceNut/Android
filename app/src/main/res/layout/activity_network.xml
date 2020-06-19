@@ -391,7 +391,8 @@
                     android:layout_marginTop="5dp"
                     android:inputType="text"
                     android:maxLength="32"
-                    android:textSize="18sp"/>
+                    android:textSize="18sp"
+                    tools:ignore="Autofill" />
 
                 <LinearLayout
                     android:layout_width="match_parent"

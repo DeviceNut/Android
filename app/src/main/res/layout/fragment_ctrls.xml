@@ -73,7 +73,8 @@
                     android:layout_alignParentLeft="true"
                     android:layout_toLeftOf="@+id/button_SendCmd"
                     android:textAppearance="@style/TextAppearance.AppCompat.Medium"
-                    android:id="@+id/edit_CmdStr"/>
+                    android:id="@+id/edit_CmdStr"
+                    android:importantForAutofill="no" />
 
                 <Button
                     android:layout_width="wrap_content"

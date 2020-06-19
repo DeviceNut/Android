@@ -284,7 +284,7 @@ class ReplyStrs
                     {
                         if (str.length() <= 0) continue; // shouldn't happen?
 
-                        if ((str.charAt(0) == 'Q') && (str.length() > 1))
+                        if ((str.charAt(0) == 'Q') && (str.length() > 1)) // FIXME document
                         {
                             int val = Integer.parseInt(str.substring(1));
                             patternBits_Device[index] |= val;
@@ -294,8 +294,8 @@ class ReplyStrs
 
                         else if (str.charAt(0) == 'I')
                         {
-                            patternBits_Device[index] |= 0x10;
-                            if (haveforce) patternBits_Device[index] |= 0x20;
+                            patternBits_Device[index] |= 0x10; // FIXME document
+                            if (haveforce) patternBits_Device[index] |= 0x20; // FIXME document
                         }
                     }
                 }

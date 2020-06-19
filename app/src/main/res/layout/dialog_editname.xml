@@ -20,7 +20,8 @@
         android:digits="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890 -!#$%*&amp;"
         android:selectAllOnFocus="true"
         android:textAppearance="@style/TextAppearance.AppCompat.Large"
-        android:id="@+id/edit_DevName"/>
+        android:id="@+id/edit_DevName"
+        tools:ignore="Autofill" />
 
     <LinearLayout
         android:layout_width="match_parent"

@@ -59,7 +59,6 @@ public class Main extends Application
     static final int MAXLEN_BLE_CHUNK       = 20;   // max chars that can be sent at once with BLE implementation
 
     static final String PREFIX_PIXELNUT     = "P!";
-    static final String PREFIX_PHOTON       = "PHOTON-";
     static final String POSTFIX_WIFI        = "---!P";
     static final String PREFIX_ADAFRUIT     = "ADAFRUIT";
     static final String DEVNAME_NONE        = "NoName";

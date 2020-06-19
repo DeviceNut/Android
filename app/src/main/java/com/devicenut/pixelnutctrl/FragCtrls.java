@@ -301,7 +301,7 @@ public class FragCtrls extends Fragment implements SeekBar.OnSeekBarChangeListen
         createViewCtrls = false;
     }
 
-    @Override public void onAttach(Context context)
+    @Override public void onAttach(@NonNull Context context)
     {
         Log.d(LOGNAME, ">>onAttach");
         super.onAttach(context);

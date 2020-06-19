@@ -32,8 +32,6 @@
     <string name="title_favs">Favorites</string>
     <string name="action_favs">&lt;&lt;&lt; Favorites</string>
     <string name="action_ctrls_rite">Controls &gt;&gt;&gt;</string>
-    <string name="action_ctrls_left">&lt;&lt;&lt; Controls</string>
-    <string name="action_details">Details &gt;&gt;&gt;</string>
     <string name="text_addnetwork">
         This will clear ALL the stored network information from the device.
     </string>

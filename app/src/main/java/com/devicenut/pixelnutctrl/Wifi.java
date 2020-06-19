@@ -26,7 +26,6 @@ import static com.devicenut.pixelnutctrl.Main.DEVSTAT_BADSTATE;
 import static com.devicenut.pixelnutctrl.Main.DEVSTAT_FAILED;
 import static com.devicenut.pixelnutctrl.Main.DEVSTAT_SUCCESS;
 import static com.devicenut.pixelnutctrl.Main.POSTFIX_WIFI;
-import static com.devicenut.pixelnutctrl.Main.PREFIX_PHOTON;
 import static com.devicenut.pixelnutctrl.Main.PREFIX_PIXELNUT;
 import static com.devicenut.pixelnutctrl.Main.SleepMsecs;
 import static com.devicenut.pixelnutctrl.Main.appContext;
@@ -300,11 +299,6 @@ class Wifi
                 {
                     haveone = true;
                     dspname = name.substring(PREFIX_PIXELNUT.length(), index);
-                }
-                else if (name.toUpperCase().startsWith(PREFIX_PHOTON)) // FIXME: remove this
-                {
-                    haveone = true;
-                    dspname = name.substring( PREFIX_PHOTON.length() );
                 }
 
                 if (haveone && !wifiNameList.contains(dspname)) // have not already seen this

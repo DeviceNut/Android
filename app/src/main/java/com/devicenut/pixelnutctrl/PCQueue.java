@@ -15,7 +15,7 @@ class PCQueue<E>
         clear();
     }
 
-    boolean empty()
+    private boolean empty()
     {
         return head==tail;
     }
