@@ -14,6 +14,7 @@ import android.util.Log;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
@@ -110,6 +111,7 @@ class Wifi
 
     void stopConnecting()
     {
+        Log.i(LOGNAME, "Stop connecting...");
         stopConnect = true;
     }
 
@@ -204,6 +206,7 @@ class Wifi
         Log.d(LOGNAME, "Wifi write: " + str);
         for (int i = 0; i < 3; ++i)
         {
+            if (stopConnect) break;
             try
             {
                 Log.v(LOGNAME, DEVICE_URL);
@@ -212,6 +215,14 @@ class Wifi
                 Log.v(LOGNAME, "Opening connection...");
                 HttpURLConnection devConnection = (HttpURLConnection) wifiURL.openConnection();
 
+                if (stopConnect) break;
+
+                int code = devConnection.getResponseCode();
+                Log.v(LOGNAME, "Response code=" + code);
+                if (code !=  200) {
+                    throw new IOException("Invalid response from server: " + code);
+                }
+
                 Log.v(LOGNAME, "Using HTTP POST");
                 devConnection.setRequestMethod("POST");
                 devConnection.setRequestMethod("GET");
@@ -219,7 +230,7 @@ class Wifi
                 devConnection.setDoInput(true);
                 devConnection.setDoOutput(true);
                 devConnection.setReadTimeout(0);     // wait forever for connection/data
-                devConnection.setConnectTimeout(0);
+                devConnection.setConnectTimeout(2000);
 
                 Log.v(LOGNAME, "Connecting to device...");
                 devConnection.connect();
@@ -257,7 +268,7 @@ class Wifi
             }
             catch (Exception e)
             {
-                Log.e(LOGNAME, "Write failed: \"" + str + "\"");
+                Log.e(LOGNAME, "Connection or Write failed: \"" + str + "\"");
                 e.printStackTrace();
                 // retry up to 3 times
             }
