@@ -91,27 +91,27 @@ public class FragCtrls extends Fragment implements SeekBar.OnSeekBarChangeListen
 {
     private static final String LOGNAME = "Controls";
 
-    private static ScrollView viewCtrls;
-    private static ScrollView helpPage;
-    private static TextView helpText;
+    private ScrollView viewCtrls;
+    private ScrollView helpPage;
+    private TextView helpText;
 
     private static int helpMode = 0;
     private static boolean changePattern = true;
 
-    private static LinearLayout llPatternHelp, llDelayControl;
-    private static LinearLayout llProperties, llAutoControls;
-    private static LinearLayout llPropColor, llPropWhite, llPropCount;
-    private static LinearLayout llTrigControls, llTrigForce;
+    private LinearLayout llPatternHelp, llDelayControl;
+    private LinearLayout llProperties, llAutoControls;
+    private LinearLayout llPropColor, llPropWhite, llPropCount;
+    private LinearLayout llTrigControls, llTrigForce;
 
-    private static Button segAddButton, favButton, helpButton, manualButton;
-    private static TextView helpText2, textTrigger;
-    private static Spinner selectPattern;
+    private Button segAddButton, favButton, helpButton, manualButton;
+    private TextView helpText2, textTrigger;
+    private Spinner selectPattern;
 
-    private static SeekBar seekBright, seekDelay;
-    private static SeekBar seekPropColor, seekPropWhite, seekPropCount;
-    private static SeekBar seekTrigForce;
+    private SeekBar seekBright, seekDelay;
+    private SeekBar seekPropColor, seekPropWhite, seekPropCount;
+    private SeekBar seekTrigForce;
 
-    private static EditText cmdText;
+    private EditText cmdText;
 
     // number of entries must be the same as MAXNUM_SEGMENTS
     private static final boolean[] segEnables = {false, false, false, false, false};

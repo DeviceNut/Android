@@ -31,10 +31,10 @@ public class FragFavs extends Fragment
 {
     private static final String LOGNAME = "Favorites";
 
-    private static View masterView;
-    private static LinearLayout llViewFavs;
-    private static ScrollView helpPage;
-    private static TextView helpText;
+    private View masterView;
+    private LinearLayout llViewFavs;
+    private ScrollView helpPage;
+    private TextView helpText;
 
     private static SharedPreferences mySettings = null;
     private static final String prefBaseName = "Favorite";
