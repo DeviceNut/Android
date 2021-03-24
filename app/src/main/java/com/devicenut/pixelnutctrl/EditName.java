@@ -35,6 +35,7 @@ public class EditName extends AppCompatActivity
 
         saveName = devName;
         editName.setText(devName);
+        editName.requestFocus();
 
         InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
         if (imm != null) imm.toggleSoftInput(InputMethodManager.SHOW_FORCED, 0);
