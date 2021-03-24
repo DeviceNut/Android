@@ -87,7 +87,7 @@ public class Main extends Application
     static final String WCMD_SET_SOFTAP     = "*A";     // set SoftAP mode: 0=disable, 1=enable
 
     static final int MAXVAL_HUE             = 359;
-    static final int MAXVAL_WHT             = 50;
+    static final int MAXVAL_WHT             = 85;       // restrict whiteness somewhat to avoid drawing excessive power
     static final int MAXVAL_PERCENT         = 100;
     static final int MAXVAL_FORCE           = 1000;
     static final int MINVAL_DELAYRANGE      = 80;       // use this for patterns defined here, and is minimal value for custom patterns
