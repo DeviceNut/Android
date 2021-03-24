@@ -17,7 +17,7 @@ import android.content.pm.PackageManager;
 import android.os.Build;
 import android.util.Log;
 
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -173,8 +173,7 @@ class Bluetooth
         if (bleGatt != null)
         {
             Log.i(LOGNAME, "Disconnecting from GATT");
-            //bleGatt.disconnect(); // unnecessary if close(), can cause issues?
-            bleGatt.close();
+            bleGatt.disconnect();
         }
         else Log.w(LOGNAME, "No GATT to disconnect");
     }
@@ -270,9 +269,9 @@ class Bluetooth
             else if (newState == BluetoothProfile.STATE_DISCONNECTED)
             {
                 Log.i(LOGNAME, "GATT now disconnected");
-                bleCB.onDisconnect();
                 bleGatt.close();
                 bleGatt = null;
+                bleCB.onDisconnect();
             }
             else Log.i(LOGNAME, "GATT state=" + newState);
         }
@@ -328,10 +327,15 @@ class Bluetooth
                     bleGatt.setCharacteristicNotification(bleRx, true);
                     config.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
                     bleGatt.writeDescriptor(config);
-
-                    bleCB.onConnect(DEVSTAT_SUCCESS);
                 }
             }
+        }
+
+        @Override public void onDescriptorWrite(BluetoothGatt gatt, BluetoothGattDescriptor descriptor, int status)
+        {
+            Log.v(LOGNAME, "onDescriptorWrite, status=" + status);
+            if (status == BluetoothGatt.GATT_SUCCESS)
+                bleCB.onConnect(DEVSTAT_SUCCESS);
         }
 
         @Override public void onCharacteristicWrite(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status)
@@ -350,7 +354,6 @@ class Bluetooth
             if (bleRx != characteristic) Log.i(LOGNAME, "Not read characteristic");
             if ((bleRx == null) || (bleRx != characteristic)) return;
 
-            bleGatt.readCharacteristic(bleRx);
             byte[] bytes = bleRx.getValue();
             if (bytes == null)
             {
@@ -358,8 +361,8 @@ class Bluetooth
                 return;
             }
 
-            String str = new String(bytes, Charset.forName("UTF-8"));
-            Log.v(LOGNAME, "ReadBytes=\"" + str + "\"");
+            String str = new String(bytes, StandardCharsets.UTF_8);
+            Log.v(LOGNAME, "ReadBytes=\"" + str + "\"" + " Len=" + str.length());
 
             while(true)
             {
@@ -371,8 +374,8 @@ class Bluetooth
                     strLine.append(str);
                     break;
                 }
+                else if (i > 0) strLine.append( str.substring(0,i) );
 
-                strLine.append( str.substring(0,i) );
                 bleCB.onRead(strLine.toString());
                 strLine = null;
                 str = str.substring(i+1);
