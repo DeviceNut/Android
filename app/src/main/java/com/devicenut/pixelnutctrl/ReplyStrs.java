@@ -130,6 +130,11 @@ class ReplyStrs
     int Next(String reply)
     {
         Log.v(LOGNAME, "ReplyState=" + replyState + " OptionLines=" + optionLines);
+        if ((replyState == 0) && (reply.compareTo("\n") == 0))
+        {
+            Log.v(LOGNAME, "Ignoring empty lines");
+            return 0;
+        }
 
         if (replyFail)
         {
